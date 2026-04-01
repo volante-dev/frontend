@@ -3,6 +3,7 @@ import ServicesList from "@/components/sections/ServicesList/ServicesList";
 import ProjectGrid from "@/components/sections/ProjectGrid/ProjectGrid";
 import type { Service } from "@/components/sections/ServicesList/ServicesList";
 import type { Project } from "@/components/sections/ProjectGrid/ProjectGrid";
+import prisma from "@/lib/prisma";
 
 const fallbackServices: Service[] = [
   {
@@ -33,11 +34,10 @@ const fallbackServices: Service[] = [
 
 const getServices = async (): Promise<Service[]> => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/services`, {
-      next: { revalidate: 3600 },
+    return await prisma.service.findMany({
+      where: { active: true },
+      orderBy: { order: "asc" },
     });
-    if (!res.ok) return fallbackServices;
-    return res.json() as Promise<Service[]>;
   } catch {
     return fallbackServices;
   }
@@ -45,11 +45,10 @@ const getServices = async (): Promise<Service[]> => {
 
 const getProjects = async (): Promise<Project[]> => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/projects`, {
-      next: { revalidate: 3600 },
+    return await prisma.project.findMany({
+      where: { publishedAt: { not: null } },
+      orderBy: [{ featured: "desc" }, { order: "asc" }, { publishedAt: "desc" }],
     });
-    if (!res.ok) return [];
-    return res.json() as Promise<Project[]>;
   } catch {
     return [];
   }

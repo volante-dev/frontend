@@ -2,26 +2,21 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import ProjectGrid from "@/components/sections/ProjectGrid/ProjectGrid";
 import { colors } from "@/app/theme/tokens";
-import type { Project } from "@/components/sections/ProjectGrid/ProjectGrid";
+import prisma from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Portfolio — Studio Volante",
 };
 
-const getProjects = async (): Promise<Project[]> => {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/projects`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return [];
-    return res.json() as Promise<Project[]>;
-  } catch {
-    return [];
-  }
-};
-
 const PortfolioPage = async () => {
-  const projects = await getProjects();
+  const projects = await prisma.project
+    .findMany({
+      where: { publishedAt: { not: null } },
+      orderBy: [{ featured: "desc" }, { order: "asc" }, { publishedAt: "desc" }],
+    })
+    .catch(() => []);
 
   return (
     <>

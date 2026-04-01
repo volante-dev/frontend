@@ -3,26 +3,21 @@ import Typography from "@mui/material/Typography";
 import ServicesList from "@/components/sections/ServicesList/ServicesList";
 import ContactForm from "@/components/sections/ContactForm/ContactForm";
 import { colors } from "@/app/theme/tokens";
-import type { Service } from "@/components/sections/ServicesList/ServicesList";
+import prisma from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Services — Studio Volante",
 };
 
-const getServices = async (): Promise<Service[]> => {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/services`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return [];
-    return res.json() as Promise<Service[]>;
-  } catch {
-    return [];
-  }
-};
-
 const ServicesPage = async () => {
-  const services = await getServices();
+  const services = await prisma.service
+    .findMany({
+      where: { active: true },
+      orderBy: { order: "asc" },
+    })
+    .catch(() => []);
 
   return (
     <>
