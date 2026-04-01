@@ -117,16 +117,41 @@ const ComingSoonPage = () => (
         alignItems: "center",
       }}
     >
-      <Typography
-        variant="caption"
-        sx={{
-          fontSize: "0.75rem",
-          letterSpacing: "0.04em",
-          color: colors.mutedBlackLight,
-        }}
-      >
-        bonjour@studiovolante.fr
-      </Typography>
+      <Box sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <Typography
+          variant="caption"
+          sx={{
+            fontSize: "0.75rem",
+            letterSpacing: "0.04em",
+            color: colors.mutedBlackLight,
+          }}
+        >
+          yasmine@studio-volante.fr
+        </Typography>
+        <Box
+          sx={{
+            width: 16,
+            height: "1px",
+            backgroundColor: colors.green,
+            marginRight: "6px",
+            marginLeft: "6px",
+          }}
+        />
+        <Typography
+          variant="caption"
+          sx={{
+            fontSize: "0.75rem",
+            letterSpacing: "0.04em",
+            color: colors.mutedBlackLight,
+          }}
+        >
+          william@studio-volante.fr
+        </Typography>
+      </Box>
 
       <Box
         sx={{
