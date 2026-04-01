@@ -47,3 +47,4 @@ next-env.d.ts
 storybook-static
 
 /app/generated/prisma
+.env*.local
