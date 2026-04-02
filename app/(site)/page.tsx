@@ -1,9 +1,12 @@
+import { headers } from "next/headers";
 import Hero from "@/components/sections/Hero/Hero";
 import ServicesList from "@/components/sections/ServicesList/ServicesList";
 import ProjectGrid from "@/components/sections/ProjectGrid/ProjectGrid";
 import type { Service } from "@/components/sections/ServicesList/ServicesList";
 import type { Project } from "@/components/sections/ProjectGrid/ProjectGrid";
 import prisma from "@/lib/prisma";
+import { getTranslations, defaultLocale } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 
 const fallbackServices: Service[] = [
   {
@@ -55,11 +58,18 @@ const getProjects = async (): Promise<Project[]> => {
 };
 
 const HomePage = async () => {
-  const [services, projects] = await Promise.all([getServices(), getProjects()]);
+  const headersList = await headers();
+  const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
+
+  const [services, projects, translations] = await Promise.all([
+    getServices(),
+    getProjects(),
+    getTranslations(locale),
+  ]);
 
   return (
     <>
-      <Hero />
+      <Hero translations={translations} />
       <ServicesList services={services} />
       {projects.length > 0 && <ProjectGrid projects={projects} preview />}
     </>

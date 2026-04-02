@@ -70,7 +70,7 @@ const Footer = () => (
         <Typography variant="subtitle2" gutterBottom>
           Contact
         </Typography>
-        <Typography variant="body2">bonjour@studiovolante.fr</Typography>
+        <Typography variant="body2">yasmine@studio-volante.fr</Typography>
       </Box>
     </Box>
 

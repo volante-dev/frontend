@@ -8,15 +8,23 @@ import Button from "@/components/ui/Button/Button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { colors } from "@/app/theme/tokens";
+import { getLocalizedHref, getAlternateHref } from "@/lib/i18n";
+import type { Locale, RouteKey } from "@/lib/i18n";
 
-const navLinks = [
-  { href: "/services", label: "Services" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/studio", label: "Studio" },
+const navRoutes: { key: RouteKey; label: Record<Locale, string> }[] = [
+  { key: "services", label: { fr: "Services", en: "Services" } },
+  { key: "portfolio", label: { fr: "Portfolio", en: "Portfolio" } },
+  { key: "studio", label: { fr: "Studio", en: "Studio" } },
 ];
 
 const Header = () => {
   const pathname = usePathname();
+  const locale: Locale = pathname.startsWith("/en") ? "en" : "fr";
+  const targetLocale: Locale = locale === "en" ? "fr" : "en";
+  const alternatePath = getAlternateHref(pathname, targetLocale);
+  // Forcer la mise à jour du cookie via ?lang= lors du retour au FR (sans préfixe URL)
+  const langSwitcherHref = targetLocale === "fr" ? `${alternatePath}?lang=fr` : alternatePath;
+  const homeHref = getLocalizedHref(locale, "home");
 
   return (
     <AppBar
@@ -32,7 +40,7 @@ const Header = () => {
         <Typography
           variant="h6"
           component={Link}
-          href="/"
+          href={homeHref}
           sx={{
             fontWeight: 700,
             fontSize: "1rem",
@@ -49,22 +57,50 @@ const Header = () => {
           component="nav"
           sx={{ display: { xs: "none", md: "flex" }, gap: 0.5, alignItems: "center" }}
         >
-          {navLinks.map(({ href, label }) => (
-            <Button
-              key={href}
-              variant="text"
-              component={Link}
-              href={href}
-              sx={{
-                color: pathname === href ? colors.green : colors.mutedBlack,
-                fontWeight: pathname === href ? 600 : 400,
-              }}
-            >
-              {label}
-            </Button>
-          ))}
-          <Button variant="contained" component={Link} href="/contact" sx={{ ml: 2 }}>
+          {navRoutes.map(({ key, label }) => {
+            const href = getLocalizedHref(locale, key);
+            const isActive = pathname === href || pathname.startsWith(`${href}/`);
+            return (
+              <Button
+                key={key}
+                variant="text"
+                component={Link}
+                href={href}
+                sx={{
+                  color: isActive ? colors.green : colors.mutedBlack,
+                  fontWeight: isActive ? 600 : 400,
+                }}
+              >
+                {label[locale]}
+              </Button>
+            );
+          })}
+
+          <Button
+            variant="contained"
+            component={Link}
+            href={getLocalizedHref(locale, "contact")}
+            sx={{ ml: 2 }}
+          >
             Contact
+          </Button>
+
+          {/* Sélecteur de langue — hard navigation pour forcer le proxy et les nouvelles traductions */}
+          <Button
+            variant="text"
+            component="a"
+            href={langSwitcherHref}
+            sx={{
+              ml: 1,
+              color: colors.mutedBlackLight,
+              fontSize: "0.75rem",
+              fontWeight: 500,
+              letterSpacing: "0.06em",
+              minWidth: "auto",
+              px: 1,
+            }}
+          >
+            {locale === "fr" ? "EN" : "FR"}
           </Button>
         </Box>
       </Toolbar>
