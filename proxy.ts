@@ -4,6 +4,9 @@ import { locales, defaultLocale, parseLocaleFromHeader } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import { slugs, getRouteKeyFromSlug } from "@/lib/i18n-routes";
 
+// Évite de répéter le cast (locales as string[]) à chaque fois
+const localeValues = locales as string[];
+
 export const proxy = (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
@@ -19,7 +22,7 @@ export const proxy = (request: NextRequest) => {
 
   // --- Forçage de locale via ?lang= (sélecteur de langue) ---
   const langParam = request.nextUrl.searchParams.get("lang");
-  if (langParam && (locales as string[]).includes(langParam)) {
+  if (langParam && localeValues.includes(langParam)) {
     const cleanUrl = new URL(request.url);
     cleanUrl.searchParams.delete("lang");
     const response = NextResponse.redirect(cleanUrl, 307);
@@ -34,7 +37,7 @@ export const proxy = (request: NextRequest) => {
   // --- Détection locale depuis l'URL (priorité sur cookie) ---
   const parts = pathname.split("/").filter(Boolean);
   const firstSegment = parts[0] ?? "";
-  const urlLocale = (locales as string[]).includes(firstSegment) ? (firstSegment as Locale) : null;
+  const urlLocale = localeValues.includes(firstSegment) ? (firstSegment as Locale) : null;
 
   // /fr ou /fr/... → redirect sans préfixe (le FR n'a pas de préfixe)
   if (urlLocale === defaultLocale) {
@@ -46,7 +49,7 @@ export const proxy = (request: NextRequest) => {
   const cookieLocale = request.cookies.get("locale")?.value;
   const locale: Locale =
     urlLocale ??
-    ((locales as string[]).includes(cookieLocale ?? "")
+    (localeValues.includes(cookieLocale ?? "")
       ? (cookieLocale as Locale)
       : parseLocaleFromHeader(request.headers.get("accept-language")));
 

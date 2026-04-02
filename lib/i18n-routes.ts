@@ -1,5 +1,5 @@
-import { defaultLocale } from "./i18n";
-import type { Locale } from "./i18n";
+import type { Locale } from "./i18n-config";
+import { defaultLocale, locales } from "./i18n-config";
 
 export type RouteKey = "home" | "services" | "portfolio" | "studio" | "contact";
 
@@ -47,9 +47,10 @@ export const getRouteKeyFromSlug = (locale: Locale, slug: string): RouteKey | nu
  *  getAlternateHref("/portfolio", "en")    → "/en/portfolio"
  */
 export const getAlternateHref = (pathname: string, targetLocale: Locale): string => {
-  // Détecter la locale courante depuis le pathname
+  // Détecter la locale courante depuis le pathname en utilisant le tableau locales
   const parts = pathname.split("/").filter(Boolean);
-  const isLocalePrefix = parts.length > 0 && parts[0] === "en"; // à étendre si plus de locales
+  const nonDefaultLocales = locales.filter((l) => l !== defaultLocale) as string[];
+  const isLocalePrefix = parts.length > 0 && nonDefaultLocales.includes(parts[0]);
   const currentLocale: Locale = isLocalePrefix ? (parts[0] as Locale) : defaultLocale;
   const slugPart = isLocalePrefix ? parts.slice(1).join("/") : parts.join("/");
 

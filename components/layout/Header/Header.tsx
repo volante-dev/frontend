@@ -19,7 +19,7 @@ const navRoutes: { key: RouteKey; label: Record<Locale, string> }[] = [
 
 const Header = () => {
   const pathname = usePathname();
-  const locale: Locale = pathname.startsWith("/en") ? "en" : "fr";
+  const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
   const targetLocale: Locale = locale === "en" ? "fr" : "en";
   const alternatePath = getAlternateHref(pathname, targetLocale);
   // Forcer la mise à jour du cookie via ?lang= lors du retour au FR (sans préfixe URL)

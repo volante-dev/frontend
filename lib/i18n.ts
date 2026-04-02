@@ -1,12 +1,11 @@
 import { get } from "@vercel/edge-config";
+import type { Locale } from "./i18n-config";
+import { locales, defaultLocale } from "./i18n-config";
 
 export { getLocalizedHref, getAlternateHref, slugs } from "./i18n-routes";
 export type { RouteKey } from "./i18n-routes";
-
-export type Locale = "fr" | "en";
-
-export const defaultLocale: Locale = "fr";
-export const locales: Locale[] = ["fr", "en"];
+export type { Locale } from "./i18n-config";
+export { locales, defaultLocale } from "./i18n-config";
 
 export type Translations = Record<string, string>;
 

@@ -97,7 +97,7 @@ const ComingSoonPage = async () => {
             whiteSpace: "pre-line",
           }}
         >
-          {t(tr, "coming-soon.heading", "")}
+          {t(tr, "coming-soon.heading", locale === "en" ? "Something beautiful\nis on its way." : "Quelque chose de beau\nest en préparation.")}
         </Typography>
 
         <Typography
@@ -109,7 +109,7 @@ const ComingSoonPage = async () => {
             whiteSpace: "pre-line",
           }}
         >
-          {t(tr, "coming-soon.subheading", "")}
+          {t(tr, "coming-soon.subheading", locale === "en" ? "We're putting the finishing touches on our new site." : "Nous peaufinons les derniers détails de notre nouveau site.")}
         </Typography>
       </Box>
 
