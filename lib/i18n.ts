@@ -23,6 +23,10 @@ export const getTranslations = async (locale: Locale): Promise<Translations> => 
 export const t = (translations: Translations, key: string, fallback = ""): string =>
   translations[key] ?? fallback;
 
+/** Retourne la valeur traduite si disponible, sinon la valeur par défaut. */
+export const localizeField = (base: string, translated: string | null | undefined, locale: Locale): string =>
+  locale !== defaultLocale && translated ? translated : base;
+
 /** Détermine la locale depuis un header Accept-Language. */
 export const parseLocaleFromHeader = (header: string | null): Locale => {
   if (!header) return defaultLocale;

@@ -7,7 +7,7 @@ import ProjectGrid from "@/components/sections/ProjectGrid/ProjectGrid";
 import type { Service } from "@/components/sections/ServicesList/ServicesList";
 import type { Project } from "@/components/sections/ProjectGrid/ProjectGrid";
 import prisma from "@/lib/prisma";
-import { getTranslations, defaultLocale } from "@/lib/i18n";
+import { getTranslations, localizeField, defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 
 const fallbackServices = [
@@ -81,18 +81,15 @@ const HomePage = async () => {
     getTranslations(locale),
   ]);
 
-  console.log(services);
-
-  // Localiser le contenu CMS selon la locale
   const localizedServices = services.map((s) => ({
     ...s,
-    title: locale === "en" && s.titleEn ? s.titleEn : s.title,
-    description: locale === "en" && s.descriptionEn ? s.descriptionEn : s.description,
+    title: localizeField(s.title, s.titleEn, locale),
+    description: localizeField(s.description, s.descriptionEn, locale),
   }));
   const localizedProjects = projects.map((p) => ({
     ...p,
-    title: locale === "en" && p.titleEn ? p.titleEn : p.title,
-    description: locale === "en" && p.descriptionEn ? p.descriptionEn : p.description,
+    title: localizeField(p.title, p.titleEn, locale),
+    description: localizeField(p.description, p.descriptionEn, locale),
   }));
 
   return (
