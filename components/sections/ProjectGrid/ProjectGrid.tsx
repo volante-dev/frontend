@@ -6,12 +6,16 @@ import Button from "@/components/ui/Button/Button";
 import ProjectCard from "@/components/ui/Card/Card";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
+import { t } from "@/lib/i18n";
+import type { Translations } from "@/lib/i18n";
 
 export interface Project {
   id: string;
   title: string;
+  titleEn?: string | null;
   slug: string;
   description: string;
+  descriptionEn?: string | null;
   imageUrl: string;
   tags: string[];
   featured: boolean;
@@ -19,11 +23,12 @@ export interface Project {
 
 interface ProjectGridProps {
   projects: Project[];
+  translations?: Translations;
   /** Limite le nombre de projets affichés, avec lien vers la page portfolio */
   preview?: boolean;
 }
 
-const ProjectGrid = ({ projects, preview = false }: ProjectGridProps) => {
+const ProjectGrid = ({ projects, translations = {}, preview = false }: ProjectGridProps) => {
   const displayed = preview ? projects.slice(0, 4) : projects;
 
   return (
@@ -49,13 +54,15 @@ const ProjectGrid = ({ projects, preview = false }: ProjectGridProps) => {
         >
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 2, color: colors.green }}>
-              Nos réalisations
+              {t(translations, "portfolio.eyebrow", "Nos réalisations")}
             </Typography>
-            <Typography variant="h2">Portfolio</Typography>
+            <Typography variant="h2">
+              {t(translations, "portfolio.heading", "Portfolio")}
+            </Typography>
           </Box>
           {preview && (
             <Button variant="outlined" component={Link} href="/portfolio">
-              Voir tout
+              {t(translations, "portfolio.cta.viewAll", "Voir tout")}
             </Button>
           )}
         </Box>

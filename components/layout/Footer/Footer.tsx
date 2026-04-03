@@ -5,15 +5,23 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
+import { t, getLocalizedHref } from "@/lib/i18n";
+import type { Translations, Locale } from "@/lib/i18n";
+import type { RouteKey } from "@/lib/i18n";
 
-const footerLinks = [
-  { href: "/services", label: "Services" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/studio", label: "Studio" },
-  { href: "/contact", label: "Contact" },
+interface FooterProps {
+  translations?: Translations;
+  locale?: Locale;
+}
+
+const navRoutes: { key: RouteKey; label: string }[] = [
+  { key: "services", label: "Services" },
+  { key: "portfolio", label: "Portfolio" },
+  { key: "studio", label: "Studio" },
+  { key: "contact", label: "Contact" },
 ];
 
-const Footer = () => (
+const Footer = ({ translations = {}, locale = "fr" }: FooterProps) => (
   <Box
     component="footer"
     sx={{
@@ -41,19 +49,19 @@ const Footer = () => (
           STUDIO VOLANTE
         </Typography>
         <Typography variant="body2" sx={{ maxWidth: 320 }}>
-          Agence de communication créative. Nous donnons vie aux idées qui comptent.
+          {t(translations, "footer.tagline", "Agence de communication créative. Nous donnons vie aux idées qui comptent.")}
         </Typography>
       </Box>
 
       <Box>
         <Typography variant="subtitle2" gutterBottom>
-          Navigation
+          {t(translations, "footer.nav.heading", "Navigation")}
         </Typography>
-        {footerLinks.map(({ href, label }) => (
-          <Typography key={href} variant="body2" sx={{ mb: 0.5 }}>
+        {navRoutes.map(({ key, label }) => (
+          <Typography key={key} variant="body2" sx={{ mb: 0.5 }}>
             <Box
               component={Link}
-              href={href}
+              href={getLocalizedHref(locale, key)}
               sx={{
                 color: "inherit",
                 textDecoration: "none",
@@ -68,7 +76,7 @@ const Footer = () => (
 
       <Box>
         <Typography variant="subtitle2" gutterBottom>
-          Contact
+          {t(translations, "footer.contact.heading", "Contact")}
         </Typography>
         <Typography variant="body2">yasmine@studio-volante.fr</Typography>
       </Box>
@@ -88,9 +96,11 @@ const Footer = () => (
       }}
     >
       <Typography variant="caption">
-        © {new Date().getFullYear()} Studio Volante. Tous droits réservés.
+      © {new Date().getFullYear()} {t(translations, "footer.copyright", "Studio Volante. Tous droits réservés.")}
       </Typography>
-      <Typography variant="caption">Fait avec soin à Paris</Typography>
+      <Typography variant="caption">
+        {t(translations, "footer.madeIn", "Fait avec soin à Paris")}
+      </Typography>
     </Box>
   </Box>
 );

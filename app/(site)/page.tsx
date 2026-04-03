@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { headers } from "next/headers";
 import Hero from "@/components/sections/Hero/Hero";
 import ServicesList from "@/components/sections/ServicesList/ServicesList";
@@ -8,28 +10,40 @@ import prisma from "@/lib/prisma";
 import { getTranslations, defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 
-const fallbackServices: Service[] = [
+const fallbackServices = [
   {
     id: "1",
     title: "Identité visuelle",
+    titleEn: "Visual identity",
     description:
       "Création de systèmes d'identité cohérents et mémorables — logo, typographie, palette chromatique, charte graphique complète.",
+    descriptionEn:
+      "Creation of coherent and memorable identity systems — logo, typography, colour palette, complete brand guidelines.",
+    icon: null,
     order: 1,
     active: true,
   },
   {
     id: "2",
     title: "Direction artistique",
+    titleEn: "Art direction",
     description:
       "Définition de l'univers visuel de vos campagnes, shootings et contenus digitaux. Un regard éditorial fort pour des communications qui marquent.",
+    descriptionEn:
+      "Defining the visual universe of your campaigns, shoots and digital content. A strong editorial eye for communications that leave a mark.",
+    icon: null,
     order: 2,
     active: true,
   },
   {
     id: "3",
     title: "Stratégie de contenu",
+    titleEn: "Content strategy",
     description:
       "Conception éditoriale et production de contenus adaptés à chaque canal — réseaux sociaux, site web, print, motion.",
+    descriptionEn:
+      "Editorial design and content production tailored to every channel — social media, website, print, motion.",
+    icon: null,
     order: 3,
     active: true,
   },
@@ -67,11 +81,25 @@ const HomePage = async () => {
     getTranslations(locale),
   ]);
 
+  console.log(services);
+
+  // Localiser le contenu CMS selon la locale
+  const localizedServices = services.map((s) => ({
+    ...s,
+    title: locale === "en" && s.titleEn ? s.titleEn : s.title,
+    description: locale === "en" && s.descriptionEn ? s.descriptionEn : s.description,
+  }));
+  const localizedProjects = projects.map((p) => ({
+    ...p,
+    title: locale === "en" && p.titleEn ? p.titleEn : p.title,
+    description: locale === "en" && p.descriptionEn ? p.descriptionEn : p.description,
+  }));
+
   return (
     <>
       <Hero translations={translations} />
-      <ServicesList services={services} />
-      {projects.length > 0 && <ProjectGrid projects={projects} preview />}
+      <ServicesList services={localizedServices} translations={translations} />
+      {localizedProjects.length > 0 && <ProjectGrid projects={localizedProjects} translations={translations} preview />}
     </>
   );
 };

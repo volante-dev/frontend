@@ -4,11 +4,15 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import { colors } from "@/app/theme/tokens";
+import { t } from "@/lib/i18n";
+import type { Translations } from "@/lib/i18n";
 
 export interface Service {
   id: string;
   title: string;
+  titleEn?: string | null;
   description: string;
+  descriptionEn?: string | null;
   icon?: string | null;
   order: number;
   active: boolean;
@@ -16,9 +20,10 @@ export interface Service {
 
 interface ServicesListProps {
   services: Service[];
+  translations?: Translations;
 }
 
-const ServicesList = ({ services }: ServicesListProps) => (
+const ServicesList = ({ services, translations = {} }: ServicesListProps) => (
   <Box
     component="section"
     data-testid="services-section"
@@ -30,10 +35,10 @@ const ServicesList = ({ services }: ServicesListProps) => (
   >
     <Box sx={{ maxWidth: 1200, mx: "auto" }}>
       <Typography variant="subtitle2" sx={{ mb: 2, color: colors.green }}>
-        Ce que nous faisons
+        {t(translations, "services.eyebrow", "Ce que nous faisons")}
       </Typography>
       <Typography variant="h2" sx={{ mb: 8, maxWidth: 560 }}>
-        Nos services
+        {t(translations, "services.heading", "Nos services")}
       </Typography>
 
       <Box>

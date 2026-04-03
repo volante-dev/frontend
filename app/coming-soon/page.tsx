@@ -63,16 +63,32 @@ const ComingSoonPage = async () => {
           STUDIO VOLANTE
         </Typography>
 
-        <Typography
-          variant="caption"
-          sx={{
-            fontSize: "0.75rem",
-            letterSpacing: "0.04em",
-            color: colors.mutedBlackLight,
-          }}
-        >
-          {new Date().getFullYear()}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: "0.75rem",
+              letterSpacing: "0.04em",
+              color: colors.mutedBlackLight,
+            }}
+          >
+            {new Date().getFullYear()}
+          </Typography>
+          <Box
+            component="a"
+            href={locale === "fr" ? "?lang=en" : "?lang=fr"}
+            sx={{
+              color: colors.mutedBlackLight,
+              fontSize: "0.75rem",
+              fontWeight: 500,
+              letterSpacing: "0.06em",
+              textDecoration: "none",
+              "&:hover": { color: colors.mutedBlack },
+            }}
+          >
+            {locale === "fr" ? "EN" : "FR"}
+          </Box>
+        </Box>
       </Box>
 
       {/* Bloc message — aligné à droite */}

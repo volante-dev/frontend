@@ -3,6 +3,9 @@ import Typography from "@mui/material/Typography";
 import ProjectGrid from "@/components/sections/ProjectGrid/ProjectGrid";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
+import { getTranslations, defaultLocale, t } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +14,24 @@ export const metadata = {
 };
 
 const PortfolioPage = async () => {
-  const projects = await prisma.project
-    .findMany({
-      where: { publishedAt: { not: null } },
-      orderBy: [{ featured: "desc" }, { order: "asc" }, { publishedAt: "desc" }],
-    })
-    .catch(() => []);
+  const headersList = await headers();
+  const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
+
+  const [rawProjects, translations] = await Promise.all([
+    prisma.project
+      .findMany({
+        where: { publishedAt: { not: null } },
+        orderBy: [{ featured: "desc" }, { order: "asc" }, { publishedAt: "desc" }],
+      })
+      .catch(() => []),
+    getTranslations(locale),
+  ]);
+
+  const projects = rawProjects.map((p) => ({
+    ...p,
+    title: locale === "en" && p.titleEn ? p.titleEn : p.title,
+    description: locale === "en" && p.descriptionEn ? p.descriptionEn : p.description,
+  }));
 
   return (
     <>
@@ -29,15 +44,15 @@ const PortfolioPage = async () => {
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
           <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
-            Nos réalisations
+            {t(translations, "portfolio.page.eyebrow", "Nos réalisations")}
           </Typography>
           <Typography variant="h1" sx={{ maxWidth: 700 }}>
-            Des projets construits avec exigence.
+            {t(translations, "portfolio.page.heading", "Des projets construits avec exigence.")}
           </Typography>
         </Box>
       </Box>
 
-      <ProjectGrid projects={projects} />
+      <ProjectGrid projects={projects} translations={translations} />
     </>
   );
 };

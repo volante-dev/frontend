@@ -4,6 +4,9 @@ import ServicesList from "@/components/sections/ServicesList/ServicesList";
 import ContactForm from "@/components/sections/ContactForm/ContactForm";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
+import { getTranslations, defaultLocale, t } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -12,12 +15,21 @@ export const metadata = {
 };
 
 const ServicesPage = async () => {
-  const services = await prisma.service
-    .findMany({
-      where: { active: true },
-      orderBy: { order: "asc" },
-    })
-    .catch(() => []);
+  const headersList = await headers();
+  const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
+
+  const [rawServices, translations] = await Promise.all([
+    prisma.service
+      .findMany({ where: { active: true }, orderBy: { order: "asc" } })
+      .catch(() => []),
+    getTranslations(locale),
+  ]);
+
+  const services = rawServices.map((s) => ({
+    ...s,
+    title: locale === "en" && s.titleEn ? s.titleEn : s.title,
+    description: locale === "en" && s.descriptionEn ? s.descriptionEn : s.description,
+  }));
 
   return (
     <>
@@ -30,16 +42,16 @@ const ServicesPage = async () => {
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
           <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
-            Notre expertise
+            {t(translations, "services.page.eyebrow", "Notre expertise")}
           </Typography>
           <Typography variant="h1" sx={{ maxWidth: 700 }}>
-            Des services pensés pour faire rayonner votre marque.
+            {t(translations, "services.page.heading", "Des services pensés pour faire rayonner votre marque.")}
           </Typography>
         </Box>
       </Box>
 
-      <ServicesList services={services} />
-      <ContactForm />
+      <ServicesList services={services} translations={translations} />
+      <ContactForm translations={translations} />
     </>
   );
 };
