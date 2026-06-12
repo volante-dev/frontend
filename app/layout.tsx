@@ -7,8 +7,8 @@ import { defaultLocale, locales } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
-  title: "Studio Volante — Agence de communication",
-  description: "Studio Volante, agence de communication créative.",
+  title: "Studio Volante - Agence créative de la Petite Ceinture",
+  description: "Studio Volante, Agence créative de la Petite Ceinture",
 };
 
 const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>) => {

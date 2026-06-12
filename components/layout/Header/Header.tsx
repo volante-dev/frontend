@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Collapse from "@mui/material/Collapse";
@@ -34,6 +34,9 @@ const pillBase = {
 
 const Header = () => {
   const [open, setOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const langDesktopRef = useRef<HTMLDivElement>(null);
+  const langMobileRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
   const targetLocale: Locale = locale === "en" ? "fr" : "en";
@@ -41,6 +44,18 @@ const Header = () => {
   const langSwitcherHref = targetLocale === "fr" ? `${alternatePath}?lang=fr` : alternatePath;
   const homeHref = getLocalizedHref(locale, "home");
   const contactHref = getLocalizedHref(locale, "contact");
+
+  useEffect(() => {
+    if (!langOpen) return;
+    const close = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (!langDesktopRef.current?.contains(t) && !langMobileRef.current?.contains(t)) {
+        setLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [langOpen]);
 
   // Track desktop pill dimensions for the liquid glass displacement map
   const pillRef = useRef<HTMLDivElement>(null);
@@ -74,7 +89,7 @@ const Header = () => {
     ? {
         backdropFilter: `url(#${filterId})`,
         WebkitBackdropFilter: `url(#${filterId})`,
-        backgroundColor: "rgba(255, 255, 255, 0.25)",
+        backgroundColor: "rgba(255, 255, 255, 0.35)",
         border: "none",
         boxShadow: "0 4px 16px rgba(0, 0, 0, 0.16)",
         transform: "translateZ(0)",
@@ -102,22 +117,60 @@ const Header = () => {
     </Typography>
   );
 
-  const langButton = (
-    <Button
-      variant="text"
-      component="a"
-      href={langSwitcherHref}
+  const makeLangSwitcher = (ref: React.RefObject<HTMLDivElement | null>) => (
+    <Box
+      ref={ref}
       sx={{
-        color: colors.mutedBlackLight,
-        fontSize: "0.75rem",
-        fontWeight: 600,
-        letterSpacing: "0.06em",
-        minWidth: "auto",
-        px: 1,
+        display: "flex",
+        flexDirection: "row-reverse",
+        alignItems: "center",
+        overflow: "hidden",
+        maxWidth: langOpen ? "110px" : "52px",
+        transition: langOpen
+          ? "max-width 380ms cubic-bezier(0.34, 1.56, 0.64, 1)"
+          : "max-width 200ms ease-in",
       }}
     >
-      {locale === "fr" ? "EN" : "FR"}
-    </Button>
+      <Button
+        variant="text"
+        onClick={() => setLangOpen((v) => !v)}
+        sx={{
+          color: colors.mutedBlackLight,
+          fontSize: "0.75rem",
+          fontWeight: 600,
+          letterSpacing: "0.06em",
+          minWidth: "auto",
+          px: 1,
+          flexShrink: 0,
+        }}
+      >
+        {locale.toUpperCase()}
+      </Button>
+      <Button
+        variant="text"
+        component="a"
+        href={langSwitcherHref}
+        onClick={() => setLangOpen(false)}
+        sx={{
+          color: colors.mutedBlack,
+          fontSize: "0.75rem",
+          fontWeight: 600,
+          letterSpacing: "0.06em",
+          minWidth: "auto",
+          px: 1,
+          flexShrink: 0,
+          opacity: langOpen ? 1 : 0,
+          transform: langOpen ? "scale(1)" : "scale(0.6)",
+          transformOrigin: "right center",
+          transition: langOpen
+            ? "opacity 260ms 60ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 260ms 60ms cubic-bezier(0.34, 1.56, 0.64, 1)"
+            : "opacity 100ms linear, transform 100ms linear",
+          pointerEvents: langOpen ? "auto" : "none",
+        }}
+      >
+        {targetLocale.toUpperCase()}
+      </Button>
+    </Box>
   );
 
   return (
@@ -186,7 +239,7 @@ const Header = () => {
             Contact
           </Button>
 
-          <Box sx={{ ml: 1 }}>{langButton}</Box>
+          <Box sx={{ ml: 1 }}>{makeLangSwitcher(langDesktopRef)}</Box>
         </Box>
       </Box>
 
@@ -204,7 +257,7 @@ const Header = () => {
         {/* Top row — always visible */}
         <Box sx={{ display: "flex", alignItems: "center", height: 56, px: 2 }}>
           {logo("Vlnt.")}
-          {langButton}
+          {makeLangSwitcher(langMobileRef)}
           <IconButton
             onClick={() => setOpen((v) => !v)}
             size="small"

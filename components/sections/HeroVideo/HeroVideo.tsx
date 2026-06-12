@@ -124,7 +124,7 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
                 ? {
                     backdropFilter: `url(#${filterId})`,
                     WebkitBackdropFilter: `url(#${filterId})`,
-                    backgroundColor: "rgba(255, 255, 255, 0.25)",
+                    backgroundColor: "rgba(255, 255, 255, 0.35)",
                     border: "none",
                     boxShadow: "0 4px 16px rgba(0, 0, 0, 0.16)",
                   }
