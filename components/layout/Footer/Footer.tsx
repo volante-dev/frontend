@@ -6,8 +6,7 @@ import Divider from "@mui/material/Divider";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
 import { t, getLocalizedHref } from "@/lib/i18n";
-import type { Translations, Locale } from "@/lib/i18n";
-import type { RouteKey } from "@/lib/i18n";
+import type { Translations, Locale, RouteKey } from "@/lib/i18n";
 
 interface FooterProps {
   translations?: Translations;

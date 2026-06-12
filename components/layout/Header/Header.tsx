@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Collapse from "@mui/material/Collapse";
@@ -14,6 +14,8 @@ import { usePathname } from "next/navigation";
 import { colors } from "@/app/theme/tokens";
 import { getLocalizedHref, getAlternateHref } from "@/lib/i18n";
 import type { Locale, RouteKey } from "@/lib/i18n";
+import { useLiquidGlass } from "@/components/ui/LiquidGlass/useLiquidGlass";
+import LiquidGlassFilter from "@/components/ui/LiquidGlass/LiquidGlassFilter";
 
 const navRoutes: { key: RouteKey; label: Record<Locale, string> }[] = [
   { key: "services", label: { fr: "Services", en: "Services" } },
@@ -23,8 +25,6 @@ const navRoutes: { key: RouteKey; label: Record<Locale, string> }[] = [
 
 const pillBase = {
   backgroundColor: "rgba(247, 248, 249, 0.65)",
-  backdropFilter: "blur(16px)",
-  WebkitBackdropFilter: "blur(16px)",
   border: "1px solid rgba(255, 255, 255, 0.8)",
   boxShadow: "0 4px 24px rgba(0, 0, 0, 0.12)",
   overflow: "hidden",
@@ -41,6 +41,48 @@ const Header = () => {
   const langSwitcherHref = targetLocale === "fr" ? `${alternatePath}?lang=fr` : alternatePath;
   const homeHref = getLocalizedHref(locale, "home");
   const contactHref = getLocalizedHref(locale, "contact");
+
+  // Track desktop pill dimensions for the liquid glass displacement map
+  const pillRef = useRef<HTMLDivElement>(null);
+  const [pillSize, setPillSize] = useState({ width: 0, height: 56 });
+
+  useEffect(() => {
+    if (!pillRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      // backdrop-filter covers the border box — contentRect would miss the px padding
+      const box = entries[0].borderBoxSize?.[0];
+      const rect = entries[0].target.getBoundingClientRect();
+      const width = box ? box.inlineSize : rect.width;
+      const height = box ? box.blockSize : rect.height;
+      setPillSize({ width: Math.round(width), height: Math.round(height) });
+    });
+    ro.observe(pillRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  const { filterId, displacementUrl, specularUrl, isSupported, scale } = useLiquidGlass({
+    width: pillSize.width,
+    height: pillSize.height,
+    radius: 29,
+  });
+
+  const glassActive = isSupported && displacementUrl && specularUrl;
+
+  // Liquid glass needs a near-transparent background so refraction stays visible;
+  // the specular ring in the filter replaces the 1px white border
+  const desktopGlassSx = glassActive
+    ? {
+        backdropFilter: `url(#${filterId})`,
+        WebkitBackdropFilter: `url(#${filterId})`,
+        backgroundColor: "rgba(255, 255, 255, 0.25)",
+        border: "none",
+        boxShadow: "0 4px 16px rgba(0, 0, 0, 0.16)",
+        transform: "translateZ(0)",
+      }
+    : {
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+      };
 
   const logo = (text: string) => (
     <Typography
@@ -68,7 +110,7 @@ const Header = () => {
       sx={{
         color: colors.mutedBlackLight,
         fontSize: "0.75rem",
-        fontWeight: 500,
+        fontWeight: 600,
         letterSpacing: "0.06em",
         minWidth: "auto",
         px: 1,
@@ -92,9 +134,21 @@ const Header = () => {
       }}
     >
       {/* ── Desktop pill ── */}
+      {glassActive && (
+        <LiquidGlassFilter
+          filterId={filterId}
+          displacementUrl={displacementUrl}
+          specularUrl={specularUrl}
+          width={pillSize.width}
+          height={pillSize.height}
+          scale={scale}
+        />
+      )}
       <Box
+        ref={pillRef}
         sx={{
           ...pillBase,
+          ...desktopGlassSx,
           display: { xs: "none", md: "flex" },
           alignItems: "center",
           height: 56,
@@ -116,14 +170,19 @@ const Header = () => {
                 variant="text"
                 component={Link}
                 href={href}
-                sx={{ color: isActive ? colors.green : colors.mutedBlack, fontWeight: isActive ? 600 : 400 }}
+                sx={{ color: isActive ? colors.green : colors.mutedBlack, fontWeight: isActive ? 800 : 600 }}
               >
                 {label[locale]}
               </Button>
             );
           })}
 
-          <Button variant="contained" component={Link} href={contactHref} sx={{ ml: 2 }}>
+          <Button
+            variant="text"
+            component={Link}
+            href={contactHref}
+            sx={{ color: colors.mutedBlack, fontWeight: 600 }}
+          >
             Contact
           </Button>
 
@@ -131,10 +190,12 @@ const Header = () => {
         </Box>
       </Box>
 
-      {/* ── Mobile pill (expandable) ── */}
+      {/* ── Mobile pill (expandable) — blur/frost fallback ── */}
       <Box
         sx={{
           ...pillBase,
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
           display: { xs: "block", md: "none" },
           borderRadius: open ? "24px" : "29px",
           transition: "border-radius 0.35s ease",
@@ -172,7 +233,7 @@ const Header = () => {
                   sx={{
                     justifyContent: "flex-start",
                     color: isActive ? colors.green : colors.mutedBlack,
-                    fontWeight: isActive ? 600 : 400,
+                    fontWeight: isActive ? 800 : 600,
                   }}
                 >
                   {label[locale]}
@@ -181,11 +242,11 @@ const Header = () => {
             })}
             <Button
               fullWidth
-              variant="contained"
+              variant="text"
               component={Link}
               href={contactHref}
               onClick={() => setOpen(false)}
-              sx={{ mt: 1 }}
+              sx={{ justifyContent: "flex-start", color: colors.mutedBlack, fontWeight: 600 }}
             >
               Contact
             </Button>

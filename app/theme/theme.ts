@@ -30,17 +30,19 @@ const theme = createTheme({
   typography: {
     fontFamily: typography.fontFamily,
     h1: {
+      fontFamily: typography.fontFamilyDisplay,
       fontSize: "clamp(2.5rem, 5vw, 4rem)",
-      fontWeight: 600,
-      letterSpacing: "-0.03em",
-      lineHeight: 1.1,
+      fontWeight: 200,
+      letterSpacing: "0.01em",
+      lineHeight: 1.05,
       color: colors.mutedBlack,
     },
     h2: {
+      fontFamily: typography.fontFamilyDisplay,
       fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)",
-      fontWeight: 600,
-      letterSpacing: "-0.02em",
-      lineHeight: 1.2,
+      fontWeight: 200,
+      letterSpacing: "0.01em",
+      lineHeight: 1.1,
       color: colors.mutedBlack,
     },
     h3: {

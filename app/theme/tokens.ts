@@ -11,8 +11,8 @@ export const colors = {
 } as const;
 
 export const typography = {
-  fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-  fontFamilyDisplay: '"Inter", "Helvetica Neue", Arial, sans-serif',
+  fontFamily: '"futura-pt", "Helvetica Neue", Arial, sans-serif',
+  fontFamilyDisplay: '"bebas-neue-pro", sans-serif',
 } as const;
 
 export const spacing = {

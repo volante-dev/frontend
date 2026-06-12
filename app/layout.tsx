@@ -29,6 +29,7 @@ const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>)
           <link key={l} rel="alternate" hrefLang={l} href={href} />
         ))}
         <link rel="alternate" hrefLang="x-default" href={appUrl || "/"} />
+        <link rel="stylesheet" href="https://use.typekit.net/mah7tat.css" />
       </head>
       <body>
         <AppRouterCacheProvider>
