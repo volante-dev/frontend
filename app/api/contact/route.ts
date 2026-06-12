@@ -11,7 +11,7 @@ export const POST = async (req: Request) => {
   }
 
   const { error } = await resend.emails.send({
-    from: "Studio Volante <no-reply@studio-volante.fr>",
+    from: "Studio Volante <no-reply@updates.vlnt.st>",
     to: "yasmine@studio-volante.fr",
     replyTo: email,
     subject: `Nouveau message de ${firstName} ${lastName}`,
