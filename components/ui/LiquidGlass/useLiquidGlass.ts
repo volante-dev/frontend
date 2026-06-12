@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo } from "react";
+import { useId, useEffect, useState, useMemo } from "react";
 
 interface Options {
   width: number;
@@ -115,11 +115,14 @@ export const useLiquidGlass = ({ width, height, radius }: Options) => {
   const uid = useId().replace(/:/g, "");
   const filterId = `lg-${uid}`;
 
-  const isSupported = useMemo(() => {
-    if (typeof document === "undefined") return false;
+  // useEffect guarantees SSR and hydration both start with false,
+  // avoiding a server/client HTML mismatch.
+  const [isSupported, setIsSupported] = useState(false);
+  useEffect(() => {
     const el = document.createElement("div");
     el.style.backdropFilter = "url(#test)";
-    return el.style.backdropFilter !== "";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsSupported(el.style.backdropFilter !== "");
   }, []);
 
   const maps = useMemo(() => {
