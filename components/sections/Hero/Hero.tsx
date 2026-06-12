@@ -24,6 +24,7 @@ const Hero = ({ translations = {} }: HeroProps) => {
       px: { xs: 2, md: 4 },
       py: { xs: 8, md: 12 },
       borderBottom: `1px solid ${colors.blueGray}`,
+      scrollSnapAlign: "start",
     }}
   >
     <Box sx={{ maxWidth: 1200, mx: "auto", width: "100%" }}>

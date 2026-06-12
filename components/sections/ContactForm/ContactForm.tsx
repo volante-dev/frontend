@@ -16,12 +16,34 @@ interface ContactFormProps {
 const ContactForm = ({ translations = {} }: ContactFormProps) => {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: connecter à une API de mailing (Resend, Mailgun, etc.)
-    await new Promise((res) => setTimeout(res, 800));
+    setError(false);
+
+    const form = e.currentTarget;
+    const data = {
+      firstName: (form.elements.namedItem("firstName") as HTMLInputElement).value,
+      lastName: (form.elements.namedItem("lastName") as HTMLInputElement).value,
+      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+      company: (form.elements.namedItem("company") as HTMLInputElement).value,
+      message: (form.elements.namedItem("message") as HTMLTextAreaElement).value,
+    };
+
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      setError(true);
+      setLoading(false);
+      return;
+    }
+
     setSent(true);
     setLoading(false);
   };
@@ -118,6 +140,16 @@ const ContactForm = ({ translations = {} }: ContactFormProps) => {
             >
               {t(translations, "contact.form.submit", "Envoyer le message")}
             </Button>
+
+            {error && (
+              <Typography variant="body2" sx={{ color: "error.main" }}>
+                {t(
+                  translations,
+                  "contact.form.error",
+                  "Une erreur est survenue. Veuillez réessayer ou nous contacter directement."
+                )}
+              </Typography>
+            )}
           </Box>
         )}
       </Box>

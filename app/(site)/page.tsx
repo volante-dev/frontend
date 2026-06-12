@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { headers } from "next/headers";
+import HeroVideo from "@/components/sections/HeroVideo/HeroVideo";
 import Hero from "@/components/sections/Hero/Hero";
 import ServicesList from "@/components/sections/ServicesList/ServicesList";
 import ProjectGrid from "@/components/sections/ProjectGrid/ProjectGrid";
@@ -92,8 +93,11 @@ const HomePage = async () => {
     description: localizeField(p.description, p.descriptionEn, locale),
   }));
 
+  const heroVideoSrc = process.env.NEXT_PUBLIC_HERO_VIDEO_URL;
+
   return (
     <>
+      <HeroVideo src={heroVideoSrc} />
       <Hero translations={translations} />
       <ServicesList services={localizedServices} translations={translations} />
       {localizedProjects.length > 0 && <ProjectGrid projects={localizedProjects} translations={translations} preview />}

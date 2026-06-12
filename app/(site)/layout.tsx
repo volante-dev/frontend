@@ -12,7 +12,7 @@ const SiteLayout = async ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <Header />
-      <main>{children}</main>
+      <main style={{ paddingTop: "var(--header-height)" }}>{children}</main>
       <Footer translations={translations} locale={locale} />
     </>
   );
