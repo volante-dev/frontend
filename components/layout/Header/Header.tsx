@@ -139,9 +139,12 @@ const Header = () => {
           fontSize: "0.75rem",
           fontWeight: 600,
           letterSpacing: "0.06em",
-          minWidth: "auto",
-          px: 1,
+          minWidth: 0,
+          width: 32,
+          height: 32,
+          p: 0,
           flexShrink: 0,
+          borderRadius: "50%",
         }}
       >
         {locale.toUpperCase()}
@@ -159,6 +162,7 @@ const Header = () => {
           minWidth: "auto",
           px: 1,
           flexShrink: 0,
+          borderRadius: "999px",
           opacity: langOpen ? 1 : 0,
           transform: langOpen ? "scale(1)" : "scale(0.6)",
           transformOrigin: "right center",
@@ -223,7 +227,7 @@ const Header = () => {
                 variant="text"
                 component={Link}
                 href={href}
-                sx={{ color: isActive ? colors.green : colors.mutedBlack, fontWeight: isActive ? 800 : 600 }}
+                sx={{ color: isActive ? colors.green : colors.mutedBlack, fontWeight: isActive ? 800 : 600, borderRadius: "999px" }}
               >
                 {label[locale]}
               </Button>
@@ -234,7 +238,7 @@ const Header = () => {
             variant="text"
             component={Link}
             href={contactHref}
-            sx={{ color: colors.mutedBlack, fontWeight: 600 }}
+            sx={{ color: colors.mutedBlack, fontWeight: 600, borderRadius: "999px" }}
           >
             Contact
           </Button>
@@ -287,6 +291,7 @@ const Header = () => {
                     justifyContent: "flex-start",
                     color: isActive ? colors.green : colors.mutedBlack,
                     fontWeight: isActive ? 800 : 600,
+                    borderRadius: "999px",
                   }}
                 >
                   {label[locale]}
@@ -299,7 +304,7 @@ const Header = () => {
               component={Link}
               href={contactHref}
               onClick={() => setOpen(false)}
-              sx={{ justifyContent: "flex-start", color: colors.mutedBlack, fontWeight: 600 }}
+              sx={{ justifyContent: "flex-start", color: colors.mutedBlack, fontWeight: 600, borderRadius: "999px" }}
             >
               Contact
             </Button>

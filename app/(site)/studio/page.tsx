@@ -15,23 +15,33 @@ const StudioPage = async () => {
   const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
   const translations = await getTranslations(locale);
 
-  const values = [
+  const defaultValues = [
     {
-      key: "0",
-      title: t(translations, "studio.values.0.title", "Exigence"),
-      description: t(translations, "studio.values.0.description", "Chaque projet est traité avec la même rigueur, qu'il s'agisse d'une carte de visite ou d'une campagne nationale."),
+      title: "Exigence",
+      description: "Chaque projet est traité avec la même rigueur, qu'il s'agisse d'une carte de visite ou d'une campagne nationale.",
     },
     {
-      key: "1",
-      title: t(translations, "studio.values.1.title", "Clarté"),
-      description: t(translations, "studio.values.1.description", "Nous simplifions le complexe. Une bonne communication est d'abord une communication compréhensible."),
+      title: "Clarté",
+      description: "Nous simplifions le complexe. Une bonne communication est d'abord une communication compréhensible.",
     },
     {
-      key: "2",
-      title: t(translations, "studio.values.2.title", "Durabilité"),
-      description: t(translations, "studio.values.2.description", "Nous concevons des identités qui vieillissent bien et des messages qui restent pertinents dans le temps."),
+      title: "Durabilité",
+      description: "Nous concevons des identités qui vieillissent bien et des messages qui restent pertinents dans le temps.",
     },
   ];
+
+  // Lit studio.values.0, .1, .2… tant que l'index existe dans Edge Config
+  const values: { key: string; title: string; description: string }[] = [];
+  for (let i = 0; translations[`studio.values.${i}.title`]; i++) {
+    values.push({
+      key: String(i),
+      title: translations[`studio.values.${i}.title`],
+      description: t(translations, `studio.values.${i}.description`),
+    });
+  }
+  if (values.length === 0) {
+    defaultValues.forEach((value, i) => values.push({ key: String(i), ...value }));
+  }
 
   return (
     <>

@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { locales, defaultLocale, parseLocaleFromHeader } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import { slugs, getRouteKeyFromSlug } from "@/lib/i18n-routes";
+import { PREVIEW_PARAM, PREVIEW_COOKIE, PREVIEW_COOKIE_MAX_AGE } from "@/lib/preview";
 
 // Évite de répéter le cast (locales as string[]) à chaque fois
 const localeValues = locales as string[];
@@ -18,6 +19,19 @@ export const proxy = (request: NextRequest) => {
     pathname.includes(".")
   ) {
     return NextResponse.next();
+  }
+
+  // --- Preview access via ?goProd=true ---
+  const previewParam = request.nextUrl.searchParams.get(PREVIEW_PARAM);
+  if (previewParam === "true") {
+    const cleanUrl = new URL(request.nextUrl.pathname, request.url);
+    const res = NextResponse.redirect(cleanUrl, 307);
+    res.cookies.set(PREVIEW_COOKIE, "true", {
+      path: "/",
+      maxAge: PREVIEW_COOKIE_MAX_AGE,
+      sameSite: "lax",
+    });
+    return res;
   }
 
   // --- Forçage de locale via ?lang= (sélecteur de langue) ---
@@ -54,7 +68,8 @@ export const proxy = (request: NextRequest) => {
       : parseLocaleFromHeader(request.headers.get("accept-language")));
 
   // --- Coming Soon ---
-  if (process.env.COMING_SOON === "true") {
+  const hasPreviewAccess = request.cookies.get(PREVIEW_COOKIE)?.value === "true";
+  if (process.env.COMING_SOON === "true" && !hasPreviewAccess) {
     const response = NextResponse.rewrite(new URL("/coming-soon", request.url));
     response.headers.set("x-locale", locale);
     return response;
