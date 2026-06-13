@@ -101,6 +101,7 @@ const HomePage = async () => {
       {/* Static black overlay present in SSR HTML — prevents any content flash before React mounts */}
       <div
         id="intro-bg"
+        suppressHydrationWarning
         style={{ position: "fixed", inset: 0, zIndex: 1299, background: "#000", pointerEvents: "none" }}
       />
       {/* Immediately hide the static overlay on return visits, before the first paint */}
