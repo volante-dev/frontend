@@ -23,6 +23,7 @@ const navRoutes: { key: RouteKey; label: string }[] = [
 const Footer = ({ translations = {}, locale = "fr" }: FooterProps) => (
   <Box
     component="footer"
+    data-testid="site-footer"
     sx={{
       borderTop: `1px solid ${colors.blueGray}`,
       backgroundColor: colors.offWhite,

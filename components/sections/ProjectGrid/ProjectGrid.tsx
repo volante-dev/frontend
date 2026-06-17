@@ -5,9 +5,10 @@ import Typography from "@mui/material/Typography";
 import Button from "@/components/ui/Button/Button";
 import ProjectCard from "@/components/ui/Card/Card";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { colors } from "@/app/theme/tokens";
-import { t } from "@/lib/i18n";
-import type { Translations } from "@/lib/i18n";
+import { getLocalizedHref, t } from "@/lib/i18n";
+import type { Locale, Translations } from "@/lib/i18n";
 
 export interface Project {
   id: string;
@@ -30,6 +31,9 @@ interface ProjectGridProps {
 
 const ProjectGrid = ({ projects, translations = {}, preview = false }: ProjectGridProps) => {
   const displayed = preview ? projects.slice(0, 4) : projects;
+  const pathname = usePathname();
+  const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
+  const portfolioHref = getLocalizedHref(locale, "portfolio");
 
   return (
     <Box
@@ -61,7 +65,7 @@ const ProjectGrid = ({ projects, translations = {}, preview = false }: ProjectGr
             </Typography>
           </Box>
           {preview && (
-            <Button variant="outlined" component={Link} href="/portfolio">
+            <Button variant="outlined" component={Link} href={portfolioHref}>
               {t(translations, "portfolio.cta.viewAll", "Voir tout")}
             </Button>
           )}
@@ -76,14 +80,20 @@ const ProjectGrid = ({ projects, translations = {}, preview = false }: ProjectGr
           data-testid="projects-list"
         >
           {displayed.map((project) => (
-            <ProjectCard
+            <Box
               key={project.id}
-              title={project.title}
-              description={project.description}
-              imageUrl={project.imageUrl}
-              tags={project.tags}
-              sx={{ cursor: "pointer" }}
-            />
+              component={Link}
+              href={`${portfolioHref}/${project.slug}`}
+              sx={{ display: "block", textDecoration: "none", color: "inherit" }}
+            >
+              <ProjectCard
+                title={project.title}
+                description={project.description}
+                imageUrl={project.imageUrl}
+                tags={project.tags}
+                sx={{ cursor: "pointer", height: "100%" }}
+              />
+            </Box>
           ))}
         </Box>
       </Box>
