@@ -10,6 +10,15 @@ Feature: Page d'accueil Studio Volante
     When je fais défiler jusqu'à la section services
     Then je vois au moins 1 service affiché
 
+  Scenario: Visiteur passe de la vidéo au contenu avec un scroll contrôlé
+    When je scrolle vers le bas depuis la vidéo d'accueil
+    Then la section principale de l'accueil est alignée en haut de l'écran
+    When je scrolle librement plus bas dans la page
+    Then la page descend sous la section principale de l'accueil
+    When je remonte jusqu'à la limite de la section principale de l'accueil
+    And je scrolle vers le haut depuis cette limite
+    Then je reviens sur la vidéo d'accueil
+
   Scenario: Visiteur navigue vers le portfolio
     When je clique sur "Voir nos projets"
     Then je suis sur la page "/portfolio"

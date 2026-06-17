@@ -42,14 +42,13 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
   return (
     <Box
       component="section"
+      data-scroll-anchor="hero-video"
       sx={{
         height: "100svh",
         width: "100%",
         position: "relative",
         overflow: "hidden",
         backgroundColor: colors.mutedBlack,
-        scrollSnapAlign: "start",
-        scrollSnapStop: "always",
         marginTop: "calc(-1 * var(--header-height))",
       }}
     >

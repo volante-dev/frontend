@@ -11,6 +11,7 @@ import prisma from "@/lib/prisma";
 import { getTranslations, localizeField, defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import OpeningSequenceLoader from "@/components/layout/OpeningSequence/OpeningSequenceLoader";
+import HomeScrollController from "@/components/sections/HomeScrollController/HomeScrollController";
 
 const fallbackServices = [
   {
@@ -111,6 +112,7 @@ const HomePage = async () => {
         }}
       />
       <OpeningSequenceLoader />
+      <HomeScrollController />
       <HeroVideo src={heroVideoSrc} />
       <Hero translations={translations} />
       <ServicesList services={localizedServices} translations={translations} />

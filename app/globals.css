@@ -16,10 +16,6 @@ body {
   color: var(--foreground);
 }
 
-html {
-  scroll-snap-type: y proximity;
-}
-
 @keyframes bounce {
   0%, 100% { transform: translateX(-50%) translateY(0); }
   50%       { transform: translateX(-50%) translateY(10px); }
