@@ -18,10 +18,13 @@ const OpeningSequence = () => {
 
   const shouldAnimate = useRef(phase === "idle");
 
-  // Remove the SSR static overlay at the right moment so it never shows through the fading React overlay
+  // Keep the node mounted because React owns it and will remove it during navigation.
   useEffect(() => {
     if (phase === "expanded" || phase === "done") {
-      document.getElementById("intro-bg")?.remove();
+      const introBackground = document.getElementById("intro-bg");
+      if (introBackground) {
+        introBackground.style.display = "none";
+      }
     }
   }, [phase]);
 
