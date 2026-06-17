@@ -8,6 +8,7 @@ export const colors = {
   greenLight: "#5A817B",
   greenDark: "#2C4340",
   white: "#FFFFFF",
+  champagne: "#D8CAAA",
 } as const;
 
 export const typography = {

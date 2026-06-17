@@ -1,7 +1,17 @@
 "use client";
 
 import { createTheme } from "@mui/material/styles";
+import { keyframes } from "@emotion/react";
 import { colors, typography, borderRadius } from "./tokens";
+
+const pulseGlow = keyframes`
+  0%, 100% {
+    box-shadow: 0 10px 32px rgba(63, 94, 90, 0.50), 0 4px 16px rgba(216, 202, 170, 0.40);
+  }
+  50% {
+    box-shadow: 0 14px 44px rgba(63, 94, 90, 0.68), 0 6px 22px rgba(216, 202, 170, 0.52);
+  }
+`;
 
 const theme = createTheme({
   palette: {
@@ -120,28 +130,50 @@ const theme = createTheme({
           borderRadius: borderRadius.sm,
           padding: "10px 24px",
           fontWeight: 500,
-          boxShadow: "none",
-          "&:hover": {
-            boxShadow: "none",
-          },
         },
         contained: {
+          backgroundColor: colors.offWhite,
+          color: colors.green,
+          position: "relative",
+          border: "none",
+          boxShadow: "0 6px 20px rgba(63, 94, 90, 0.20)",
+          transition: "box-shadow 0.6s ease",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            borderRadius: "inherit",
+            padding: "1px",
+            background: `linear-gradient(135deg, ${colors.green}, ${colors.champagne})`,
+            WebkitMask:
+              "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            maskComposite: "exclude",
+            pointerEvents: "none",
+          },
           "&:hover": {
-            backgroundColor: colors.greenLight,
+            backgroundColor: colors.offWhite,
+            boxShadow:
+              "0 10px 32px rgba(63, 94, 90, 0.50), 0 4px 16px rgba(216, 202, 170, 0.40)",
+            animation: `${pulseGlow} 2s ease-in-out 0.6s infinite`,
           },
         },
         outlined: {
+          boxShadow: "none",
           borderColor: colors.blueGrayDark,
           color: colors.mutedBlack,
           "&:hover": {
+            boxShadow: "none",
             borderColor: colors.green,
             color: colors.green,
             backgroundColor: "transparent",
           },
         },
         text: {
+          boxShadow: "none",
           color: colors.mutedBlack,
           "&:hover": {
+            boxShadow: "none",
             color: colors.green,
             backgroundColor: "transparent",
           },

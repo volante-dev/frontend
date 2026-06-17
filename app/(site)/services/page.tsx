@@ -5,7 +5,7 @@ import ContactForm from "@/components/sections/ContactForm/ContactForm";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
-import { getTranslations, defaultLocale, t } from "@/lib/i18n";
+import { getTranslations, localizeField, defaultLocale, t } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -27,8 +27,8 @@ const ServicesPage = async () => {
 
   const services = rawServices.map((s) => ({
     ...s,
-    title: locale === "en" && s.titleEn ? s.titleEn : s.title,
-    description: locale === "en" && s.descriptionEn ? s.descriptionEn : s.description,
+    title: localizeField(s.title, s.titleEn, locale),
+    description: localizeField(s.description, s.descriptionEn, locale),
   }));
 
   return (

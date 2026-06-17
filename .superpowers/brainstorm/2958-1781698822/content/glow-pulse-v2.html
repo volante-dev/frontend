@@ -1,0 +1,164 @@
+<h2>Glow pulsant — transition adoucie</h2>
+<p class="subtitle">La montée du glow est maintenant plus progressive. Passe la souris sur chaque bouton pour comparer la vitesse de transition.</p>
+
+<style>
+  .demo-row {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 32px 0;
+  }
+
+  .demo-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    background: #F7F8F9;
+    padding: 36px 32px;
+    border-radius: 8px;
+    width: 230px;
+  }
+
+  .demo-label {
+    font-size: 11px;
+    font-family: sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #888;
+  }
+
+  .btn-wrap {
+    position: relative;
+    display: inline-block;
+    border-radius: 5px;
+    padding: 1.5px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #3F5E5A, #D8CAAA);
+  }
+
+  .btn-inner {
+    border-radius: 3.5px;
+    background: #EAECEE;
+    padding: 10px 26px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.03em;
+    color: #3F5E5A;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  /* ——— Option A : transition 0.6s ——— */
+  .btn-a {
+    box-shadow: 0 6px 20px rgba(63, 94, 90, 0.20);
+    transition: box-shadow 0.6s ease;
+  }
+  .btn-a:hover {
+    box-shadow:
+      0 10px 32px rgba(63, 94, 90, 0.50),
+      0 4px 16px rgba(216, 202, 170, 0.40);
+    animation: pulse 2s ease-in-out 0.6s infinite;
+  }
+
+  /* ——— Option B : transition 1.0s ——— */
+  .btn-b {
+    box-shadow: 0 6px 20px rgba(63, 94, 90, 0.20);
+    transition: box-shadow 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .btn-b:hover {
+    box-shadow:
+      0 10px 32px rgba(63, 94, 90, 0.50),
+      0 4px 16px rgba(216, 202, 170, 0.40);
+    animation: pulse 2s ease-in-out 1.0s infinite;
+  }
+
+  /* ——— Option C : transition 1.5s ——— */
+  .btn-c {
+    box-shadow: 0 6px 20px rgba(63, 94, 90, 0.20);
+    transition: box-shadow 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-c:hover {
+    box-shadow:
+      0 10px 32px rgba(63, 94, 90, 0.50),
+      0 4px 16px rgba(216, 202, 170, 0.40);
+    animation: pulse 2s ease-in-out 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      box-shadow:
+        0 10px 32px rgba(63, 94, 90, 0.50),
+        0 4px 16px rgba(216, 202, 170, 0.40);
+    }
+    50% {
+      box-shadow:
+        0 14px 44px rgba(63, 94, 90, 0.68),
+        0 6px 22px rgba(216, 202, 170, 0.52);
+    }
+  }
+
+  .desc {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    font-family: sans-serif;
+    line-height: 1.5;
+    max-width: 190px;
+  }
+</style>
+
+<div class="demo-row">
+
+  <div class="demo-col">
+    <div class="demo-label">Rapide — 0.6s</div>
+    <div class="btn-wrap btn-a">
+      <div class="btn-inner">Voir nos projets</div>
+    </div>
+    <p class="desc">Transition en <strong>0.6s</strong><br>Monte rapidement puis pulse</p>
+  </div>
+
+  <div class="demo-col">
+    <div class="demo-label">Moyen — 1.0s</div>
+    <div class="btn-wrap btn-b">
+      <div class="btn-inner">Voir nos projets</div>
+    </div>
+    <p class="desc">Transition en <strong>1.0s</strong> avec ease naturel<br>Légèrement plus enveloppant</p>
+  </div>
+
+  <div class="demo-col">
+    <div class="demo-label">Doux — 1.5s</div>
+    <div class="btn-wrap btn-c">
+      <div class="btn-inner">Voir nos projets</div>
+    </div>
+    <p class="desc">Transition en <strong>1.5s</strong> avec spring ease<br>Monte très lentement, presque fondu</p>
+  </div>
+
+</div>
+
+<div class="options">
+  <div class="option" data-choice="fast" onclick="toggleSelect(this)">
+    <div class="letter">0.6s</div>
+    <div class="content">
+      <h3>Rapide</h3>
+      <p>Réactif, net — le glow apparaît vite puis respire</p>
+    </div>
+  </div>
+  <div class="option" data-choice="medium" onclick="toggleSelect(this)">
+    <div class="letter">1.0s</div>
+    <div class="content">
+      <h3>Moyen</h3>
+      <p>Naturel, fluide — bon équilibre entre réactivité et douceur</p>
+    </div>
+  </div>
+  <div class="option" data-choice="slow" onclick="toggleSelect(this)">
+    <div class="letter">1.5s</div>
+    <div class="content">
+      <h3>Doux</h3>
+      <p>Luxueux, enveloppant — la lumière s'installe progressivement</p>
+    </div>
+  </div>
+</div>
