@@ -1,8 +1,0 @@
-{"type":"server-started","port":58723,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:58723","screen_dir":"/Users/adm2_wromano_ext/PERSONNEL/volante/frontend/.superpowers/brainstorm/2958-1781698822/content","state_dir":"/Users/adm2_wromano_ext/PERSONNEL/volante/frontend/.superpowers/brainstorm/2958-1781698822/state"}
-{"type":"screen-added","file":"/Users/adm2_wromano_ext/PERSONNEL/volante/frontend/.superpowers/brainstorm/2958-1781698822/content/beige-gradient.html"}
-{"source":"user-event","type":"click","text":"Option C\n        \n          \n            Voir nos projets\n          \n        \n        \n          \n          Vert → Champagne #D8CAAA\n        \n      \n    \n    \n      Champagne doux\n      Plus clair, presque crème. Transition très douce et élégante.","choice":"c","id":null,"timestamp":1781698913188}
-{"source":"user-event","type":"click","text":"Option C\n        \n          \n            Voir nos projets\n          \n        \n        \n          \n          Vert → Champagne #D8CAAA\n        \n      \n    \n    \n      Champagne doux\n      Plus clair, presque crème. Transition très douce et élégante.","choice":"c","id":null,"timestamp":1781698920569}
-{"type":"screen-added","file":"/Users/adm2_wromano_ext/PERSONNEL/volante/frontend/.superpowers/brainstorm/2958-1781698822/content/glow-animation.html"}
-{"type":"screen-added","file":"/Users/adm2_wromano_ext/PERSONNEL/volante/frontend/.superpowers/brainstorm/2958-1781698822/content/glow-pulse-v2.html"}
-{"type":"screen-added","file":"/Users/adm2_wromano_ext/PERSONNEL/volante/frontend/.superpowers/brainstorm/2958-1781698822/content/waiting.html"}
-{"type":"server-stopped","reason":"idle timeout"}
