@@ -11,6 +11,8 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import type { Theme } from "@mui/material/styles";
 import { colors } from "@/app/theme/tokens";
 import VideoToggleButton from "@/components/ui/VideoToggleButton/VideoToggleButton";
+import LiquidGlassFilter from "@/components/ui/LiquidGlass/LiquidGlassFilter";
+import { useLiquidGlass } from "@/components/ui/LiquidGlass/useLiquidGlass";
 import { getLocalizedHref } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 
@@ -30,6 +32,8 @@ interface ProjectRealizationViewerProps {
 }
 
 const SCROLL_COOLDOWN_MS = 980;
+const CLOSE_BUTTON_SIZE = 44;
+const CLOSE_BUTTON_RADIUS = 22;
 
 const ProjectMedia = ({
   slide,
@@ -113,38 +117,68 @@ const CloseProjectButton = () => {
   const pathname = usePathname();
   const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
   const portfolioHref = getLocalizedHref(locale, "portfolio");
+  const { filterId, displacementUrl, specularUrl, isSupported, scale } = useLiquidGlass({
+    width: CLOSE_BUTTON_SIZE,
+    height: CLOSE_BUTTON_SIZE,
+    radius: CLOSE_BUTTON_RADIUS,
+  });
+  const glassActive = isSupported && displacementUrl && specularUrl;
 
   return (
-    <IconButton
-      component={Link}
-      href={portfolioHref}
-      aria-label="Fermer la realisation"
-      sx={{
-        position: "absolute",
-        top: {
-          xs: "calc(var(--header-height) + 18px)",
-          md: "calc(var(--header-height) + 32px)",
-          lg: "calc(var(--header-height) + 40px)",
-        },
-        right: { xs: 18, md: 40, lg: 56 },
-        zIndex: 4,
-        width: { xs: 40, md: 44 },
-        height: { xs: 40, md: 44 },
-        color: colors.mutedBlack,
-        backgroundColor: "rgba(247, 248, 249, 0.72)",
-        border: "1px solid rgba(255, 255, 255, 0.74)",
-        backdropFilter: "blur(14px)",
-        WebkitBackdropFilter: "blur(14px)",
-        boxShadow: "0 8px 24px rgba(28, 29, 30, 0.12)",
-        transition: "background-color 220ms ease, transform 220ms ease",
-        "&:hover": {
-          backgroundColor: "rgba(247, 248, 249, 0.88)",
-          transform: "scale(1.04)",
-        },
-      }}
-    >
-      <CloseIcon fontSize="small" />
-    </IconButton>
+    <>
+      {glassActive && (
+        <LiquidGlassFilter
+          filterId={filterId}
+          displacementUrl={displacementUrl}
+          specularUrl={specularUrl}
+          width={CLOSE_BUTTON_SIZE}
+          height={CLOSE_BUTTON_SIZE}
+          scale={scale}
+        />
+      )}
+      <IconButton
+        component={Link}
+        href={portfolioHref}
+        aria-label="Fermer la realisation"
+        sx={{
+          position: "absolute",
+          top: {
+            xs: "calc(var(--header-height) + 18px)",
+            md: "calc(var(--header-height) + 32px)",
+            lg: "calc(var(--header-height) + 40px)",
+          },
+          right: { xs: 18, md: 40, lg: 56 },
+          zIndex: 4,
+          width: { xs: 40, md: CLOSE_BUTTON_SIZE },
+          height: { xs: 40, md: CLOSE_BUTTON_SIZE },
+          borderRadius: "50%",
+          color: colors.mutedBlack,
+          transform: "translateZ(0)",
+          transition: "background-color 220ms ease, transform 220ms ease",
+          ...(glassActive
+            ? {
+                backdropFilter: `url(#${filterId})`,
+                WebkitBackdropFilter: `url(#${filterId})`,
+                backgroundColor: "rgba(255, 255, 255, 0.35)",
+                border: "none",
+                boxShadow: "0 4px 16px rgba(0, 0, 0, 0.16)",
+              }
+            : {
+                backgroundColor: "rgba(247, 248, 249, 0.65)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                border: "1px solid rgba(255, 255, 255, 0.8)",
+                boxShadow: "0 4px 24px rgba(0, 0, 0, 0.12)",
+              }),
+          "&:hover": {
+            backgroundColor: glassActive ? "rgba(255, 255, 255, 0.42)" : "rgba(247, 248, 249, 0.85)",
+            transform: "translateZ(0) scale(1.04)",
+          },
+        }}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </>
   );
 };
 
@@ -266,9 +300,9 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
         position: "relative",
         overflow: "hidden",
         backgroundColor: colors.offWhite,
-        animation: "realizationViewerIn 920ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        animation: "realizationViewerIn 1300ms cubic-bezier(0.16, 1, 0.3, 1) both",
         "@keyframes realizationViewerIn": {
-          from: { opacity: 0 },
+          from: { opacity: 0.001 },
           to: { opacity: 1 },
         },
         "@media (prefers-reduced-motion: reduce)": {
@@ -289,9 +323,9 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
           display: "flex",
           flexDirection: "column",
           minWidth: 0,
-          animation: "realizationTextColumnIn 980ms 120ms cubic-bezier(0.22, 1, 0.36, 1) both",
+          animation: "realizationTextColumnIn 1250ms 260ms cubic-bezier(0.16, 1, 0.3, 1) both",
           "@keyframes realizationTextColumnIn": {
-            from: { opacity: 0, transform: "translateY(18px)" },
+            from: { opacity: 0, transform: "translateY(14px)" },
             to: { opacity: 1, transform: "translateY(0)" },
           },
           "@media (prefers-reduced-motion: reduce)": {
@@ -349,11 +383,11 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
           position: "relative",
           backgroundColor: colors.mutedBlack,
           overflow: "hidden",
-          animation: "realizationMediaReveal 1100ms cubic-bezier(0.22, 1, 0.36, 1) both",
+          animation: "realizationMediaReveal 1450ms 80ms cubic-bezier(0.16, 1, 0.3, 1) both",
           transformOrigin: "right center",
           "@keyframes realizationMediaReveal": {
-            from: { clipPath: "inset(0 0 0 100%)", transform: "scale(1.035)" },
-            to: { clipPath: "inset(0 0 0 0%)", transform: "scale(1)" },
+            from: { opacity: 0, transform: "scale(1.025) translateX(18px)" },
+            to: { opacity: 1, transform: "scale(1) translateX(0)" },
           },
           "@media (prefers-reduced-motion: reduce)": {
             animation: "none",
@@ -387,6 +421,7 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
 const MobileSlide = ({ slide, index }: { slide: ProjectRealizationSlide; index: number }) => {
   const mediaRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
+  const imageOnRight = index % 2 === 0;
 
   useEffect(() => {
     const media = mediaRef.current;
@@ -420,7 +455,8 @@ const MobileSlide = ({ slide, index }: { slide: ProjectRealizationSlide; index: 
         ref={mediaRef}
         sx={{
           width: "88%",
-          ml: "auto",
+          ml: imageOnRight ? "auto" : 0,
+          mr: imageOnRight ? 0 : "auto",
           height: { xs: "58svh", sm: "64svh" },
           minHeight: 380,
           overflow: "hidden",
@@ -435,8 +471,8 @@ const MobileSlide = ({ slide, index }: { slide: ProjectRealizationSlide; index: 
         sx={{
           width: "86%",
           mt: -6,
-          ml: 0,
-          mr: "auto",
+          ml: imageOnRight ? 0 : "auto",
+          mr: imageOnRight ? "auto" : 0,
           position: "relative",
           zIndex: 1,
           backgroundColor: colors.white,
