@@ -5,7 +5,7 @@ const ProjectDetailLayout = ({ children }: { children: React.ReactNode }) => (
   <>
     <PreviewSync />
     <Header />
-    <main style={{ paddingTop: "var(--header-height)" }}>{children}</main>
+    <main>{children}</main>
   </>
 );
 

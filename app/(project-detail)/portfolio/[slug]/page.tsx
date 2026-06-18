@@ -7,18 +7,20 @@ import { defaultLocale, localizeField } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import prisma from "@/lib/prisma";
 import { sanitizeRichTextHtml } from "@/lib/sanitize-html";
+import { verifyProjectPreviewToken } from "@/lib/preview-token";
 
 export const dynamic = "force-dynamic";
 
 interface ProjectPageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ preview?: string; token?: string }>;
 }
 
-const getProject = async (slug: string) =>
+const getProject = async (slug: string, allowDraftPreview = false) =>
   prisma.project.findFirst({
     where: {
       slug,
-      publishedAt: { not: null },
+      ...(allowDraftPreview ? {} : { publishedAt: { not: null } }),
     },
     include: {
       slides: {
@@ -41,11 +43,15 @@ export const generateMetadata = async ({ params }: ProjectPageProps): Promise<Me
   };
 };
 
-const ProjectDetailPage = async ({ params }: ProjectPageProps) => {
+const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => {
   const { slug } = await params;
   const headersList = await headers();
   const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
-  const project = await getProject(slug).catch(() => null);
+  const previewParams = searchParams ? await searchParams : {};
+  const allowDraftPreview =
+    previewParams.preview === "true" &&
+    verifyProjectPreviewToken(previewParams.token, slug);
+  const project = await getProject(slug, allowDraftPreview).catch(() => null);
 
   if (!project) notFound();
 

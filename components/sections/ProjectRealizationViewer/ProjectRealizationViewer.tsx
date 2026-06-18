@@ -191,7 +191,7 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
       sx={{
         display: { xs: "none", md: "grid" },
         gridTemplateColumns: "1fr 1fr",
-        height: "calc(100svh - var(--header-height))",
+        height: "100svh",
         minHeight: 640,
         position: "relative",
         overflow: "hidden",
@@ -202,7 +202,10 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
         sx={{
           position: "relative",
           px: { md: 5, lg: 7 },
-          pt: { md: 4, lg: 5 },
+          pt: {
+            md: "calc(var(--header-height) + 32px)",
+            lg: "calc(var(--header-height) + 40px)",
+          },
           pb: 12,
           display: "flex",
           flexDirection: "column",
@@ -349,7 +352,7 @@ const MobileViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) =
       display: { xs: "block", md: "none" },
       backgroundColor: colors.offWhite,
       px: 2,
-      pt: 3,
+      pt: "calc(var(--header-height) + 24px)",
       pb: 5,
     }}
   >
