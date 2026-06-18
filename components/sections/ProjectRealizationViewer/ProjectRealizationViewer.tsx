@@ -2,11 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
+import CloseIcon from "@mui/icons-material/Close";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import type { Theme } from "@mui/material/styles";
 import { colors } from "@/app/theme/tokens";
 import VideoToggleButton from "@/components/ui/VideoToggleButton/VideoToggleButton";
+import { getLocalizedHref } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 
 export interface ProjectRealizationSlide {
   id: string;
@@ -23,7 +29,7 @@ interface ProjectRealizationViewerProps {
   slides: ProjectRealizationSlide[];
 }
 
-const SCROLL_COOLDOWN_MS = 720;
+const SCROLL_COOLDOWN_MS = 980;
 
 const ProjectMedia = ({
   slide,
@@ -103,7 +109,46 @@ const ProjectMedia = ({
   );
 };
 
-const ProgressRail = ({
+const CloseProjectButton = () => {
+  const pathname = usePathname();
+  const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
+  const portfolioHref = getLocalizedHref(locale, "portfolio");
+
+  return (
+    <IconButton
+      component={Link}
+      href={portfolioHref}
+      aria-label="Fermer la realisation"
+      sx={{
+        position: "absolute",
+        top: {
+          xs: "calc(var(--header-height) + 18px)",
+          md: "calc(var(--header-height) + 32px)",
+          lg: "calc(var(--header-height) + 40px)",
+        },
+        right: { xs: 18, md: 40, lg: 56 },
+        zIndex: 4,
+        width: { xs: 40, md: 44 },
+        height: { xs: 40, md: 44 },
+        color: colors.mutedBlack,
+        backgroundColor: "rgba(247, 248, 249, 0.72)",
+        border: "1px solid rgba(255, 255, 255, 0.74)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        boxShadow: "0 8px 24px rgba(28, 29, 30, 0.12)",
+        transition: "background-color 220ms ease, transform 220ms ease",
+        "&:hover": {
+          backgroundColor: "rgba(247, 248, 249, 0.88)",
+          transform: "scale(1.04)",
+        },
+      }}
+    >
+      <CloseIcon fontSize="small" />
+    </IconButton>
+  );
+};
+
+const VerticalProgressRail = ({
   activeIndex,
   count,
   onSelect,
@@ -115,17 +160,36 @@ const ProgressRail = ({
   <Box
     aria-label="Progression de la réalisation"
     sx={{
-      position: "absolute",
-      left: { md: 40, lg: 56 },
-      bottom: { md: 34, lg: 40 },
-      width: "calc(50% - 112px)",
       display: { xs: "none", md: "flex" },
-      alignItems: "center",
-      zIndex: 2,
+      justifyContent: "center",
+      alignItems: "stretch",
+      minHeight: 220,
+      width: 32,
+      pt: 0.5,
+      pb: 0.5,
     }}
   >
-    <Box sx={{ position: "absolute", left: 0, right: 0, height: "1px", backgroundColor: colors.blueGrayDark }} />
-    <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", position: "relative" }}>
+    <Box
+      sx={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        alignItems: "center",
+        width: 28,
+      }}
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          top: 14,
+          bottom: 14,
+          left: "50%",
+          width: "1px",
+          transform: "translateX(-50%)",
+          backgroundColor: colors.blueGrayDark,
+        }}
+      />
       {Array.from({ length: count }).map((_, index) => {
         const active = index === activeIndex;
         return (
@@ -137,6 +201,8 @@ const ProgressRail = ({
             aria-current={active ? "step" : undefined}
             onClick={() => onSelect(index)}
             sx={{
+              position: "relative",
+              zIndex: 1,
               width: 28,
               height: 28,
               border: active ? `1px solid ${colors.mutedBlack}` : "1px solid transparent",
@@ -146,6 +212,8 @@ const ProgressRail = ({
               placeItems: "center",
               p: 0,
               cursor: "pointer",
+              transition: "border-color 360ms ease, transform 360ms ease",
+              transform: active ? "scale(1)" : "scale(0.86)",
             }}
           >
             <Box
@@ -154,6 +222,8 @@ const ProgressRail = ({
                 height: 12,
                 borderRadius: "50%",
                 backgroundColor: active ? colors.mutedBlack : colors.blueGrayDark,
+                transition: "background-color 360ms ease, transform 360ms ease",
+                transform: active ? "scale(1)" : "scale(0.82)",
               }}
             />
           </Box>
@@ -196,8 +266,17 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
         position: "relative",
         overflow: "hidden",
         backgroundColor: colors.offWhite,
+        animation: "realizationViewerIn 920ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "@keyframes realizationViewerIn": {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        "@media (prefers-reduced-motion: reduce)": {
+          animation: "none",
+        },
       }}
     >
+      <CloseProjectButton />
       <Box
         sx={{
           position: "relative",
@@ -209,6 +288,15 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
           pb: 12,
           display: "flex",
           flexDirection: "column",
+          minWidth: 0,
+          animation: "realizationTextColumnIn 980ms 120ms cubic-bezier(0.22, 1, 0.36, 1) both",
+          "@keyframes realizationTextColumnIn": {
+            from: { opacity: 0, transform: "translateY(18px)" },
+            to: { opacity: 1, transform: "translateY(0)" },
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            animation: "none",
+          },
         }}
       >
         <Typography variant="h6" component="p" sx={{ mb: "auto", color: colors.green }}>
@@ -217,33 +305,61 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
         <Box
           key={activeSlide.id}
           sx={{
-            maxWidth: 560,
-            animation: "realizationTextIn 420ms ease both",
+            display: "grid",
+            gridTemplateColumns: "32px minmax(0, 560px)",
+            gap: { md: 2.5, lg: 3 },
+            alignItems: "stretch",
+            maxWidth: 640,
+            animation: "realizationTextIn 760ms cubic-bezier(0.22, 1, 0.36, 1) both",
             "@keyframes realizationTextIn": {
-              from: { opacity: 0, transform: "translateY(10px)" },
+              from: { opacity: 0, transform: "translateY(16px)" },
               to: { opacity: 1, transform: "translateY(0)" },
+            },
+            "@media (prefers-reduced-motion: reduce)": {
+              animation: "none",
             },
           }}
         >
-          <Typography variant="h1" component="h1" sx={{ mb: 3 }}>
-            {activeSlide.title}
-          </Typography>
-          <Box
-            sx={{
-              "& p": { typography: "body1", mb: 2 },
-              "& h3": { typography: "h3", mt: 4, mb: 1.5 },
-              "& h4": { typography: "h4", mt: 3, mb: 1 },
-              "& ul, & ol": { pl: 3, my: 2 },
-              "& li": { mb: 0.75 },
-              "& a": { color: colors.green, textDecorationColor: colors.greenLight },
-            }}
-            dangerouslySetInnerHTML={{ __html: activeSlide.contentHtml }}
+          <VerticalProgressRail
+            activeIndex={activeIndex}
+            count={slides.length}
+            onSelect={goTo}
           />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h1" component="h1" sx={{ mb: 3 }}>
+              {activeSlide.title}
+            </Typography>
+            <Box
+              sx={{
+                "& p": { typography: "body1", mb: 2 },
+                "& h3": { typography: "h3", mt: 4, mb: 1.5 },
+                "& h4": { typography: "h4", mt: 3, mb: 1 },
+                "& ul, & ol": { pl: 3, my: 2 },
+                "& li": { mb: 0.75 },
+                "& a": { color: colors.green, textDecorationColor: colors.greenLight },
+              }}
+              dangerouslySetInnerHTML={{ __html: activeSlide.contentHtml }}
+            />
+          </Box>
         </Box>
-        <ProgressRail activeIndex={activeIndex} count={slides.length} onSelect={goTo} />
       </Box>
 
-      <Box sx={{ position: "relative", backgroundColor: colors.mutedBlack }}>
+      <Box
+        sx={{
+          position: "relative",
+          backgroundColor: colors.mutedBlack,
+          overflow: "hidden",
+          animation: "realizationMediaReveal 1100ms cubic-bezier(0.22, 1, 0.36, 1) both",
+          transformOrigin: "right center",
+          "@keyframes realizationMediaReveal": {
+            from: { clipPath: "inset(0 0 0 100%)", transform: "scale(1.035)" },
+            to: { clipPath: "inset(0 0 0 0%)", transform: "scale(1)" },
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            animation: "none",
+          },
+        }}
+      >
         {slides.map((slide, index) => (
           <Box
             key={slide.id}
@@ -252,8 +368,12 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
               inset: 0,
               opacity: index === activeIndex ? 1 : 0,
               transform: index === activeIndex ? "scale(1)" : "scale(1.015)",
-              transition: "opacity 500ms ease, transform 700ms ease",
+              transition:
+                "opacity 780ms cubic-bezier(0.22, 1, 0.36, 1), transform 1100ms cubic-bezier(0.22, 1, 0.36, 1)",
               pointerEvents: index === activeIndex ? "auto" : "none",
+              "@media (prefers-reduced-motion: reduce)": {
+                transition: "none",
+              },
             }}
           >
             <ProjectMedia slide={slide} active={index === activeIndex} priority={index === 0} />
@@ -354,8 +474,10 @@ const MobileViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) =
       px: 2,
       pt: "calc(var(--header-height) + 24px)",
       pb: 5,
+      position: "relative",
     }}
   >
+    <CloseProjectButton />
     <Typography variant="h6" component="p" sx={{ mb: 3, color: colors.green }}>
       {projectTitle}
     </Typography>
