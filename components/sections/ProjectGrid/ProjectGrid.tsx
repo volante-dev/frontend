@@ -20,6 +20,8 @@ export interface Project {
   imageUrl: string;
   tags: string[];
   featured: boolean;
+  portfolioSize: "NORMAL" | "HERO";
+  portfolioOrder: number;
 }
 
 interface ProjectGridProps {

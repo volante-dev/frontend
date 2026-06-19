@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import ProjectGrid from "@/components/sections/ProjectGrid/ProjectGrid";
+import PortfolioMasonry from "@/components/sections/ProjectGrid/PortfolioMasonry";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
@@ -21,7 +21,11 @@ const PortfolioPage = async () => {
     prisma.project
       .findMany({
         where: { publishedAt: { not: null } },
-        orderBy: [{ featured: "desc" }, { order: "asc" }, { publishedAt: "desc" }],
+        orderBy: [
+          { portfolioOrder: "asc" },
+          { publishedAt: "asc" },
+          { id: "asc" },
+        ],
       })
       .catch(() => []),
     getTranslations(locale),
@@ -52,7 +56,7 @@ const PortfolioPage = async () => {
         </Box>
       </Box>
 
-      <ProjectGrid projects={projects} translations={translations} />
+      <PortfolioMasonry projects={projects} />
     </>
   );
 };
