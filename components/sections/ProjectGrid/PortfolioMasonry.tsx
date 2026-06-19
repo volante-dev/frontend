@@ -108,8 +108,8 @@ const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
               component="h3"
               sx={{
                 position: "absolute",
-                left: { xs: 1.5, md: hero ? 3 : 2 },
-                right: { xs: 1.5, md: hero ? 3 : 2 },
+                left: { xs: 2.5, md: hero ? 4 : 3 },
+                right: { xs: 2.5, md: hero ? 4 : 3 },
                 bottom: { xs: 1.5, md: hero ? 3 : 2 },
                 color: colors.white,
                 opacity: 0.68,
