@@ -45,6 +45,7 @@ const ProjectMedia = ({
   priority?: boolean;
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const wasActiveRef = useRef(false);
   const [playing, setPlaying] = useState(true);
 
   useEffect(() => {
@@ -52,7 +53,13 @@ const ProjectMedia = ({
 
     if (!active) {
       videoRef.current.pause();
+      wasActiveRef.current = false;
       return;
+    }
+
+    if (!wasActiveRef.current) {
+      videoRef.current.currentTime = 0;
+      wasActiveRef.current = true;
     }
 
     if (playing) {
