@@ -29,7 +29,11 @@ const ContactPage = async () => {
             {t(translations, "contact.page.eyebrow", "Nous contacter")}
           </Typography>
           <Typography variant="h1" sx={{ maxWidth: 600 }}>
-            {t(translations, "contact.page.heading", "Parlons de votre projet.")}
+            {t(
+              translations,
+              "contact.page.heading",
+              "Parlons de votre projet.",
+            )}
           </Typography>
         </Box>
       </Box>

@@ -20,7 +20,10 @@ const ServicesPage = async () => {
 
   const [rawServices, translations] = await Promise.all([
     prisma.service
-      .findMany({ where: { active: true }, orderBy: { order: "asc" } })
+      .findMany({
+        where: { active: true },
+        orderBy: { order: "asc" },
+      })
       .catch(() => []),
     getTranslations(locale),
   ]);

@@ -1,7 +1,7 @@
 Feature: Page Contact Studio Volante
 
   Background:
-    Given je suis sur la page "/contact"
+    Given j'ouvre la page "/contact"
 
   Scenario: Visiteur voit le formulaire de contact
     Then je vois le formulaire de contact

@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { headers } from "next/headers";
 import HeroVideo from "@/components/sections/HeroVideo/HeroVideo";
 import Hero from "@/components/sections/Hero/Hero";
@@ -12,6 +10,8 @@ import { getTranslations, localizeField, defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import OpeningSequenceLoader from "@/components/layout/OpeningSequence/OpeningSequenceLoader";
 import HomeScrollController from "@/components/sections/HomeScrollController/HomeScrollController";
+
+export const dynamic = "force-dynamic";
 
 const fallbackServices = [
   {
@@ -99,18 +99,6 @@ const HomePage = async () => {
 
   return (
     <>
-      {/* Static black overlay present in SSR HTML — prevents any content flash before React mounts */}
-      <div
-        id="intro-bg"
-        suppressHydrationWarning
-        style={{ position: "fixed", inset: 0, zIndex: 1299, background: "#000", pointerEvents: "none" }}
-      />
-      {/* Immediately hide the static overlay on return visits, before the first paint */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `if(sessionStorage.getItem('volante-intro-played'))document.getElementById('intro-bg').style.display='none';`,
-        }}
-      />
       <OpeningSequenceLoader />
       <HomeScrollController />
       <HeroVideo src={heroVideoSrc} />

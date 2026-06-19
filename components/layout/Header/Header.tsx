@@ -10,7 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import Button from "@/components/ui/Button/Button";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { colors } from "@/app/theme/tokens";
 import { getLocalizedHref, getAlternateHref } from "@/lib/i18n";
 import type { Locale, RouteKey } from "@/lib/i18n";
@@ -23,6 +23,8 @@ const navRoutes: { key: RouteKey; label: Record<Locale, string> }[] = [
   { key: "studio", label: { fr: "Studio", en: "Studio" } },
 ];
 
+const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
 const pillBase = {
   backgroundColor: "rgba(247, 248, 249, 0.65)",
   border: "1px solid rgba(255, 255, 255, 0.8)",
@@ -33,11 +35,14 @@ const pillBase = {
 } as const;
 
 const Header = () => {
-  const [open, setOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const [openPath, setOpenPath] = useState<string | null>(null);
+  const [langOpenPath, setLangOpenPath] = useState<string | null>(null);
+  const open = openPath === pathname;
+  const langOpen = langOpenPath === pathname;
   const langDesktopRef = useRef<HTMLDivElement>(null);
   const langMobileRef = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
   const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
   const targetLocale: Locale = locale === "en" ? "fr" : "en";
   const alternatePath = getAlternateHref(pathname, targetLocale);
@@ -50,7 +55,7 @@ const Header = () => {
     const close = (e: MouseEvent) => {
       const t = e.target as Node;
       if (!langDesktopRef.current?.contains(t) && !langMobileRef.current?.contains(t)) {
-        setLangOpen(false);
+        setLangOpenPath(null);
       }
     };
     document.addEventListener("mousedown", close);
@@ -82,6 +87,26 @@ const Header = () => {
   });
 
   const glassActive = isSupported && displacementUrl && specularUrl;
+
+  const handleLanguageNavigation = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    document.cookie = `locale=${targetLocale};path=/;max-age=${LOCALE_COOKIE_MAX_AGE};SameSite=Lax`;
+    setLangOpenPath(null);
+    setOpenPath(null);
+    router.push(alternatePath);
+  };
 
   // Liquid glass needs a near-transparent background so refraction stays visible;
   // the specular ring in the filter replaces the 1px white border
@@ -133,7 +158,7 @@ const Header = () => {
     >
       <Button
         variant="text"
-        onClick={() => setLangOpen((v) => !v)}
+        onClick={() => setLangOpenPath(langOpen ? null : pathname)}
         sx={{
           color: colors.mutedBlackLight,
           fontSize: "0.75rem",
@@ -149,16 +174,20 @@ const Header = () => {
       >
         {locale.toUpperCase()}
       </Button>
-      <Button
-        variant="text"
-        component="a"
+      <Box
+        component={Link}
         href={langSwitcherHref}
-        onClick={() => setLangOpen(false)}
+        prefetch={false}
+        onClick={handleLanguageNavigation}
         sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
           color: colors.mutedBlack,
           fontSize: "0.75rem",
           fontWeight: 600,
           letterSpacing: "0.06em",
+          textDecoration: "none",
           minWidth: "auto",
           px: 1,
           flexShrink: 0,
@@ -173,13 +202,14 @@ const Header = () => {
         }}
       >
         {targetLocale.toUpperCase()}
-      </Button>
+      </Box>
     </Box>
   );
 
   return (
     <Box
       component="header"
+      data-testid="site-header"
       sx={{
         position: "fixed",
         top: 0,
@@ -263,7 +293,7 @@ const Header = () => {
           {logo("Vlnt.")}
           {makeLangSwitcher(langMobileRef)}
           <IconButton
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setOpenPath(open ? null : pathname)}
             size="small"
             aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
             sx={{ ml: 0.5, color: colors.mutedBlack }}
@@ -286,7 +316,7 @@ const Header = () => {
                   variant="text"
                   component={Link}
                   href={href}
-                  onClick={() => setOpen(false)}
+                  onClick={() => setOpenPath(null)}
                   sx={{
                     justifyContent: "flex-start",
                     color: isActive ? colors.green : colors.mutedBlack,
@@ -303,7 +333,7 @@ const Header = () => {
               variant="text"
               component={Link}
               href={contactHref}
-              onClick={() => setOpen(false)}
+              onClick={() => setOpenPath(null)}
               sx={{ justifyContent: "flex-start", color: colors.mutedBlack, fontWeight: 600, borderRadius: "999px" }}
             >
               Contact

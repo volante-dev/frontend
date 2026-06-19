@@ -34,7 +34,8 @@ const PortfolioPage = async () => {
   const projects = rawProjects.map((p) => ({
     ...p,
     title: locale === "en" && p.titleEn ? p.titleEn : p.title,
-    description: locale === "en" && p.descriptionEn ? p.descriptionEn : p.description,
+    description:
+      locale === "en" && p.descriptionEn ? p.descriptionEn : p.description,
   }));
 
   return (

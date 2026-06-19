@@ -29,7 +29,9 @@ const getProject = async (slug: string, allowDraftPreview = false) =>
     },
   });
 
-export const generateMetadata = async ({ params }: ProjectPageProps): Promise<Metadata> => {
+export const generateMetadata = async ({
+  params,
+}: ProjectPageProps): Promise<Metadata> => {
   const { slug } = await params;
   const project = await getProject(slug).catch(() => null);
 

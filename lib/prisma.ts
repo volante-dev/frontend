@@ -5,7 +5,6 @@ const createPrismaClient = () => {
   // En production (Vercel), DATABASE_URL pointe vers l'URL poolée (pgBouncer/Neon pooler)
   // En local, DATABASE_URL pointe vers la connexion directe
   const connectionString = process.env.DATABASE_URL!;
-  console.log("process :", process.env.DATABASE_URL);
   const adapter = new PrismaPg({ connectionString });
   return new PrismaClient({ adapter });
 };

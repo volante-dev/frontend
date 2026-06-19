@@ -2,6 +2,8 @@
   --background: #ffffff;
   --foreground: #171717;
   --header-height: 88px;
+  --page-transition-background: #F7F8F9;
+  view-transition-name: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -14,6 +16,55 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+.page-transition-surface {
+  min-height: 100vh;
+  background: var(--page-transition-background);
+}
+
+html.volante-intro-enabled body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1299;
+  background: #000000;
+  pointer-events: none;
+}
+
+@keyframes page-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+html.volante-transitions-ready::view-transition-old(.page-fade) {
+  animation: page-fade-out 180ms ease-in both;
+}
+
+html.volante-transitions-ready::view-transition-new(.page-fade) {
+  animation: page-fade-in 220ms 180ms ease-out both;
+}
+
+html.volante-transitions-ready::view-transition-group(.page-fade) {
+  animation: none;
+  clip-path: inset(var(--header-height) 0 0 0);
+}
+
+html:not(.volante-transitions-ready)::view-transition-old(.page-fade),
+html:not(.volante-transitions-ready)::view-transition-new(.page-fade) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(.page-fade),
+  ::view-transition-new(.page-fade) {
+    animation: none;
+  }
 }
 
 @keyframes bounce {

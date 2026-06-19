@@ -67,11 +67,17 @@ export const proxy = (request: NextRequest) => {
       ? (cookieLocale as Locale)
       : parseLocaleFromHeader(request.headers.get("accept-language")));
 
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-locale", locale);
+  requestHeaders.set("x-initial-pathname", pathname);
+
   // --- Coming Soon ---
   const hasPreviewAccess = request.cookies.get(PREVIEW_COOKIE)?.value === "true";
   if (process.env.COMING_SOON === "true" && !hasPreviewAccess) {
-    const response = NextResponse.rewrite(new URL("/coming-soon", request.url));
-    response.headers.set("x-locale", locale);
+    requestHeaders.set("x-coming-soon", "true");
+    const response = NextResponse.rewrite(new URL("/coming-soon", request.url), {
+      request: { headers: requestHeaders },
+    });
     return response;
   }
 
@@ -93,11 +99,10 @@ export const proxy = (request: NextRequest) => {
 
   const response =
     rewritePath !== pathname
-      ? NextResponse.rewrite(new URL(rewritePath, request.url))
-      : NextResponse.next();
-
-  // Transmettre la locale aux Server Components via header
-  response.headers.set("x-locale", locale);
+      ? NextResponse.rewrite(new URL(rewritePath, request.url), {
+          request: { headers: requestHeaders },
+        })
+      : NextResponse.next({ request: { headers: requestHeaders } });
 
   // Persister la locale en cookie si elle a changé
   if (cookieLocale !== locale) {

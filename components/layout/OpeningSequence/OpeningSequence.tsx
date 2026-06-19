@@ -2,17 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
+import { usePublicExperience } from "@/components/layout/PublicExperience/PublicExperienceProvider";
 
 const SESSION_KEY = "volante-intro-played";
 
 type Phase = "idle" | "circle" | "expanded" | "done";
 
 const OpeningSequence = () => {
+  const { introActive, completeIntro } = usePublicExperience();
   // Component is client-only (ssr: false) — sessionStorage and matchMedia are always available here
   const [phase, setPhase] = useState<Phase>(() => {
-    if (sessionStorage.getItem(SESSION_KEY)) return "done";
+    if (!introActive || sessionStorage.getItem(SESSION_KEY)) return "done";
     sessionStorage.setItem(SESSION_KEY, "1");
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return "done";
     return "idle";
   });
 
@@ -21,12 +22,12 @@ const OpeningSequence = () => {
   // Keep the node mounted because React owns it and will remove it during navigation.
   useEffect(() => {
     if (phase === "expanded" || phase === "done") {
-      const introBackground = document.getElementById("intro-bg");
-      if (introBackground) {
-        introBackground.style.display = "none";
-      }
+      document.documentElement.classList.remove("volante-intro-enabled");
     }
-  }, [phase]);
+    if (phase === "done") {
+      completeIntro();
+    }
+  }, [completeIntro, phase]);
 
   useEffect(() => {
     if (!shouldAnimate.current) return;

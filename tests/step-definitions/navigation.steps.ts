@@ -21,7 +21,7 @@ Given("je suis sur la page d'accueil", async ({ page }: { page: Page }) => {
   await page.goto("/");
 });
 
-Given("je suis sur la page {string}", async ({ page }: { page: Page }, path: string) => {
+Given("j'ouvre la page {string}", async ({ page }: { page: Page }, path: string) => {
   await page.goto(path);
 });
 
@@ -54,9 +54,96 @@ When("je clique sur {string}", async ({ page }: { page: Page }, text: string) =>
   await page.getByRole("link", { name: text }).click();
 });
 
+When("je marque le header courant", async ({ page }: { page: Page }) => {
+  await expect(page.locator("html")).toHaveClass(
+    /volante-transitions-ready/,
+    { timeout: 7000 },
+  );
+  await page.evaluate(() => {
+    const transitionWindow = window as typeof window & {
+      __viewTransitionCount?: number;
+    };
+    transitionWindow.__viewTransitionCount = 0;
+
+    if (!document.startViewTransition) return;
+    const startViewTransition = document.startViewTransition.bind(document);
+    document.startViewTransition = ((callback) => {
+      transitionWindow.__viewTransitionCount =
+        (transitionWindow.__viewTransitionCount ?? 0) + 1;
+      return startViewTransition(callback);
+    }) as typeof document.startViewTransition;
+  });
+  await page.locator('[data-testid="site-header"]').evaluate((header) => {
+    header.setAttribute("data-persistence-marker", "before-navigation");
+  });
+});
+
+Then("une View Transition a été déclenchée", async ({ page }: { page: Page }) => {
+  const count = await page.evaluate(
+    () =>
+      (window as typeof window & { __viewTransitionCount?: number })
+        .__viewTransitionCount ?? 0,
+  );
+  expect(count).toBeGreaterThan(0);
+});
+
+Then("le header est exclu du fade de page", async ({ page }: { page: Page }) => {
+  const transitionNames = await page.evaluate(() => ({
+    root: getComputedStyle(document.documentElement).viewTransitionName,
+    header: getComputedStyle(
+      document.querySelector('[data-testid="site-header"]')!,
+    ).viewTransitionName,
+  }));
+  expect(transitionNames).toEqual({ root: "none", header: "none" });
+});
+
+Then(
+  "l'animation d'introduction ne se joue pas",
+  async ({ page }: { page: Page }) => {
+    await expect(page.locator("html")).not.toHaveClass(
+      /volante-intro-enabled/,
+    );
+    await page.waitForTimeout(600);
+    await expect(page.locator("html")).not.toHaveClass(
+      /volante-intro-enabled/,
+    );
+  },
+);
+
+Then(
+  "l'animation d'introduction se joue",
+  async ({ page }: { page: Page }) => {
+    const introStarted = await page.evaluate(
+      () => sessionStorage.getItem("volante-intro-played") === "1",
+    );
+    expect(introStarted).toBeTruthy();
+  },
+);
+
+When("je passe le site en anglais", async ({ page }: { page: Page }) => {
+  await page.getByRole("button", { name: "FR", exact: true }).click();
+  await page.getByRole("link", { name: "EN", exact: true }).click();
+});
+
 Then("je suis sur la page {string}", async ({ page }: { page: Page }, path: string) => {
   await expect(page).toHaveURL(new RegExp(`${path}$`));
 });
+
+Then("le même header est resté monté", async ({ page }: { page: Page }) => {
+  await expect(page.locator('[data-testid="site-header"]')).toHaveAttribute(
+    "data-persistence-marker",
+    "before-navigation",
+  );
+});
+
+Then(
+  "le sélecteur de langue affiche {string}",
+  async ({ page }: { page: Page }, locale: string) => {
+    await expect(
+      page.getByRole("button", { name: locale, exact: true }),
+    ).toBeVisible();
+  },
+);
 
 Then("je vois le titre principal du studio", async ({ page }: { page: Page }) => {
   await expect(page.locator('[data-testid="hero"]')).toBeVisible();

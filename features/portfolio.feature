@@ -1,7 +1,7 @@
 Feature: Page Portfolio Studio Volante
 
   Background:
-    Given je suis sur la page "/portfolio"
+    Given j'ouvre la page "/portfolio"
 
   Scenario: Visiteur voit le titre de la page portfolio
     Then je vois un titre contenant "projets"

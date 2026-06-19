@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>) => {
   const headersList = await headers();
   const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
+  const comingSoon = headersList.get("x-coming-soon") === "true";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
   // Calcule l'URL canonique pour chaque locale (pour les balises hreflang)
@@ -23,8 +24,13 @@ const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>)
   }));
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var enabled=${JSON.stringify(!comingSoon)};var p=location.pathname;if(p.length>1&&p.endsWith('/'))p=p.slice(0,-1);var home=p==='/'||p==='/en';var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;if(enabled&&home&&!reduced&&!sessionStorage.getItem('volante-intro-played'))document.documentElement.classList.add('volante-intro-enabled');}catch(e){}})();`,
+          }}
+        />
         {hrefLangLinks.map(({ locale: l, href }) => (
           <link key={l} rel="alternate" hrefLang={l} href={href} />
         ))}

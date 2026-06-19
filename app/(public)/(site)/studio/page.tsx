@@ -18,15 +18,18 @@ const StudioPage = async () => {
   const defaultValues = [
     {
       title: "Exigence",
-      description: "Chaque projet est traité avec la même rigueur, qu'il s'agisse d'une carte de visite ou d'une campagne nationale.",
+      description:
+        "Chaque projet est traité avec la même rigueur, qu'il s'agisse d'une carte de visite ou d'une campagne nationale.",
     },
     {
       title: "Clarté",
-      description: "Nous simplifions le complexe. Une bonne communication est d'abord une communication compréhensible.",
+      description:
+        "Nous simplifions le complexe. Une bonne communication est d'abord une communication compréhensible.",
     },
     {
       title: "Durabilité",
-      description: "Nous concevons des identités qui vieillissent bien et des messages qui restent pertinents dans le temps.",
+      description:
+        "Nous concevons des identités qui vieillissent bien et des messages qui restent pertinents dans le temps.",
     },
   ];
 
