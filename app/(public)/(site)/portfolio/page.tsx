@@ -3,9 +3,8 @@ import Typography from "@mui/material/Typography";
 import PortfolioMasonry from "@/components/sections/ProjectGrid/PortfolioMasonry";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
-import { headers } from "next/headers";
-import { getTranslations, defaultLocale, t } from "@/lib/i18n";
-import type { Locale } from "@/lib/i18n";
+import { getTranslations, t } from "@/lib/i18n";
+import { resolveLocale } from "@/lib/i18n-config";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +12,12 @@ export const metadata = {
   title: "Portfolio — Studio Volante",
 };
 
-const PortfolioPage = async () => {
-  const headersList = await headers();
-  const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
+const PortfolioPage = async ({
+  params,
+}: {
+  params?: Promise<{ locale?: string }>;
+}) => {
+  const locale = resolveLocale((await params)?.locale);
 
   const [rawProjects, translations] = await Promise.all([
     prisma.project

@@ -5,8 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import { colors } from "@/app/theme/tokens";
-import { t } from "@/lib/i18n";
-import type { Translations } from "@/lib/i18n";
+import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 
 export interface Service {
   id: string;
@@ -21,10 +20,10 @@ export interface Service {
 
 interface ServicesListProps {
   services: Service[];
-  translations?: Translations;
 }
 
-const ServicesList = ({ services, translations = {} }: ServicesListProps) => {
+const ServicesList = ({ services }: ServicesListProps) => {
+  const { t } = useI18n();
   const [openId, setOpenId] = useState<string | null>(null);
   const toggle = (id: string) => setOpenId((prev) => (prev === id ? null : id));
 
@@ -51,10 +50,10 @@ const ServicesList = ({ services, translations = {} }: ServicesListProps) => {
         {/* Left — heading */}
         <Box sx={{ position: { md: "sticky" }, top: { md: 48 } }}>
           <Typography variant="subtitle2" sx={{ mb: 2, color: colors.green }}>
-            {t(translations, "services.eyebrow", "Ce que nous faisons")}
+            {t("services.eyebrow", "Ce que nous faisons")}
           </Typography>
           <Typography variant="h2">
-            {t(translations, "services.heading", "Nos services")}
+            {t("services.heading", "Nos services")}
           </Typography>
         </Box>
 

@@ -10,20 +10,17 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import Button from "@/components/ui/Button/Button";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import { colors } from "@/app/theme/tokens";
-import { getLocalizedHref, getAlternateHref } from "@/lib/i18n";
 import type { Locale, RouteKey } from "@/lib/i18n";
 import { useLiquidGlass } from "@/components/ui/LiquidGlass/useLiquidGlass";
 import LiquidGlassFilter from "@/components/ui/LiquidGlass/LiquidGlassFilter";
+import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 
 const navRoutes: { key: RouteKey; label: Record<Locale, string> }[] = [
   { key: "services", label: { fr: "Services", en: "Services" } },
   { key: "portfolio", label: { fr: "Portfolio", en: "Portfolio" } },
   { key: "studio", label: { fr: "Studio", en: "Studio" } },
 ];
-
-const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 const pillBase = {
   backgroundColor: "rgba(247, 248, 249, 0.65)",
@@ -35,20 +32,17 @@ const pillBase = {
 } as const;
 
 const Header = () => {
-  const pathname = usePathname();
-  const router = useRouter();
+  const { locale, pathname, localizedHref, alternateHref } = useI18n();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const [langOpenPath, setLangOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
   const langOpen = langOpenPath === pathname;
   const langDesktopRef = useRef<HTMLDivElement>(null);
   const langMobileRef = useRef<HTMLDivElement>(null);
-  const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
   const targetLocale: Locale = locale === "en" ? "fr" : "en";
-  const alternatePath = getAlternateHref(pathname, targetLocale);
-  const langSwitcherHref = targetLocale === "fr" ? `${alternatePath}?lang=fr` : alternatePath;
-  const homeHref = getLocalizedHref(locale, "home");
-  const contactHref = getLocalizedHref(locale, "contact");
+  const alternatePath = alternateHref(targetLocale);
+  const homeHref = localizedHref("home");
+  const contactHref = localizedHref("contact");
 
   useEffect(() => {
     if (!langOpen) return;
@@ -88,24 +82,9 @@ const Header = () => {
 
   const glassActive = isSupported && displacementUrl && specularUrl;
 
-  const handleLanguageNavigation = (
-    event: React.MouseEvent<HTMLAnchorElement>,
-  ) => {
-    if (
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-    document.cookie = `locale=${targetLocale};path=/;max-age=${LOCALE_COOKIE_MAX_AGE};SameSite=Lax`;
+  const closeMenusForLanguageNavigation = () => {
     setLangOpenPath(null);
     setOpenPath(null);
-    router.push(alternatePath);
   };
 
   // Liquid glass needs a near-transparent background so refraction stays visible;
@@ -176,9 +155,9 @@ const Header = () => {
       </Button>
       <Box
         component={Link}
-        href={langSwitcherHref}
+        href={alternatePath}
         prefetch={false}
-        onClick={handleLanguageNavigation}
+        onClick={closeMenusForLanguageNavigation}
         sx={{
           display: "inline-flex",
           alignItems: "center",
@@ -249,7 +228,7 @@ const Header = () => {
 
         <Box component="nav" sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
           {navRoutes.map(({ key, label }) => {
-            const href = getLocalizedHref(locale, key);
+            const href = localizedHref(key);
             const isActive = pathname === href || pathname.startsWith(`${href}/`);
             return (
               <Button
@@ -307,7 +286,7 @@ const Header = () => {
           <Box sx={{ px: 2, pb: 2 }}>
             <Divider sx={{ mb: 1, borderColor: "rgba(232, 236, 240, 0.5)" }} />
             {navRoutes.map(({ key, label }) => {
-              const href = getLocalizedHref(locale, key);
+              const href = localizedHref(key);
               const isActive = pathname === href || pathname.startsWith(`${href}/`);
               return (
                 <Button

@@ -4,16 +4,9 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { colors } from "@/app/theme/tokens";
-import { t, getLocalizedHref } from "@/lib/i18n";
-import type { Translations, Locale, RouteKey } from "@/lib/i18n";
-
-interface FooterProps {
-  translations?: Translations;
-  locale?: Locale;
-  translationsByLocale?: Partial<Record<Locale, Translations>>;
-}
+import type { RouteKey } from "@/lib/i18n";
+import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 
 const navRoutes: { key: RouteKey; label: string }[] = [
   { key: "services", label: "Services" },
@@ -22,17 +15,8 @@ const navRoutes: { key: RouteKey; label: string }[] = [
   { key: "contact", label: "Contact" },
 ];
 
-const Footer = ({
-  translations = {},
-  locale = "fr",
-  translationsByLocale,
-}: FooterProps) => {
-  const pathname = usePathname();
-  const pathnameLocale: Locale =
-    pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
-  const currentLocale = translationsByLocale ? pathnameLocale : locale;
-  const currentTranslations =
-    translationsByLocale?.[currentLocale] ?? translations;
+const Footer = () => {
+  const { t, localizedHref } = useI18n();
 
   return (
     <Box
@@ -69,7 +53,6 @@ const Footer = ({
           </Typography>
           <Typography variant="body2" sx={{ maxWidth: 320 }}>
             {t(
-              currentTranslations,
               "footer.tagline",
               "Agence de communication créative. Nous donnons vie aux idées qui comptent.",
             )}
@@ -78,13 +61,13 @@ const Footer = ({
 
         <Box>
           <Typography variant="subtitle2" gutterBottom>
-            {t(currentTranslations, "footer.nav.heading", "Navigation")}
+            {t("footer.nav.heading", "Navigation")}
           </Typography>
           {navRoutes.map(({ key, label }) => (
             <Typography key={key} variant="body2" sx={{ mb: 0.5 }}>
               <Box
                 component={Link}
-                href={getLocalizedHref(currentLocale, key)}
+                href={localizedHref(key)}
                 sx={{
                   color: "inherit",
                   textDecoration: "none",
@@ -99,7 +82,7 @@ const Footer = ({
 
         <Box>
           <Typography variant="subtitle2" gutterBottom>
-            {t(currentTranslations, "footer.contact.heading", "Contact")}
+            {t("footer.contact.heading", "Contact")}
           </Typography>
           <Typography variant="body2">yasmine@studio-volante.fr</Typography>
         </Box>
@@ -121,17 +104,12 @@ const Footer = ({
         <Typography variant="caption">
           © {new Date().getFullYear()}{" "}
           {t(
-            currentTranslations,
             "footer.copyright",
             "Studio Volante. Tous droits réservés.",
           )}
         </Typography>
         <Typography variant="caption">
-          {t(
-            currentTranslations,
-            "footer.madeIn",
-            "Fait avec soin à Paris",
-          )}
+          {t("footer.madeIn", "Fait avec soin à Paris")}
         </Typography>
       </Box>
     </Box>

@@ -5,14 +5,10 @@ import Typography from "@mui/material/Typography";
 import Button from "@/components/ui/Button/Button";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
-import type { Translations } from "@/lib/i18n";
-import { t } from "@/lib/i18n";
+import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 
-interface HeroProps {
-  translations?: Translations;
-}
-
-const Hero = ({ translations = {} }: HeroProps) => {
+const Hero = () => {
+  const { t, localizedHref } = useI18n();
   return (
   <Box
     component="section"
@@ -29,16 +25,15 @@ const Hero = ({ translations = {} }: HeroProps) => {
   >
     <Box sx={{ maxWidth: 1200, mx: "auto", width: "100%" }}>
       <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
-        {t(translations, "hero.eyebrow", "Agence de communication créative")}
+        {t("hero.eyebrow", "Agence de communication créative")}
       </Typography>
 
       <Typography variant="h1" sx={{ mb: 4, maxWidth: 800 }}>
-        {t(translations, "hero.heading", "Nous donnons vie aux idées qui méritent d\'exister.")}
+        {t("hero.heading", "Nous donnons vie aux idées qui méritent d\'exister.")}
       </Typography>
 
       <Typography variant="subtitle1" sx={{ mb: 6, maxWidth: 560 }}>
         {t(
-          translations,
           "hero.subheading",
           "Studio Volante accompagne les marques ambitieuses dans leur communication — identité visuelle, stratégie de contenu, direction artistique."
         )}
@@ -49,13 +44,13 @@ const Hero = ({ translations = {} }: HeroProps) => {
           variant="contained"
           size="large"
           component={Link}
-          href="/portfolio"
+          href={localizedHref("portfolio")}
           data-testid="hero-cta-portfolio"
         >
-          {t(translations, "hero.cta.portfolio", "Voir nos projets")}
+          {t("hero.cta.portfolio", "Voir nos projets")}
         </Button>
-        <Button variant="outlined" size="large" component={Link} href="/contact">
-          {t(translations, "hero.cta.contact", "Travailler ensemble")}
+        <Button variant="outlined" size="large" component={Link} href={localizedHref("contact")}>
+          {t("hero.cta.contact", "Travailler ensemble")}
         </Button>
       </Box>
     </Box>

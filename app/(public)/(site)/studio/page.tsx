@@ -2,17 +2,19 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import { colors } from "@/app/theme/tokens";
-import { headers } from "next/headers";
-import { getTranslations, defaultLocale, t } from "@/lib/i18n";
-import type { Locale } from "@/lib/i18n";
+import { getTranslations, t } from "@/lib/i18n";
+import { resolveLocale } from "@/lib/i18n-config";
 
 export const metadata = {
   title: "Studio — Studio Volante",
 };
 
-const StudioPage = async () => {
-  const headersList = await headers();
-  const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
+const StudioPage = async ({
+  params,
+}: {
+  params?: Promise<{ locale?: string }>;
+}) => {
+  const locale = resolveLocale((await params)?.locale);
   const translations = await getTranslations(locale);
 
   const defaultValues = [

@@ -31,13 +31,14 @@ npx vitest
 
 ### Routing & Middleware
 
-The locale routing is handled by a **custom `proxy.ts`** (not a Next.js `middleware.ts`). It detects locale from the URL path (`/en/...`), cookie, or `Accept-Language` header, injects an `x-locale` request header, and rewrites localized slugs to internal routes. Pages read locale via `headers()`.
+The locale routing is handled by a **custom `proxy.ts`** (not a Next.js `middleware.ts`). The public URL is the source of truth: unprefixed paths are French and `/en/...` paths are English. The proxy rewrites them to distinct internal `[locale]` routes so App Router caches cannot mix languages. Pages read locale from their route params.
 
 ### Internationalization
 
 - Locales: French (default) and English
-- Translation strings are stored in **Vercel Edge Config** (not in the codebase)
-- Server Components call `getTranslations(locale)` from `lib/i18n.ts` to load strings at request time
+- Complete French and English fallback dictionaries live in `lib/i18n-messages.ts`
+- **Vercel Edge Config** can override dictionary values without becoming a runtime dependency
+- Server Components call `getTranslations(locale)`; Client Components consume the shared `I18nProvider`
 
 ### Database
 

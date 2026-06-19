@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import HeroVideo from "@/components/sections/HeroVideo/HeroVideo";
 import Hero from "@/components/sections/Hero/Hero";
 import ServicesList from "@/components/sections/ServicesList/ServicesList";
@@ -6,8 +5,8 @@ import ProjectGrid from "@/components/sections/ProjectGrid/ProjectGrid";
 import type { Service } from "@/components/sections/ServicesList/ServicesList";
 import type { Project } from "@/components/sections/ProjectGrid/ProjectGrid";
 import prisma from "@/lib/prisma";
-import { getTranslations, localizeField, defaultLocale } from "@/lib/i18n";
-import type { Locale } from "@/lib/i18n";
+import { localizeField } from "@/lib/i18n";
+import { resolveLocale } from "@/lib/i18n-config";
 import OpeningSequenceLoader from "@/components/layout/OpeningSequence/OpeningSequenceLoader";
 import HomeScrollController from "@/components/sections/HomeScrollController/HomeScrollController";
 
@@ -74,14 +73,16 @@ const getProjects = async (): Promise<Project[]> => {
   }
 };
 
-const HomePage = async () => {
-  const headersList = await headers();
-  const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
+const HomePage = async ({
+  params,
+}: {
+  params?: Promise<{ locale?: string }>;
+}) => {
+  const locale = resolveLocale((await params)?.locale);
 
-  const [services, projects, translations] = await Promise.all([
+  const [services, projects] = await Promise.all([
     getServices(),
     getProjects(),
-    getTranslations(locale),
   ]);
 
   const localizedServices = services.map((s) => ({
@@ -102,9 +103,9 @@ const HomePage = async () => {
       <OpeningSequenceLoader />
       <HomeScrollController />
       <HeroVideo src={heroVideoSrc} />
-      <Hero translations={translations} />
-      <ServicesList services={localizedServices} translations={translations} />
-      {localizedProjects.length > 0 && <ProjectGrid projects={localizedProjects} translations={translations} preview />}
+      <Hero />
+      <ServicesList services={localizedServices} />
+      {localizedProjects.length > 0 && <ProjectGrid projects={localizedProjects} preview />}
     </>
   );
 };

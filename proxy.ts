@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { locales, defaultLocale, parseLocaleFromHeader } from "@/lib/i18n";
+import { locales, defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
-import { slugs, getRouteKeyFromSlug } from "@/lib/i18n-routes";
+import {
+  slugs,
+  getAlternateHref,
+  getRouteKeyFromSlug,
+} from "@/lib/i18n-routes";
 import { PREVIEW_PARAM, PREVIEW_COOKIE, PREVIEW_COOKIE_MAX_AGE } from "@/lib/preview";
 
 // Évite de répéter le cast (locales as string[]) à chaque fois
@@ -34,18 +38,12 @@ export const proxy = (request: NextRequest) => {
     return res;
   }
 
-  // --- Forçage de locale via ?lang= (sélecteur de langue) ---
+  // --- Compatibilité avec les anciens liens ?lang= ---
   const langParam = request.nextUrl.searchParams.get("lang");
   if (langParam && localeValues.includes(langParam)) {
-    const cleanUrl = new URL(request.url);
-    cleanUrl.searchParams.delete("lang");
-    const response = NextResponse.redirect(cleanUrl, 307);
-    response.cookies.set("locale", langParam, {
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-      sameSite: "lax",
-    });
-    return response;
+    const cleanPath = request.nextUrl.pathname;
+    const targetPath = getAlternateHref(cleanPath, langParam as Locale);
+    return NextResponse.redirect(new URL(targetPath, request.url), 307);
   }
 
   // --- Détection locale depuis l'URL (priorité sur cookie) ---
@@ -59,13 +57,8 @@ export const proxy = (request: NextRequest) => {
     return NextResponse.redirect(new URL(rest ? `/${rest}` : "/", request.url), 308);
   }
 
-  // Locale finale : URL > cookie > Accept-Language > défaut
-  const cookieLocale = request.cookies.get("locale")?.value;
-  const locale: Locale =
-    urlLocale ??
-    (localeValues.includes(cookieLocale ?? "")
-      ? (cookieLocale as Locale)
-      : parseLocaleFromHeader(request.headers.get("accept-language")));
+  // L'URL est l'unique source de vérité : sans préfixe, la page est française.
+  const locale: Locale = urlLocale ?? defaultLocale;
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-locale", locale);
@@ -81,21 +74,18 @@ export const proxy = (request: NextRequest) => {
     return response;
   }
 
-  // --- Rewrite pour les locales non-défaut (/en/...) ---
-  let rewritePath = pathname;
-
-  if (urlLocale && urlLocale !== defaultLocale) {
-    const slugPart = parts.slice(1).join("/");
-
-    if (!slugPart) {
-      // /en → homepage
-      rewritePath = "/";
-    } else {
-      const routeKey = getRouteKeyFromSlug(urlLocale, slugPart);
-      // Slug connu → slug canonique FR ; slug inconnu → utiliser tel quel
-      rewritePath = routeKey ? `/${slugs[defaultLocale][routeKey]}` : `/${slugPart}`;
-    }
-  }
+  // Chaque locale possède désormais son propre segment interne afin que le
+  // cache App Router ne puisse plus confondre les payloads français et anglais.
+  const visibleSlug = urlLocale ? parts.slice(1).join("/") : parts.join("/");
+  const routeKey = visibleSlug
+    ? getRouteKeyFromSlug(locale, visibleSlug)
+    : "home";
+  const internalSlug = routeKey
+    ? slugs[defaultLocale][routeKey]
+    : visibleSlug;
+  const rewritePath = internalSlug
+    ? `/${locale}/${internalSlug}`
+    : `/${locale}`;
 
   const response =
     rewritePath !== pathname
@@ -103,15 +93,6 @@ export const proxy = (request: NextRequest) => {
           request: { headers: requestHeaders },
         })
       : NextResponse.next({ request: { headers: requestHeaders } });
-
-  // Persister la locale en cookie si elle a changé
-  if (cookieLocale !== locale) {
-    response.cookies.set("locale", locale, {
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-      sameSite: "lax",
-    });
-  }
 
   return response;
 };

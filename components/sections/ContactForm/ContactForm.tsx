@@ -6,14 +6,10 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@/components/ui/Button/Button";
 import { colors } from "@/app/theme/tokens";
-import { t } from "@/lib/i18n";
-import type { Translations } from "@/lib/i18n";
+import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 
-interface ContactFormProps {
-  translations?: Translations;
-}
-
-const ContactForm = ({ translations = {} }: ContactFormProps) => {
+const ContactForm = () => {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(false);
@@ -56,13 +52,13 @@ const ContactForm = ({ translations = {} }: ContactFormProps) => {
     >
       <Box sx={{ maxWidth: 640, mx: "auto" }}>
         <Typography variant="subtitle2" sx={{ mb: 2, color: colors.green }}>
-          {t(translations, "contact.eyebrow", "Parlons-en")}
+          {t("contact.eyebrow", "Parlons-en")}
         </Typography>
         <Typography variant="h2" sx={{ mb: 2 }}>
-          {t(translations, "contact.heading", "Démarrons un projet")}
+          {t("contact.heading", "Démarrons un projet")}
         </Typography>
         <Typography variant="subtitle1" sx={{ mb: 6 }}>
-          {t(translations, "contact.subheading", "Décrivez-nous votre projet et nous vous répondrons sous 48h.")}
+          {t("contact.subheading", "Décrivez-nous votre projet et nous vous répondrons sous 48h.")}
         </Typography>
 
         {sent ? (
@@ -76,10 +72,10 @@ const ContactForm = ({ translations = {} }: ContactFormProps) => {
             data-testid="contact-success"
           >
             <Typography variant="h5" sx={{ mb: 1 }}>
-              {t(translations, "contact.success.title", "Message envoyé !")}
+              {t("contact.success.title", "Message envoyé !")}
             </Typography>
             <Typography variant="body2">
-              {t(translations, "contact.success.body", "Merci pour votre message. Nous reviendrons vers vous très bientôt.")}
+              {t("contact.success.body", "Merci pour votre message. Nous reviendrons vers vous très bientôt.")}
             </Typography>
           </Box>
         ) : (
@@ -97,38 +93,38 @@ const ContactForm = ({ translations = {} }: ContactFormProps) => {
               }}
             >
               <TextField
-                label={t(translations, "contact.form.firstName", "Prénom")}
+                label={t("contact.form.firstName", "Prénom")}
                 name="firstName"
                 required
                 fullWidth
               />
               <TextField
-                label={t(translations, "contact.form.lastName", "Nom")}
+                label={t("contact.form.lastName", "Nom")}
                 name="lastName"
                 required
                 fullWidth
               />
             </Box>
             <TextField
-              label={t(translations, "contact.form.email", "Email")}
+              label={t("contact.form.email", "Email")}
               name="email"
               type="email"
               required
               fullWidth
             />
             <TextField
-              label={t(translations, "contact.form.company", "Entreprise")}
+              label={t("contact.form.company", "Entreprise")}
               name="company"
               fullWidth
             />
             <TextField
-              label={t(translations, "contact.form.message", "Votre projet")}
+              label={t("contact.form.message", "Votre projet")}
               name="message"
               multiline
               rows={5}
               required
               fullWidth
-              placeholder={t(translations, "contact.form.messagePlaceholder", "Décrivez votre projet, vos objectifs, votre budget approximatif…")}
+              placeholder={t("contact.form.messagePlaceholder", "Décrivez votre projet, vos objectifs, votre budget approximatif…")}
             />
             <Button
               type="submit"
@@ -138,13 +134,12 @@ const ContactForm = ({ translations = {} }: ContactFormProps) => {
               data-testid="contact-submit"
               sx={{ alignSelf: "flex-start" }}
             >
-              {t(translations, "contact.form.submit", "Envoyer le message")}
+              {t("contact.form.submit", "Envoyer le message")}
             </Button>
 
             {error && (
               <Typography variant="body2" sx={{ color: "error.main" }}>
                 {t(
-                  translations,
                   "contact.form.error",
                   "Une erreur est survenue. Veuillez réessayer ou nous contacter directement."
                 )}

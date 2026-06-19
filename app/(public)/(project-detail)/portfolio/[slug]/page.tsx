@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
 import ProjectRealizationViewer from "@/components/sections/ProjectRealizationViewer/ProjectRealizationViewer";
 import type { ProjectRealizationSlide } from "@/components/sections/ProjectRealizationViewer/ProjectRealizationViewer";
-import { defaultLocale, localizeField } from "@/lib/i18n";
-import type { Locale } from "@/lib/i18n";
+import { localizeField } from "@/lib/i18n";
+import { resolveLocale } from "@/lib/i18n-config";
 import prisma from "@/lib/prisma";
 import { sanitizeRichTextHtml } from "@/lib/sanitize-html";
 import { verifyProjectPreviewToken } from "@/lib/preview-token";
@@ -12,7 +11,7 @@ import { verifyProjectPreviewToken } from "@/lib/preview-token";
 export const dynamic = "force-dynamic";
 
 interface ProjectPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale?: string }>;
   searchParams?: Promise<{ preview?: string; token?: string }>;
 }
 
@@ -46,9 +45,8 @@ export const generateMetadata = async ({
 };
 
 const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => {
-  const { slug } = await params;
-  const headersList = await headers();
-  const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
+  const { slug, locale: localeParam } = await params;
+  const locale = resolveLocale(localeParam);
   const previewParams = searchParams ? await searchParams : {};
   const allowDraftPreview =
     previewParams.preview === "true" &&

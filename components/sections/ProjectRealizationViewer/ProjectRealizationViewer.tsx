@@ -6,15 +6,13 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import type { Theme } from "@mui/material/styles";
 import { colors } from "@/app/theme/tokens";
 import VideoToggleButton from "@/components/ui/VideoToggleButton/VideoToggleButton";
 import LiquidGlassFilter from "@/components/ui/LiquidGlass/LiquidGlassFilter";
 import { useLiquidGlass } from "@/components/ui/LiquidGlass/useLiquidGlass";
-import { getLocalizedHref } from "@/lib/i18n";
-import type { Locale } from "@/lib/i18n";
+import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 
 export interface ProjectRealizationSlide {
   id: string;
@@ -121,9 +119,8 @@ const ProjectMedia = ({
 };
 
 const CloseProjectButton = () => {
-  const pathname = usePathname();
-  const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
-  const portfolioHref = getLocalizedHref(locale, "portfolio");
+  const { localizedHref, t } = useI18n();
+  const portfolioHref = localizedHref("portfolio");
   const { filterId, displacementUrl, specularUrl, isSupported, scale } = useLiquidGlass({
     width: CLOSE_BUTTON_SIZE,
     height: CLOSE_BUTTON_SIZE,
@@ -146,7 +143,7 @@ const CloseProjectButton = () => {
       <IconButton
         component={Link}
         href={portfolioHref}
-        aria-label="Fermer la realisation"
+        aria-label={t("portfolio.close", "Fermer la réalisation")}
         sx={{
           position: "absolute",
           top: {

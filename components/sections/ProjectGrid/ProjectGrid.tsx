@@ -5,10 +5,8 @@ import Typography from "@mui/material/Typography";
 import Button from "@/components/ui/Button/Button";
 import ProjectCard from "@/components/ui/Card/Card";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { colors } from "@/app/theme/tokens";
-import { getLocalizedHref, t } from "@/lib/i18n";
-import type { Locale, Translations } from "@/lib/i18n";
+import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 
 export interface Project {
   id: string;
@@ -26,16 +24,14 @@ export interface Project {
 
 interface ProjectGridProps {
   projects: Project[];
-  translations?: Translations;
   /** Limite le nombre de projets affichés, avec lien vers la page portfolio */
   preview?: boolean;
 }
 
-const ProjectGrid = ({ projects, translations = {}, preview = false }: ProjectGridProps) => {
+const ProjectGrid = ({ projects, preview = false }: ProjectGridProps) => {
   const displayed = preview ? projects.slice(0, 4) : projects;
-  const pathname = usePathname();
-  const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
-  const portfolioHref = getLocalizedHref(locale, "portfolio");
+  const { t, localizedHref } = useI18n();
+  const portfolioHref = localizedHref("portfolio");
 
   return (
     <Box
@@ -60,15 +56,15 @@ const ProjectGrid = ({ projects, translations = {}, preview = false }: ProjectGr
         >
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 2, color: colors.green }}>
-              {t(translations, "portfolio.eyebrow", "Nos réalisations")}
+              {t("portfolio.eyebrow", "Nos réalisations")}
             </Typography>
             <Typography variant="h2">
-              {t(translations, "portfolio.heading", "Portfolio")}
+              {t("portfolio.heading", "Portfolio")}
             </Typography>
           </Box>
           {preview && (
             <Button variant="outlined" component={Link} href={portfolioHref}>
-              {t(translations, "portfolio.cta.viewAll", "Voir tout")}
+              {t("portfolio.cta.viewAll", "Voir tout")}
             </Button>
           )}
         </Box>

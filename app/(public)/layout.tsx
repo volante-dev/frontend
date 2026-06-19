@@ -3,6 +3,8 @@ import Header from "@/components/layout/Header/Header";
 import PreviewSync from "@/components/layout/PreviewSync/PreviewSync";
 import PageTransitionBoundary from "@/components/layout/PageTransition/PageTransitionBoundary";
 import PublicExperienceProvider from "@/components/layout/PublicExperience/PublicExperienceProvider";
+import I18nProvider from "@/components/providers/I18nProvider/I18nProvider";
+import { getTranslations } from "@/lib/i18n";
 
 const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
   const headersList = await headers();
@@ -13,13 +15,21 @@ const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
       : initialPathname;
   const initialHome =
     normalizedPathname === "/" || normalizedPathname === "/en";
+  const [translationsFr, translationsEn] = await Promise.all([
+    getTranslations("fr"),
+    getTranslations("en"),
+  ]);
 
   return (
-    <PublicExperienceProvider initialHome={initialHome}>
-      <PreviewSync />
-      <Header />
-      <PageTransitionBoundary>{children}</PageTransitionBoundary>
-    </PublicExperienceProvider>
+    <I18nProvider
+      translationsByLocale={{ fr: translationsFr, en: translationsEn }}
+    >
+      <PublicExperienceProvider initialHome={initialHome}>
+        <PreviewSync />
+        <Header />
+        <PageTransitionBoundary>{children}</PageTransitionBoundary>
+      </PublicExperienceProvider>
+    </I18nProvider>
   );
 };
 

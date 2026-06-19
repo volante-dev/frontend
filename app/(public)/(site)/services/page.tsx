@@ -4,9 +4,8 @@ import ServicesList from "@/components/sections/ServicesList/ServicesList";
 import ContactForm from "@/components/sections/ContactForm/ContactForm";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
-import { headers } from "next/headers";
-import { getTranslations, localizeField, defaultLocale, t } from "@/lib/i18n";
-import type { Locale } from "@/lib/i18n";
+import { getTranslations, localizeField, t } from "@/lib/i18n";
+import { resolveLocale } from "@/lib/i18n-config";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +13,12 @@ export const metadata = {
   title: "Services — Studio Volante",
 };
 
-const ServicesPage = async () => {
-  const headersList = await headers();
-  const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
+const ServicesPage = async ({
+  params,
+}: {
+  params?: Promise<{ locale?: string }>;
+}) => {
+  const locale = resolveLocale((await params)?.locale);
 
   const [rawServices, translations] = await Promise.all([
     prisma.service
@@ -53,8 +55,8 @@ const ServicesPage = async () => {
         </Box>
       </Box>
 
-      <ServicesList services={services} translations={translations} />
-      <ContactForm translations={translations} />
+      <ServicesList services={services} />
+      <ContactForm />
     </>
   );
 };

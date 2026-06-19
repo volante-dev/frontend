@@ -125,6 +125,29 @@ When("je passe le site en anglais", async ({ page }: { page: Page }) => {
   await page.getByRole("link", { name: "EN", exact: true }).click();
 });
 
+When("je repasse le site en français", async ({ page }: { page: Page }) => {
+  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await page.getByRole("link", { name: "FR", exact: true }).click();
+});
+
+When("je recharge la page", async ({ page }: { page: Page }) => {
+  await page.reload();
+});
+
+When(
+  "j'enregistre une ancienne préférence anglaise et je recharge",
+  async ({ page }: { page: Page }) => {
+    await page.context().addCookies([
+      {
+        name: "locale",
+        value: "en",
+        url: new URL(page.url()).origin,
+      },
+    ]);
+    await page.reload();
+  },
+);
+
 Then("je suis sur la page {string}", async ({ page }: { page: Page }, path: string) => {
   await expect(page).toHaveURL(new RegExp(`${path}$`));
 });
@@ -142,6 +165,37 @@ Then(
     await expect(
       page.getByRole("button", { name: locale, exact: true }),
     ).toBeVisible();
+  },
+);
+
+Then(
+  "le contenu principal est affiché en anglais",
+  async ({ page }: { page: Page }) => {
+    await expect(page.locator('[data-testid="hero"] h1')).toContainText(
+      "We bring ideas",
+    );
+    await expect(page.locator('[data-testid="hero"] h1')).not.toContainText(
+      "Nous donnons vie",
+    );
+  },
+);
+
+Then(
+  "le contenu principal est affiché en français",
+  async ({ page }: { page: Page }) => {
+    await expect(page.locator('[data-testid="hero"] h1')).toContainText(
+      "Nous donnons vie",
+    );
+    await expect(page.locator('[data-testid="hero"] h1')).not.toContainText(
+      "We bring ideas",
+    );
+  },
+);
+
+Then(
+  "la langue du document est {string}",
+  async ({ page }: { page: Page }, locale: string) => {
+    await expect(page.locator("html")).toHaveAttribute("lang", locale);
   },
 );
 

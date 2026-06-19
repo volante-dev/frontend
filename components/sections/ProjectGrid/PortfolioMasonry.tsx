@@ -3,11 +3,9 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { colors } from "@/app/theme/tokens";
-import { getLocalizedHref } from "@/lib/i18n";
-import type { Locale } from "@/lib/i18n";
+import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 import type { Project } from "./ProjectGrid";
 import { getDesktopMasonryPlacements } from "./masonry-layout";
 
@@ -18,9 +16,8 @@ type PortfolioMasonryProps = {
 const isHero = (project: Project) => project.portfolioSize === "HERO";
 
 const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
-  const pathname = usePathname();
-  const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "fr";
-  const portfolioHref = getLocalizedHref(locale, "portfolio");
+  const { localizedHref } = useI18n();
+  const portfolioHref = localizedHref("portfolio");
   const desktopPlacements = useMemo(
     () => getDesktopMasonryPlacements(projects),
     [projects],

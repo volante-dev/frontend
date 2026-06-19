@@ -37,3 +37,22 @@ Feature: Page d'accueil Studio Volante
     Then je suis sur la page "/en"
     And le même header est resté monté
     And le sélecteur de langue affiche "EN"
+    And le contenu principal est affiché en anglais
+    And la langue du document est "en"
+    When je repasse le site en français
+    Then je suis sur la page "/"
+    And le même header est resté monté
+    And le contenu principal est affiché en français
+    And la langue du document est "fr"
+
+  Scenario: Une URL anglaise reste anglaise après un rechargement
+    Given j'ouvre la page "/en"
+    Then le contenu principal est affiché en anglais
+    When je recharge la page
+    Then le contenu principal est affiché en anglais
+    And la langue du document est "en"
+
+  Scenario: Un ancien cookie anglais ne modifie pas une URL française
+    When j'enregistre une ancienne préférence anglaise et je recharge
+    Then le contenu principal est affiché en français
+    And la langue du document est "fr"
