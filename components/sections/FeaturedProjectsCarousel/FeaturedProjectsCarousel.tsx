@@ -244,7 +244,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
       moved: false,
       directionLocked: null,
     };
-    setDragging(true);
+    if (event.pointerType === "mouse") setDragging(true);
     updateCursor(event);
   };
 
@@ -254,15 +254,23 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     if (!drag || drag.pointerId !== event.pointerId) return;
 
     if (!drag.directionLocked) {
-      const deltaX = Math.abs(event.clientX - drag.startX);
+      const deltaX = event.clientX - drag.startX;
       const deltaY = Math.abs(event.clientY - drag.startY);
-      if (deltaX >= DIRECTION_LOCK_THRESHOLD || deltaY >= DIRECTION_LOCK_THRESHOLD) {
-        drag.directionLocked = deltaX >= deltaY ? "horizontal" : "vertical";
+      const absDeltaX = Math.abs(deltaX);
+      if (absDeltaX >= DIRECTION_LOCK_THRESHOLD || deltaY >= DIRECTION_LOCK_THRESHOLD) {
+        drag.directionLocked = absDeltaX >= deltaY ? "horizontal" : "vertical";
         if (drag.directionLocked === "vertical") {
           try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
           dragRef.current = null;
           setDragging(false);
           setDragOffset(0);
+          return;
+        }
+        if (drag.directionLocked === "horizontal" && drag.pointerType !== "mouse") {
+          try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
+          dragRef.current = null;
+          setDragOffset(0);
+          goTo(deltaX < 0 ? 1 : -1);
           return;
         }
       }
