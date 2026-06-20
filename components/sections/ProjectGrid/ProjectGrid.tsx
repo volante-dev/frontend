@@ -7,20 +7,9 @@ import ProjectCard from "@/components/ui/Card/Card";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
+import type { Project } from "./project-types";
 
-export interface Project {
-  id: string;
-  title: string;
-  titleEn?: string | null;
-  slug: string;
-  description: string;
-  descriptionEn?: string | null;
-  imageUrl: string;
-  tags: string[];
-  featured: boolean;
-  portfolioSize: "NORMAL" | "HERO";
-  portfolioOrder: number;
-}
+export type { Project } from "./project-types";
 
 interface ProjectGridProps {
   projects: Project[];

@@ -1,9 +1,9 @@
 import HeroVideo from "@/components/sections/HeroVideo/HeroVideo";
 import Hero from "@/components/sections/Hero/Hero";
 import ServicesList from "@/components/sections/ServicesList/ServicesList";
-import ProjectGrid from "@/components/sections/ProjectGrid/ProjectGrid";
+import FeaturedProjectsCarousel from "@/components/sections/FeaturedProjectsCarousel/FeaturedProjectsCarousel";
 import type { Service } from "@/components/sections/ServicesList/ServicesList";
-import type { Project } from "@/components/sections/ProjectGrid/ProjectGrid";
+import type { Project } from "@/components/sections/ProjectGrid/project-types";
 import prisma from "@/lib/prisma";
 import { localizeField } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
@@ -74,8 +74,8 @@ const getServices = async (): Promise<Service[]> => {
 const getProjects = async (): Promise<Project[]> => {
   try {
     return await prisma.project.findMany({
-      where: { publishedAt: { not: null } },
-      orderBy: [{ featured: "desc" }, { order: "asc" }, { publishedAt: "desc" }],
+      where: { publishedAt: { not: null }, featured: true },
+      orderBy: [{ order: "asc" }, { publishedAt: "desc" }],
     });
   } catch {
     return [];
@@ -103,6 +103,13 @@ const HomePage = async ({
     ...p,
     title: localizeField(p.title, p.titleEn, locale),
     description: localizeField(p.description, p.descriptionEn, locale),
+    sector: localizeField(p.sector ?? "", p.sectorEn, locale) || null,
+    projectLocation:
+      localizeField(
+        p.projectLocation ?? "",
+        p.projectLocationEn,
+        locale,
+      ) || null,
   }));
 
   const heroVideoSrc = process.env.NEXT_PUBLIC_HERO_VIDEO_URL;
@@ -115,7 +122,9 @@ const HomePage = async ({
       <HeroVideo src={heroVideoSrc} poster={heroVideoPoster} />
       <Hero />
       <ServicesList services={localizedServices} />
-      {localizedProjects.length > 0 && <ProjectGrid projects={localizedProjects} preview />}
+      {localizedProjects.length >= 2 && (
+        <FeaturedProjectsCarousel projects={localizedProjects} />
+      )}
     </>
   );
 };

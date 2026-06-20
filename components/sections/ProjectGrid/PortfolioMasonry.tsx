@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { colors } from "@/app/theme/tokens";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
-import type { Project } from "./ProjectGrid";
+import type { Project } from "./project-types";
 import { getDesktopMasonryPlacements } from "./masonry-layout";
 
 type PortfolioMasonryProps = {
