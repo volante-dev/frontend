@@ -31,9 +31,9 @@ const OpeningSequence = () => {
 
   useEffect(() => {
     if (!shouldAnimate.current) return;
-    const t1 = setTimeout(() => setPhase("circle"), 500);
-    const t2 = setTimeout(() => setPhase("expanded"), 2250);
-    const t3 = setTimeout(() => setPhase("done"), 4800);
+    const t1 = setTimeout(() => setPhase("circle"), 600);
+    const t2 = setTimeout(() => setPhase("expanded"), 2800);
+    const t3 = setTimeout(() => setPhase("done"), 6200);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -57,7 +57,7 @@ const OpeningSequence = () => {
         backgroundColor: "#000000",
         pointerEvents: "none",
         opacity: isExpanded ? 0 : 1,
-        transition: isExpanded ? "opacity 2100ms cubic-bezier(0.4, 0, 0.2, 1)" : "none",
+        transition: isExpanded ? "opacity 2800ms cubic-bezier(0.16, 1, 0.3, 1)" : "none",
       }}
     >
       <Box
@@ -78,9 +78,9 @@ const OpeningSequence = () => {
             opacity: pillVisible ? 1 : 0,
             transform: pillVisible ? "translateY(0px)" : "translateY(-80px)",
             transition: isExpanded
-              ? "max-width 1350ms cubic-bezier(0.22, 1, 0.36, 1)"
+              ? "max-width 1800ms cubic-bezier(0.16, 1, 0.3, 1)"
               : isCircle
-                ? "opacity 900ms cubic-bezier(0.16, 1, 0.3, 1), transform 900ms cubic-bezier(0.16, 1, 0.3, 1)"
+                ? "opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1), transform 1200ms cubic-bezier(0.16, 1, 0.3, 1)"
                 : "none",
           }}
         />
