@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import type { Theme } from "@mui/material/styles";
 import { colors } from "@/app/theme/tokens";
@@ -166,6 +167,18 @@ const ProjectMedia = ({
 const CloseProjectButton = () => {
   const { localizedHref, t } = useI18n();
   const portfolioHref = localizedHref("portfolio");
+  const router = useRouter();
+
+  const handleClose = useCallback(() => {
+    try {
+      if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
+        router.back();
+        return;
+      }
+    } catch {}
+    router.push(portfolioHref);
+  }, [router, portfolioHref]);
+
   const { filterId, displacementUrl, specularUrl, isSupported, scale } = useLiquidGlass({
     width: CLOSE_BUTTON_SIZE,
     height: CLOSE_BUTTON_SIZE,
@@ -186,8 +199,7 @@ const CloseProjectButton = () => {
         />
       )}
       <IconButton
-        component={Link}
-        href={portfolioHref}
+        onClick={handleClose}
         aria-label={t("portfolio.close", "Fermer la réalisation")}
         sx={{
           position: "absolute",

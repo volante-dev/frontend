@@ -24,9 +24,12 @@ type FeaturedProjectsCarouselProps = {
 
 type DragState = {
   pointerId: number;
+  pointerType: string;
   startX: number;
+  startY: number;
   startedAt: number;
   moved: boolean;
+  directionLocked: "horizontal" | "vertical" | null;
 };
 
 const FALLBACK_PALETTE = [
@@ -35,7 +38,9 @@ const FALLBACK_PALETTE = [
   colors.champagne,
   colors.blueGrayDark,
 ];
-const DRAG_CLICK_THRESHOLD = 6;
+const DRAG_CLICK_THRESHOLD_TOUCH = 6;
+const DRAG_CLICK_THRESHOLD_MOUSE = 14;
+const DIRECTION_LOCK_THRESHOLD = 10;
 
 const modulo = (value: number, length: number) =>
   ((value % length) + length) % length;
@@ -232,9 +237,12 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     setTrackWidth(event.currentTarget.clientWidth);
     dragRef.current = {
       pointerId: event.pointerId,
+      pointerType: event.pointerType,
       startX: event.clientX,
+      startY: event.clientY,
       startedAt: performance.now(),
       moved: false,
+      directionLocked: null,
     };
     setDragging(true);
     updateCursor(event);
@@ -245,10 +253,30 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
 
+    if (!drag.directionLocked) {
+      const deltaX = Math.abs(event.clientX - drag.startX);
+      const deltaY = Math.abs(event.clientY - drag.startY);
+      if (deltaX >= DIRECTION_LOCK_THRESHOLD || deltaY >= DIRECTION_LOCK_THRESHOLD) {
+        drag.directionLocked = deltaX >= deltaY ? "horizontal" : "vertical";
+        if (drag.directionLocked === "vertical") {
+          try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
+          dragRef.current = null;
+          setDragging(false);
+          setDragOffset(0);
+          return;
+        }
+      }
+    }
+
+    if (drag.directionLocked === "vertical") return;
+
     const rawOffset = event.clientX - drag.startX;
     const maximum = Math.max(180, (trackRef.current?.clientWidth ?? 900) * 0.32);
     const nextOffset = Math.max(-maximum, Math.min(maximum, rawOffset));
-    if (Math.abs(nextOffset) > DRAG_CLICK_THRESHOLD) drag.moved = true;
+    const clickThreshold = drag.pointerType === "mouse"
+      ? DRAG_CLICK_THRESHOLD_MOUSE
+      : DRAG_CLICK_THRESHOLD_TOUCH;
+    if (Math.abs(nextOffset) > clickThreshold) drag.moved = true;
     setDragOffset(nextOffset);
   };
 
@@ -265,6 +293,21 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     const shouldMove = Math.abs(dragOffset) >= threshold || Math.abs(velocity) > 0.5;
 
     suppressClickRef.current = drag.moved;
+
+    // Pointer capture redirects click to the track, bypassing the Link cards.
+    // For mouse clicks without drag, find the link under the cursor and navigate.
+    if (!drag.moved && drag.pointerType === "mouse") {
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const link = target?.closest("a") as HTMLAnchorElement | null;
+      if (link) {
+        dragRef.current = null;
+        setDragging(false);
+        setDragOffset(0);
+        link.click();
+        return;
+      }
+    }
+
     dragRef.current = null;
     setDragging(false);
     if (shouldMove) goTo(dragOffset < 0 ? 1 : -1);
@@ -273,6 +316,14 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     window.setTimeout(() => {
       suppressClickRef.current = false;
     }, 0);
+  };
+
+  const handlePointerCancel = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    setDragging(false);
+    setDragOffset(0);
   };
 
   if (projects.length < 2) return null;
@@ -316,10 +367,13 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         }}
       >
         <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1.5, color: "inherit", opacity: 0.76 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ mb: 1.5, color: "inherit", opacity: 0.76, textShadow: "0 4px 30px rgba(0, 0, 0, 0.28)" }}
+          >
             {t("portfolio.eyebrow", "Nos réalisations")}
           </Typography>
-          <Typography variant="h2" sx={{ color: "inherit" }}>
+          <Typography variant="h2" sx={{ color: "inherit", textShadow: "0 4px 36px rgba(0, 0, 0, 0.25)" }}>
             {t("portfolio.heading", "Portfolio")}
           </Typography>
         </Box>
@@ -366,7 +420,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishDrag}
-        onPointerCancel={finishDrag}
+        onPointerCancel={handlePointerCancel}
         onPointerLeave={() => {
           if (!dragRef.current) setCursor((current) => ({ ...current, visible: false }));
         }}
@@ -420,6 +474,8 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
                 borderRadius: { xs: 2, md: 3 },
                 color: colors.white,
                 textDecoration: "none",
+                cursor: { xs: "grab", md: "none" },
+                "&:active": { cursor: { xs: "grabbing", md: "none" } },
                 bgcolor: colors.mutedBlack,
                 opacity: visible ? 1 : 0,
                 pointerEvents: visible ? "auto" : "none",
@@ -469,9 +525,9 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
               <Box
                 sx={{
                   position: "absolute",
-                  left: { xs: active ? 2.5 : 2, md: active ? 4 : 2.5 },
-                  right: { xs: active ? 2.5 : 2, md: active ? 4 : 2.5 },
-                  bottom: { xs: active ? 3 : 2.5, md: active ? 4 : 3 },
+                  left: { xs: active ? "30px" : "24px", md: active ? "42px" : "28px" },
+                  right: { xs: active ? "20px" : "16px", md: active ? "32px" : "20px" },
+                  bottom: { xs: active ? "34px" : "28px", md: active ? "42px" : "32px" },
                   transition:
                     "left 820ms cubic-bezier(0.22, 1, 0.36, 1), right 820ms cubic-bezier(0.22, 1, 0.36, 1), bottom 820ms cubic-bezier(0.22, 1, 0.36, 1)",
                 }}
