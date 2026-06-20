@@ -10,7 +10,7 @@ const projects: Project[] = [
     description: "Identité et campagne.",
     imageUrl:
       "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
-    heroColorComputed: "#477C78",
+    heroPaletteComputed: ["#477C78", "#83A59D", "#D8C8A7", "#78909C"],
     sector: "Culture",
     projectLocation: "Paris",
     tags: [],
@@ -25,7 +25,7 @@ const projects: Project[] = [
     description: "Direction artistique.",
     imageUrl:
       "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80",
-    heroColorComputed: "#245C74",
+    heroPaletteComputed: ["#245C74", "#4E8DA4", "#A8CDD1", "#D8C9A4"],
     sector: "Hospitalité",
     projectLocation: "Marseille",
     tags: [],
@@ -40,7 +40,7 @@ const projects: Project[] = [
     description: "Identité visuelle.",
     imageUrl:
       "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1600&q=80",
-    heroColorOverride: "#9A6845",
+    heroPaletteComputed: ["#9A6845", "#C59061", "#E6C99C", "#8A7370"],
     sector: "Art de vivre",
     projectLocation: "Lyon",
     tags: [],

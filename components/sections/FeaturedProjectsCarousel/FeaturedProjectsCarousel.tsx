@@ -29,16 +29,29 @@ type DragState = {
   moved: boolean;
 };
 
-const FALLBACK_COLOR = colors.green;
+const FALLBACK_PALETTE = [
+  colors.green,
+  colors.greenLight,
+  colors.champagne,
+  colors.blueGrayDark,
+];
 const DRAG_CLICK_THRESHOLD = 6;
 
 const modulo = (value: number, length: number) =>
   ((value % length) + length) % length;
 
-const normalizeHex = (value: string | null | undefined) => {
+const normalizeHex = (
+  value: string | null | undefined,
+  fallback = FALLBACK_PALETTE[0],
+) => {
   const match = value?.trim().match(/^#([0-9a-f]{6})$/i);
-  return match ? `#${match[1].toUpperCase()}` : FALLBACK_COLOR;
+  return match ? `#${match[1].toUpperCase()}` : fallback;
 };
+
+const normalizePalette = (palette: string[] | undefined) =>
+  FALLBACK_PALETTE.map((fallback, index) =>
+    normalizeHex(palette?.[index], fallback),
+  );
 
 const hexToRgb = (color: string) => ({
   r: Number.parseInt(color.slice(1, 3), 16),
@@ -57,17 +70,74 @@ const mixHex = (from: string, to: string, progress: number) => {
   return `#${channel(start.r, end.r)}${channel(start.g, end.g)}${channel(start.b, end.b)}`;
 };
 
-const readableForeground = (background: string) => {
-  const { r, g, b } = hexToRgb(normalizeHex(background));
-  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+const mixPalettes = (from: string[], to: string[], progress: number) =>
+  from.map((color, index) => mixHex(color, to[index], progress));
+
+const readableForeground = (palette: string[]) => {
+  const luminance =
+    palette.reduce((total, color) => {
+      const { r, g, b } = hexToRgb(normalizeHex(color));
+      return total + (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    }, 0) / palette.length;
   return luminance > 0.62 ? colors.mutedBlack : colors.white;
 };
 
-const relativePosition = (index: number, activeIndex: number, length: number) => {
-  const forward = modulo(index - activeIndex, length);
-  if (forward === 0) return 0;
-  return forward > length / 2 ? forward - length : forward;
-};
+const MeshGradient = ({ palette, dragging }: { palette: string[]; dragging: boolean }) => (
+  <Box
+    aria-hidden
+    sx={{
+      position: "absolute",
+      inset: "-22% -12%",
+      overflow: "hidden",
+      pointerEvents: "none",
+      zIndex: 0,
+      "@keyframes meshFloatOne": {
+        from: { transform: "translate3d(-2%, -1%, 0) scale(1)" },
+        to: { transform: "translate3d(4%, 3%, 0) scale(1.06)" },
+      },
+      "@keyframes meshFloatTwo": {
+        from: { transform: "translate3d(3%, -2%, 0) scale(1.04)" },
+        to: { transform: "translate3d(-3%, 4%, 0) scale(0.99)" },
+      },
+    }}
+  >
+    {palette.map((color, index) => {
+      const positions = [
+        { left: "-8%", top: "-18%" },
+        { right: "-10%", top: "-10%" },
+        { left: "10%", bottom: "-28%" },
+        { right: "5%", bottom: "-25%" },
+      ];
+
+      return (
+        <Box
+          key={index}
+          sx={{
+            position: "absolute",
+            ...positions[index],
+            width: { xs: "90vw", md: "65vw" },
+            aspectRatio: "1",
+            borderRadius: "50%",
+            backgroundColor: color,
+            filter: { xs: "blur(55px)", md: "blur(90px)" },
+            opacity: index === 0 ? 0.78 : 0.68,
+            willChange: "transform",
+            transition: dragging
+              ? "none"
+              : "background-color 720ms cubic-bezier(0.22, 1, 0.36, 1)",
+            animation: `${index % 2 === 0 ? "meshFloatOne" : "meshFloatTwo"} ${
+              24 + index * 2
+            }s ease-in-out infinite alternate`,
+            "@media (prefers-reduced-motion: reduce)": {
+              animation: "none",
+              transition: "none",
+            },
+          }}
+        />
+      );
+    })}
+  </Box>
+);
 
 const cardLeft = (position: number) => {
   if (position === 0) return "var(--carousel-start)";
@@ -90,7 +160,7 @@ const cardLeft = (position: number) => {
 const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) => {
   const { t, localizedHref } = useI18n();
   const portfolioHref = localizedHref("portfolio");
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeStep, setActiveStep] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [trackWidth, setTrackWidth] = useState(900);
@@ -101,24 +171,22 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
 
   const goTo = useCallback(
     (delta: number) => {
-      setActiveIndex((current) => modulo(current + delta, projects.length));
+      setActiveStep((current) => current + delta);
       setDragOffset(0);
     },
-    [projects.length],
+    [],
   );
 
-  const projectColor = useCallback(
+  const projectPalette = useCallback(
     (index: number) => {
       const project = projects[modulo(index, projects.length)];
-      return normalizeHex(
-        project.heroColorOverride ?? project.heroColorComputed ?? FALLBACK_COLOR,
-      );
+      return normalizePalette(project.heroPaletteComputed);
     },
     [projects],
   );
 
-  const backgroundColor = useMemo(() => {
-    const current = projectColor(activeIndex);
+  const backgroundPalette = useMemo(() => {
+    const current = projectPalette(activeStep);
     if (!dragOffset) return current;
 
     const direction = dragOffset < 0 ? 1 : -1;
@@ -126,9 +194,25 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
       1,
       Math.abs(dragOffset) / Math.max(160, trackWidth * 0.28),
     );
-    return mixHex(current, projectColor(activeIndex + direction), distance);
-  }, [activeIndex, dragOffset, projectColor, trackWidth]);
-  const foreground = readableForeground(backgroundColor);
+    return mixPalettes(
+      current,
+      projectPalette(activeStep + direction),
+      distance,
+    );
+  }, [activeStep, dragOffset, projectPalette, trackWidth]);
+  const foreground = readableForeground(backgroundPalette);
+  const virtualItems = useMemo(
+    () =>
+      [-2, -1, 0, 1, 2, 3].map((position) => {
+        const virtualIndex = activeStep + position;
+        return {
+          position,
+          virtualIndex,
+          project: projects[modulo(virtualIndex, projects.length)],
+        };
+      }),
+    [activeStep, projects],
+  );
 
   const updateCursor = (event: ReactPointerEvent<HTMLDivElement>) => {
     const rect = trackRef.current?.getBoundingClientRect();
@@ -200,8 +284,11 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
       aria-roledescription="carousel"
       aria-label={t("portfolio.heading", "Portfolio")}
       sx={{
+        width: "100%",
+        position: "relative",
+        isolation: "isolate",
         color: foreground,
-        backgroundColor,
+        backgroundColor: backgroundPalette[0],
         borderBottom: `1px solid ${colors.blueGray}`,
         py: { xs: 7, md: 10 },
         overflow: "hidden",
@@ -213,8 +300,11 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         },
       }}
     >
+      <MeshGradient palette={backgroundPalette} dragging={dragging} />
       <Box
         sx={{
+          position: "relative",
+          zIndex: 1,
           maxWidth: 1200,
           mx: "auto",
           px: { xs: 2, md: 4 },
@@ -286,13 +376,14 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
           event.stopPropagation();
         }}
         sx={{
-          "--carousel-start": { xs: "16px", md: "max(32px, calc((100vw - 1200px) / 2 + 32px))" },
-          "--carousel-active-width": { xs: "84vw", md: "clamp(620px, 58vw, 820px)" },
-          "--carousel-side-width": { xs: "66vw", md: "clamp(230px, 23vw, 320px)" },
-          "--carousel-gap": { xs: "14px", md: "36px" },
+          "--carousel-start": { xs: "12vw", md: "clamp(150px, 12vw, 220px)" },
+          "--carousel-active-width": { xs: "76vw", md: "clamp(620px, 58vw, 900px)" },
+          "--carousel-side-width": { xs: "68vw", md: "clamp(230px, 23vw, 340px)" },
+          "--carousel-gap": { xs: "12px", md: "36px" },
           height: { xs: "min(68svh, 600px)", md: "clamp(520px, 48vw, 650px)" },
           minHeight: { xs: 440, md: 520 },
           position: "relative",
+          zIndex: 1,
           outline: "none",
           touchAction: "pan-y",
           userSelect: "none",
@@ -300,15 +391,14 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
           "&:active": { cursor: { xs: "grabbing", md: "none" } },
         }}
       >
-        {projects.map((project, index) => {
-          const position = relativePosition(index, activeIndex, projects.length);
+        {virtualItems.map(({ project, position, virtualIndex }) => {
           const active = position === 0;
-          const visible = position >= 0 && position <= 2;
+          const visible = position >= -1 && position <= 2;
           const meta = [project.sector, project.projectLocation].filter(Boolean).join(" — ");
 
           return (
             <Box
-              key={project.id}
+              key={virtualIndex}
               component={Link}
               href={`${portfolioHref}/${project.slug}`}
               aria-label={`${project.title}${meta ? ` — ${meta}` : ""}`}

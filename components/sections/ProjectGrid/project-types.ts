@@ -6,8 +6,7 @@ export interface Project {
   description: string;
   descriptionEn?: string | null;
   imageUrl: string;
-  heroColorOverride?: string | null;
-  heroColorComputed?: string | null;
+  heroPaletteComputed?: string[];
   sector?: string | null;
   sectorEn?: string | null;
   projectLocation?: string | null;
