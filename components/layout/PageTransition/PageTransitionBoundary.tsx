@@ -13,7 +13,7 @@ const PageTransitionBoundary = ({
 }) => {
   return (
     <>
-      <ViewTransition default="none" update="page-fade">
+      <ViewTransition default="none">
         <TransitionSurface>{children}</TransitionSurface>
       </ViewTransition>
     </>
