@@ -3,25 +3,26 @@ import { headers } from "next/headers";
 import "./globals.css";
 import ThemeProvider from "./theme/ThemeProvider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import { defaultLocale, locales } from "@/lib/i18n";
+import { defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
+import { siteName, siteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Studio Volante - Agence créative de la Petite Ceinture",
-  description: "Studio Volante, Agence créative de la Petite Ceinture",
+  metadataBase: siteUrl,
+  title: {
+    default: "Studio Volante — Studio de communication créative à Paris",
+    template: `%s — ${siteName}`,
+  },
+  description:
+    "Studio Volante accompagne les marques en identité visuelle, direction artistique et stratégie de contenu à Paris et partout en France.",
+  applicationName: siteName,
+  category: "design",
 };
 
 const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>) => {
   const headersList = await headers();
   const locale = (headersList.get("x-locale") ?? defaultLocale) as Locale;
   const comingSoon = headersList.get("x-coming-soon") === "true";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-
-  // Calcule l'URL canonique pour chaque locale (pour les balises hreflang)
-  const hrefLangLinks = locales.map((l) => ({
-    locale: l,
-    href: l === defaultLocale ? appUrl || "/" : `${appUrl}/${l}`,
-  }));
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -31,10 +32,6 @@ const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>)
             __html: `(function(){try{var enabled=${JSON.stringify(!comingSoon)};var p=location.pathname;if(p.length>1&&p.endsWith('/'))p=p.slice(0,-1);var home=p==='/'||p==='/en';var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;if(enabled&&home&&!reduced&&!sessionStorage.getItem('volante-intro-played'))document.documentElement.classList.add('volante-intro-enabled');}catch(e){}})();`,
           }}
         />
-        {hrefLangLinks.map(({ locale: l, href }) => (
-          <link key={l} rel="alternate" hrefLang={l} href={href} />
-        ))}
-        <link rel="alternate" hrefLang="x-default" href={appUrl || "/"} />
         <link rel="stylesheet" href="https://use.typekit.net/mah7tat.css" />
       </head>
       <body>

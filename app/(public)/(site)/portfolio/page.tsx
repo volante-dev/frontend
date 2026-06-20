@@ -5,12 +5,18 @@ import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
 import { getTranslations, t } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
+import type { Metadata } from "next";
+import { createRouteMetadata } from "@/lib/seo-pages";
+import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Portfolio — Studio Volante",
-};
+export const generateMetadata = async ({
+  params,
+}: {
+  params?: Promise<{ locale?: string }>;
+}): Promise<Metadata> =>
+  createRouteMetadata(resolveLocale((await params)?.locale), "portfolio");
 
 const PortfolioPage = async ({
   params,
@@ -42,6 +48,7 @@ const PortfolioPage = async ({
 
   return (
     <>
+      <RouteBreadcrumbJsonLd locale={locale} route="portfolio" label="Portfolio" />
       <Box
         sx={{
           py: { xs: 8, md: 12 },

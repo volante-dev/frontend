@@ -78,6 +78,8 @@ const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
               component="img"
               src={project.imageUrl}
               alt={project.title}
+              width={1200}
+              height={900}
               loading="lazy"
               sx={{
                 position: "absolute",

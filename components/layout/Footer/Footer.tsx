@@ -42,6 +42,7 @@ const Footer = () => {
         <Box>
           <Typography
             variant="h6"
+            component="p"
             sx={{
               fontWeight: 700,
               fontSize: "1rem",

@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export const POST = async (req: Request) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("[contact] Missing RESEND_API_KEY.");
+    return NextResponse.json({ error: "Service indisponible" }, { status: 503 });
+  }
+  const resend = new Resend(apiKey);
   const { firstName, lastName, email, company, message } = await req.json();
 
   if (!firstName || !lastName || !email || !message) {

@@ -26,8 +26,51 @@ export interface ProjectRealizationSlide {
 
 interface ProjectRealizationViewerProps {
   projectTitle: string;
+  projectDescription?: string;
+  facts?: Array<{ label: string; value: string }>;
   slides: ProjectRealizationSlide[];
 }
+
+const ProjectOverview = ({
+  projectTitle,
+  projectDescription,
+  facts = [],
+  compact = false,
+}: Omit<ProjectRealizationViewerProps, "slides"> & { compact?: boolean }) => (
+  <Box>
+    <Typography variant="h6" component="h1" sx={{ color: colors.green, mb: facts.length ? 1.5 : 0 }}>
+      {projectTitle}
+    </Typography>
+    {facts.length > 0 && (
+      <Box
+        component="dl"
+        sx={{
+          m: 0,
+          display: "grid",
+          gridTemplateColumns: compact ? "repeat(2, minmax(0, 1fr))" : "repeat(3, minmax(0, 1fr))",
+          gap: 1.25,
+          maxWidth: 620,
+        }}
+      >
+        {facts.map((fact) => (
+          <Box key={fact.label}>
+            <Typography component="dt" variant="caption" sx={{ color: colors.mutedBlackLight }}>
+              {fact.label}
+            </Typography>
+            <Typography component="dd" variant="body2" sx={{ m: 0 }}>
+              {fact.value}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+    )}
+    {compact && projectDescription && (
+      <Typography variant="body2" sx={{ mt: 2, maxWidth: 560 }}>
+        {projectDescription}
+      </Typography>
+    )}
+  </Box>
+);
 
 const SCROLL_COOLDOWN_MS = 980;
 const CLOSE_BUTTON_SIZE = 44;
@@ -104,6 +147,8 @@ const ProjectMedia = ({
           component="img"
           src={slide.mediaUrl}
           alt={slide.alt ?? slide.title}
+          width={1600}
+          height={1200}
           loading={priority ? "eager" : "lazy"}
           sx={{
             position: "absolute",
@@ -271,7 +316,7 @@ const VerticalProgressRail = ({
   </Box>
 );
 
-const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) => {
+const DesktopViewer = ({ projectTitle, projectDescription, facts, slides }: ProjectRealizationViewerProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const lockUntil = useRef(0);
   const activeSlide = slides[activeIndex];
@@ -337,9 +382,9 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
           },
         }}
       >
-        <Typography variant="h6" component="p" sx={{ mb: "auto", color: colors.green }}>
-          {projectTitle}
-        </Typography>
+        <Box sx={{ mb: "auto" }}>
+          <ProjectOverview projectTitle={projectTitle} projectDescription={projectDescription} facts={facts} />
+        </Box>
         <Box
           key={activeSlide.id}
           sx={{
@@ -364,7 +409,7 @@ const DesktopViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) 
             onSelect={goTo}
           />
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h1" component="h1" sx={{ mb: 3 }}>
+            <Typography variant="h1" component="h2" sx={{ mb: 3 }}>
               {activeSlide.title}
             </Typography>
             <Box
@@ -485,7 +530,7 @@ const MobileSlide = ({ slide, index }: { slide: ProjectRealizationSlide; index: 
           boxShadow: "0 18px 40px rgba(28, 29, 30, 0.10)",
         }}
       >
-        <Typography variant="h2" component={index === 0 ? "h1" : "h2"} sx={{ mb: 2 }}>
+        <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
           {slide.title}
         </Typography>
         <Box
@@ -504,7 +549,7 @@ const MobileSlide = ({ slide, index }: { slide: ProjectRealizationSlide; index: 
   );
 };
 
-const MobileViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) => (
+const MobileViewer = ({ projectTitle, projectDescription, facts, slides }: ProjectRealizationViewerProps) => (
   <Box
     component="section"
     data-testid="project-realization-viewer-mobile"
@@ -518,25 +563,30 @@ const MobileViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) =
     }}
   >
     <CloseProjectButton />
-    <Typography variant="h6" component="p" sx={{ mb: 3, color: colors.green }}>
-      {projectTitle}
-    </Typography>
+    <Box sx={{ mb: 4 }}>
+      <ProjectOverview
+        projectTitle={projectTitle}
+        projectDescription={projectDescription}
+        facts={facts}
+        compact
+      />
+    </Box>
     {slides.map((slide, index) => (
       <MobileSlide key={slide.id} slide={slide} index={index} />
     ))}
   </Box>
 );
 
-const ProjectRealizationViewer = ({ projectTitle, slides }: ProjectRealizationViewerProps) => {
+const ProjectRealizationViewer = ({ projectTitle, projectDescription, facts, slides }: ProjectRealizationViewerProps) => {
   const isDesktop = useMediaQuery((theme: Theme) => theme.breakpoints.up("md"), { noSsr: true });
   const normalizedSlides = useMemo(() => slides.filter((slide) => slide.mediaUrl), [slides]);
 
   if (normalizedSlides.length === 0) return null;
 
   return isDesktop ? (
-    <DesktopViewer projectTitle={projectTitle} slides={normalizedSlides} />
+    <DesktopViewer projectTitle={projectTitle} projectDescription={projectDescription} facts={facts} slides={normalizedSlides} />
   ) : (
-    <MobileViewer projectTitle={projectTitle} slides={normalizedSlides} />
+    <MobileViewer projectTitle={projectTitle} projectDescription={projectDescription} facts={facts} slides={normalizedSlides} />
   );
 };
 

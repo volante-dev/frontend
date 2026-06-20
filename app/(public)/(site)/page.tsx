@@ -9,8 +9,17 @@ import { localizeField } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
 import OpeningSequenceLoader from "@/components/layout/OpeningSequence/OpeningSequenceLoader";
 import HomeScrollController from "@/components/sections/HomeScrollController/HomeScrollController";
+import type { Metadata } from "next";
+import { createRouteMetadata } from "@/lib/seo-pages";
 
 export const dynamic = "force-dynamic";
+
+export const generateMetadata = async ({
+  params,
+}: {
+  params?: Promise<{ locale?: string }>;
+}): Promise<Metadata> =>
+  createRouteMetadata(resolveLocale((await params)?.locale), "home");
 
 const fallbackServices = [
   {
@@ -97,12 +106,13 @@ const HomePage = async ({
   }));
 
   const heroVideoSrc = process.env.NEXT_PUBLIC_HERO_VIDEO_URL;
+  const heroVideoPoster = process.env.NEXT_PUBLIC_HERO_VIDEO_POSTER_URL;
 
   return (
     <>
       <OpeningSequenceLoader />
       <HomeScrollController />
-      <HeroVideo src={heroVideoSrc} />
+      <HeroVideo src={heroVideoSrc} poster={heroVideoPoster} />
       <Hero />
       <ServicesList services={localizedServices} />
       {localizedProjects.length > 0 && <ProjectGrid projects={localizedProjects} preview />}

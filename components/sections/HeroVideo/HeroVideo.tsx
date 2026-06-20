@@ -44,6 +44,7 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
           muted
           loop
           playsInline
+          preload="metadata"
           poster={poster}
           style={{
             position: "absolute",

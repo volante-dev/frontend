@@ -9,6 +9,7 @@ import type { Locale } from "@/lib/i18n";
 export const metadata: Metadata = {
   title: "Studio Volante",
   description: "Quelque chose de beau est en préparation.",
+  robots: { index: false, follow: false, noarchive: true },
 };
 
 const ComingSoonPage = async () => {
@@ -53,6 +54,7 @@ const ComingSoonPage = async () => {
       >
         <Typography
           variant="h6"
+          component="p"
           sx={{
             fontSize: { xs: "0.75rem", md: "0.8125rem" },
             fontWeight: 600,

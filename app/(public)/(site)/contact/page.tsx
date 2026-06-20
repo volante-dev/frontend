@@ -4,10 +4,16 @@ import ContactForm from "@/components/sections/ContactForm/ContactForm";
 import { colors } from "@/app/theme/tokens";
 import { getTranslations, t } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
+import type { Metadata } from "next";
+import { createRouteMetadata } from "@/lib/seo-pages";
+import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
 
-export const metadata = {
-  title: "Contact — Studio Volante",
-};
+export const generateMetadata = async ({
+  params,
+}: {
+  params?: Promise<{ locale?: string }>;
+}): Promise<Metadata> =>
+  createRouteMetadata(resolveLocale((await params)?.locale), "contact");
 
 const ContactPage = async ({
   params,
@@ -19,6 +25,7 @@ const ContactPage = async ({
 
   return (
     <>
+      <RouteBreadcrumbJsonLd locale={locale} route="contact" label="Contact" />
       <Box
         sx={{
           py: { xs: 8, md: 12 },
@@ -41,6 +48,35 @@ const ContactPage = async ({
       </Box>
 
       <ContactForm />
+      <Box
+        component="address"
+        sx={{
+          maxWidth: 1200,
+          mx: "auto",
+          px: { xs: 2, md: 4 },
+          pb: { xs: 8, md: 12 },
+          fontStyle: "normal",
+        }}
+      >
+        <Typography variant="h2" sx={{ mb: 2 }}>
+          Studio Volante, Paris
+        </Typography>
+        <Typography variant="body1">
+          <a href="mailto:yasmine@studio-volante.fr">yasmine@studio-volante.fr</a>
+        </Typography>
+        {process.env.NEXT_PUBLIC_STUDIO_ADDRESS_LABEL && (
+          <Typography variant="body1">
+            {process.env.NEXT_PUBLIC_STUDIO_ADDRESS_LABEL}
+          </Typography>
+        )}
+        {process.env.NEXT_PUBLIC_STUDIO_PHONE && (
+          <Typography variant="body1">
+            <a href={`tel:${process.env.NEXT_PUBLIC_STUDIO_PHONE}`}>
+              {process.env.NEXT_PUBLIC_STUDIO_PHONE}
+            </a>
+          </Typography>
+        )}
+      </Box>
     </>
   );
 };

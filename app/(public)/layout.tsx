@@ -6,6 +6,9 @@ import PublicExperienceProvider from "@/components/layout/PublicExperience/Publi
 import I18nProvider from "@/components/providers/I18nProvider/I18nProvider";
 import { getTranslations } from "@/lib/i18n";
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next";
+import JsonLd from "@/components/seo/JsonLd";
+import { getOrganizationJsonLd, getWebsiteJsonLd } from "@/lib/seo";
 
 const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
   const headersList = await headers();
@@ -25,11 +28,13 @@ const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
     <I18nProvider
       translationsByLocale={{ fr: translationsFr, en: translationsEn }}
     >
+      <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
       <PublicExperienceProvider initialHome={initialHome}>
         <PreviewSync />
         <Header />
         <PageTransitionBoundary>{children}</PageTransitionBoundary>
         <SpeedInsights />
+        <Analytics />
       </PublicExperienceProvider>
     </I18nProvider>
   );
