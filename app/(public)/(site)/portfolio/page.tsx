@@ -46,7 +46,6 @@ const PortfolioPage = async ({
         sx={{
           py: { xs: 8, md: 12 },
           px: { xs: 2, md: 4 },
-          borderBottom: `1px solid ${colors.blueGray}`,
         }}
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>

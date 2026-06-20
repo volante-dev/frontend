@@ -47,7 +47,7 @@ The locale routing is handled by a **custom `proxy.ts`** (not a Next.js `middlew
   - `DATABASE_URL` — pooled via pgBouncer, used at runtime
   - `DATABASE_URL_UNPOOLED` — direct connection, used only for migrations
 - Prisma client is generated into `app/generated/prisma/` — never edit it manually
-- Schema models: `Project`, `Service`, `Testimonial`
+- Schema models: `Project`, `Service`, `StudioValue`, `Testimonial`
 
 ### Component Boundaries
 

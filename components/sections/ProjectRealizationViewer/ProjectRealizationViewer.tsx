@@ -96,7 +96,7 @@ const ProjectMedia = ({
           <VideoToggleButton
             playing={playing}
             onToggle={toggle}
-            sx={{ position: "absolute", left: { xs: 18, md: 32 }, bottom: { xs: 18, md: 32 } }}
+            sx={{ position: "absolute", left: { xs: 18, md: 32 }, bottom: { xs: 66, md: 32 } }}
           />
         </>
       ) : (
@@ -436,7 +436,7 @@ const MobileSlide = ({ slide, index }: { slide: ProjectRealizationSlide; index: 
       frame = 0;
       const rect = media.getBoundingClientRect();
       const centerDelta = rect.top + rect.height / 2 - window.innerHeight / 2;
-      setOffset(Math.max(-18, Math.min(18, centerDelta * -0.035)));
+      setOffset(Math.max(-24, Math.min(24, centerDelta * -0.045)));
     };
     const schedule = () => {
       if (frame) return;

@@ -5,6 +5,7 @@ import PageTransitionBoundary from "@/components/layout/PageTransition/PageTrans
 import PublicExperienceProvider from "@/components/layout/PublicExperience/PublicExperienceProvider";
 import I18nProvider from "@/components/providers/I18nProvider/I18nProvider";
 import { getTranslations } from "@/lib/i18n";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
   const headersList = await headers();
@@ -28,6 +29,7 @@ const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
         <PreviewSync />
         <Header />
         <PageTransitionBoundary>{children}</PageTransitionBoundary>
+        <SpeedInsights />
       </PublicExperienceProvider>
     </I18nProvider>
   );

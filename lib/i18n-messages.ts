@@ -48,15 +48,6 @@ export const localTranslations = {
     "studio.history.body2":
       "Notre approche est toujours stratégique avant d'être esthétique : comprendre le positionnement, les cibles, les ambitions — puis créer.",
     "studio.values.heading": "Nos valeurs",
-    "studio.values.0.title": "Exigence",
-    "studio.values.0.description":
-      "Chaque projet est traité avec la même rigueur, qu'il s'agisse d'une carte de visite ou d'une campagne nationale.",
-    "studio.values.1.title": "Clarté",
-    "studio.values.1.description":
-      "Nous simplifions le complexe. Une bonne communication est d'abord une communication compréhensible.",
-    "studio.values.2.title": "Durabilité",
-    "studio.values.2.description":
-      "Nous concevons des identités qui vieillissent bien et des messages qui restent pertinents dans le temps.",
     "footer.tagline":
       "Agence de communication créative. Nous donnons vie aux idées qui comptent.",
     "footer.nav.heading": "Navigation",
@@ -112,15 +103,6 @@ export const localTranslations = {
     "studio.history.body2":
       "Our approach is always strategic before it is aesthetic: understand the positioning, audiences and ambitions — then create.",
     "studio.values.heading": "Our values",
-    "studio.values.0.title": "Excellence",
-    "studio.values.0.description":
-      "Every project receives the same attention to detail, from a business card to a national campaign.",
-    "studio.values.1.title": "Clarity",
-    "studio.values.1.description":
-      "We make complexity simple. Good communication begins with being understood.",
-    "studio.values.2.title": "Durability",
-    "studio.values.2.description":
-      "We design identities that age well and messages that remain relevant over time.",
     "footer.tagline":
       "Creative communication agency. We bring meaningful ideas to life.",
     "footer.nav.heading": "Navigation",
