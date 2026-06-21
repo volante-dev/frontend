@@ -1,5 +1,7 @@
 const ProjectDetailLayout = ({ children }: { children: React.ReactNode }) => (
-  <main>{children}</main>
+  <main style={{ height: "100svh", overflow: "hidden", overscrollBehavior: "none" }}>
+    {children}
+  </main>
 );
 
 export default ProjectDetailLayout;
