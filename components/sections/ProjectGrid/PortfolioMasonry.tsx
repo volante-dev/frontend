@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import { useMemo } from "react";
-import { colors } from "@/app/theme/tokens";
+import { colors, typography } from "@/app/theme/tokens";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 import type { Project } from "./project-types";
 import { getDesktopMasonryPlacements } from "./masonry-layout";
@@ -66,10 +66,10 @@ const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
               "&:hover img": {
                 transform: "scale(1.025)",
               },
-              "&:hover .portfolio-masonry-title": {
+              "&:hover .portfolio-masonry-gradient, &:hover .portfolio-masonry-title": {
                 opacity: 1,
               },
-              "&:focus-visible .portfolio-masonry-title": {
+              "&:focus-visible .portfolio-masonry-gradient, &:focus-visible .portfolio-masonry-title": {
                 opacity: 1,
               },
             }}
@@ -91,6 +91,7 @@ const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
               }}
             />
             <Box
+              className="portfolio-masonry-gradient"
               sx={{
                 position: "absolute",
                 left: 0,
@@ -99,19 +100,22 @@ const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
                 height: "48%",
                 background:
                   "linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0))",
+                opacity: { xs: 1, md: 0 },
+                transition: "opacity 260ms ease-in",
               }}
             />
             <Typography
               className="portfolio-masonry-title"
-              variant={hero ? "h2" : "h4"}
+              variant={hero ? "h2" : "h3"}
               component="h3"
               sx={{
+                fontFamily: typography.fontFamilyDisplay,
                 position: "absolute",
-                left: { xs: 2.5, md: hero ? 4 : 3 },
-                right: { xs: 2.5, md: hero ? 4 : 3 },
-                bottom: { xs: 1.5, md: hero ? 3 : 2 },
+                left: { xs: "20px", md: hero ? "32px" : "24px" },
+                right: { xs: "20px", md: hero ? "32px" : "24px" },
+                bottom: { xs: "12px", md: hero ? "28px" : "20px" },
                 color: colors.white,
-                opacity: 0.68,
+                opacity: { xs: 0.68, md: 0 },
                 transition: "opacity 260ms ease-in",
               }}
             >

@@ -8,9 +8,7 @@ export interface Project {
   imageUrl: string;
   heroPaletteComputed?: string[];
   sector?: string | null;
-  sectorEn?: string | null;
   projectLocation?: string | null;
-  projectLocationEn?: string | null;
   tags: string[];
   featured: boolean;
   portfolioSize: "NORMAL" | "HERO";

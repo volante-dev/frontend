@@ -5,7 +5,6 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors } from "@/app/theme/tokens";
 import VideoToggleButton from "@/components/ui/VideoToggleButton/VideoToggleButton";

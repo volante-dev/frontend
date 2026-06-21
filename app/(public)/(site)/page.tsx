@@ -3,7 +3,6 @@ import Hero from "@/components/sections/Hero/Hero";
 import ServicesList from "@/components/sections/ServicesList/ServicesList";
 import FeaturedProjectsCarousel from "@/components/sections/FeaturedProjectsCarousel/FeaturedProjectsCarousel";
 import type { Service } from "@/components/sections/ServicesList/ServicesList";
-import type { Project } from "@/components/sections/ProjectGrid/project-types";
 import prisma from "@/lib/prisma";
 import { localizeField } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
@@ -71,11 +70,12 @@ const getServices = async (): Promise<Service[]> => {
   }
 };
 
-const getProjects = async (): Promise<Project[]> => {
+const getProjects = async () => {
   try {
     return await prisma.project.findMany({
       where: { publishedAt: { not: null }, featured: true },
       orderBy: [{ order: "asc" }, { publishedAt: "desc" }],
+      include: { sectorEntry: true, locationEntry: true },
     });
   } catch {
     return [];
@@ -103,13 +103,14 @@ const HomePage = async ({
     ...p,
     title: localizeField(p.title, p.titleEn, locale),
     description: localizeField(p.description, p.descriptionEn, locale),
-    sector: localizeField(p.sector ?? "", p.sectorEn, locale) || null,
+    sector:
+      (p.sectorEntry
+        ? localizeField(p.sectorEntry.label, p.sectorEntry.labelEn, locale)
+        : "") || null,
     projectLocation:
-      localizeField(
-        p.projectLocation ?? "",
-        p.projectLocationEn,
-        locale,
-      ) || null,
+      (p.locationEntry
+        ? localizeField(p.locationEntry.label, p.locationEntry.labelEn, locale)
+        : "") || null,
   }));
 
   const heroVideoSrc = process.env.NEXT_PUBLIC_HERO_VIDEO_URL;

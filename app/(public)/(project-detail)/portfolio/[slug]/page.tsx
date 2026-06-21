@@ -31,6 +31,9 @@ const getProject = async (slug: string, allowDraftPreview = false) =>
       ...(allowDraftPreview ? {} : { publishedAt: { not: null } }),
     },
     include: {
+      sectorEntry: true,
+      locationEntry: true,
+      deliveredServiceEntries: { orderBy: { label: "asc" } },
       slides: {
         orderBy: { order: "asc" },
       },
@@ -96,18 +99,15 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
 
   const projectTitle = localizeField(project.title, project.titleEn, locale);
   const projectDescription = localizeField(project.description, project.descriptionEn, locale);
-  const sector = localizeField(project.sector ?? "", project.sectorEn, locale);
-  const location = localizeField(
-    project.projectLocation ?? "",
-    project.projectLocationEn,
-    locale,
+  const sector = project.sectorEntry
+    ? localizeField(project.sectorEntry.label, project.sectorEntry.labelEn, locale)
+    : "";
+  const location = project.locationEntry
+    ? localizeField(project.locationEntry.label, project.locationEntry.labelEn, locale)
+    : "";
+  const services = project.deliveredServiceEntries.map((entry) =>
+    localizeField(entry.label, entry.labelEn, locale),
   );
-  const deliveredServices = project.deliveredServices ?? [];
-  const deliveredServicesEn = project.deliveredServicesEn ?? [];
-  const services =
-    locale === "en" && deliveredServicesEn.length > 0
-      ? deliveredServicesEn
-      : deliveredServices;
   const challenge = localizeField(project.challenge ?? "", project.challengeEn, locale);
   const approach = localizeField(project.approach ?? "", project.approachEn, locale);
   const results = localizeField(project.results ?? "", project.resultsEn, locale);
