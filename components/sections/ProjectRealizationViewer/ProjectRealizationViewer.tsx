@@ -7,8 +7,6 @@ import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import type { Theme } from "@mui/material/styles";
 import { colors } from "@/app/theme/tokens";
 import VideoToggleButton from "@/components/ui/VideoToggleButton/VideoToggleButton";
 import LiquidGlassFilter from "@/components/ui/LiquidGlass/LiquidGlassFilter";
@@ -330,11 +328,14 @@ const VerticalProgressRail = ({
 
 const DesktopViewer = ({ projectTitle, projectDescription, facts, slides }: ProjectRealizationViewerProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
   const lockUntil = useRef(0);
   const activeSlide = slides[activeIndex];
 
   const goTo = (nextIndex: number) => {
-    setActiveIndex(Math.max(0, Math.min(slides.length - 1, nextIndex)));
+    const clamped = Math.max(0, Math.min(slides.length - 1, nextIndex));
+    if (clamped !== activeIndex) setDirection(clamped > activeIndex ? 1 : -1);
+    setActiveIndex(clamped);
   };
 
   const handleWheel = (event: React.WheelEvent<HTMLElement>) => {
@@ -398,21 +399,12 @@ const DesktopViewer = ({ projectTitle, projectDescription, facts, slides }: Proj
           <ProjectOverview projectTitle={projectTitle} projectDescription={projectDescription} facts={facts} />
         </Box>
         <Box
-          key={activeSlide.id}
           sx={{
             display: "grid",
             gridTemplateColumns: "32px minmax(0, 560px)",
             gap: { md: 2.5, lg: 3 },
             alignItems: "stretch",
             maxWidth: 640,
-            animation: "realizationTextIn 760ms cubic-bezier(0.22, 1, 0.36, 1) both",
-            "@keyframes realizationTextIn": {
-              from: { opacity: 0, transform: "translateY(16px)" },
-              to: { opacity: 1, transform: "translateY(0)" },
-            },
-            "@media (prefers-reduced-motion: reduce)": {
-              animation: "none",
-            },
           }}
         >
           <VerticalProgressRail
@@ -420,7 +412,24 @@ const DesktopViewer = ({ projectTitle, projectDescription, facts, slides }: Proj
             count={slides.length}
             onSelect={goTo}
           />
-          <Box sx={{ minWidth: 0 }}>
+          <Box
+            key={activeSlide.id}
+            sx={{
+              minWidth: 0,
+              animation: `${direction > 0 ? "realizationTextDown" : "realizationTextUp"} 760ms cubic-bezier(0.22, 1, 0.36, 1) both`,
+              "@keyframes realizationTextDown": {
+                from: { opacity: 0, transform: "translateY(16px)" },
+                to: { opacity: 1, transform: "translateY(0)" },
+              },
+              "@keyframes realizationTextUp": {
+                from: { opacity: 0, transform: "translateY(-16px)" },
+                to: { opacity: 1, transform: "translateY(0)" },
+              },
+              "@media (prefers-reduced-motion: reduce)": {
+                animation: "none",
+              },
+            }}
+          >
             <Typography variant="h1" component="h2" sx={{ mb: 3 }}>
               {activeSlide.title}
             </Typography>
@@ -590,15 +599,15 @@ const MobileViewer = ({ projectTitle, projectDescription, facts, slides }: Proje
 );
 
 const ProjectRealizationViewer = ({ projectTitle, projectDescription, facts, slides }: ProjectRealizationViewerProps) => {
-  const isDesktop = useMediaQuery((theme: Theme) => theme.breakpoints.up("md"), { noSsr: true });
   const normalizedSlides = useMemo(() => slides.filter((slide) => slide.mediaUrl), [slides]);
 
   if (normalizedSlides.length === 0) return null;
 
-  return isDesktop ? (
-    <DesktopViewer projectTitle={projectTitle} projectDescription={projectDescription} facts={facts} slides={normalizedSlides} />
-  ) : (
-    <MobileViewer projectTitle={projectTitle} projectDescription={projectDescription} facts={facts} slides={normalizedSlides} />
+  return (
+    <>
+      <DesktopViewer projectTitle={projectTitle} projectDescription={projectDescription} facts={facts} slides={normalizedSlides} />
+      <MobileViewer projectTitle={projectTitle} projectDescription={projectDescription} facts={facts} slides={normalizedSlides} />
+    </>
   );
 };
 
