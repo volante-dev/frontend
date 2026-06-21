@@ -32,6 +32,12 @@ type DragState = {
   directionLocked: "horizontal" | "vertical" | null;
 };
 
+type MeshPoint = {
+  x: number;
+  y: number;
+  opacity: number;
+};
+
 const FALLBACK_PALETTE = [
   colors.green,
   colors.greenLight,
@@ -41,6 +47,12 @@ const FALLBACK_PALETTE = [
 const DRAG_CLICK_THRESHOLD_TOUCH = 6;
 const DRAG_CLICK_THRESHOLD_MOUSE = 14;
 const DIRECTION_LOCK_THRESHOLD = 10;
+const BASE_MESH_POINTS: MeshPoint[] = [
+  { x: 12, y: 10, opacity: 0.78 },
+  { x: 88, y: 12, opacity: 0.68 },
+  { x: 24, y: 88, opacity: 0.68 },
+  { x: 80, y: 84, opacity: 0.68 },
+];
 
 const modulo = (value: number, length: number) =>
   ((value % length) + length) % length;
@@ -78,6 +90,43 @@ const mixHex = (from: string, to: string, progress: number) => {
 const mixPalettes = (from: string[], to: string[], progress: number) =>
   from.map((color, index) => mixHex(color, to[index], progress));
 
+const seededRandom = (value: string) => {
+  let state = Array.from(value).reduce(
+    (hash, character) => Math.imul(hash ^ character.charCodeAt(0), 16777619),
+    2166136261,
+  );
+  return () => {
+    state += 0x6d2b79f5;
+    let result = state;
+    result = Math.imul(result ^ (result >>> 15), result | 1);
+    result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
+    return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const createMeshLayout = (project: Project): MeshPoint[] => {
+  const random = seededRandom(project.id || project.slug);
+  return BASE_MESH_POINTS.map((point) => ({
+    x: point.x + (random() * 2 - 1) * 8,
+    y: point.y + (random() * 2 - 1) * 6,
+    opacity: point.opacity + (random() * 2 - 1) * 0.035,
+  }));
+};
+
+const mixMeshLayouts = (
+  from: MeshPoint[],
+  to: MeshPoint[],
+  progress: number,
+) => {
+  const amount = Math.max(0, Math.min(1, progress));
+  return from.map((point, index) => ({
+    x: point.x + (to[index].x - point.x) * amount,
+    y: point.y + (to[index].y - point.y) * amount,
+    opacity:
+      point.opacity + (to[index].opacity - point.opacity) * amount,
+  }));
+};
+
 const readableForeground = (palette: string[]) => {
   const luminance =
     palette.reduce((total, color) => {
@@ -87,7 +136,15 @@ const readableForeground = (palette: string[]) => {
   return luminance > 0.62 ? colors.mutedBlack : colors.white;
 };
 
-const MeshGradient = ({ palette, dragging }: { palette: string[]; dragging: boolean }) => (
+const MeshGradient = ({
+  palette,
+  points,
+  dragging,
+}: {
+  palette: string[];
+  points: MeshPoint[];
+  dragging: boolean;
+}) => (
   <Box
     aria-hidden
     sx={{
@@ -106,30 +163,34 @@ const MeshGradient = ({ palette, dragging }: { palette: string[]; dragging: bool
       },
     }}
   >
-    {palette.map((color, index) => {
-      const positions = [
-        { left: "-8%", top: "-18%" },
-        { right: "-10%", top: "-10%" },
-        { left: "10%", bottom: "-28%" },
-        { right: "5%", bottom: "-25%" },
-      ];
-
-      return (
+    {palette.map((color, index) => (
+      <Box
+        key={index}
+        sx={{
+          position: "absolute",
+          left: `${points[index].x}%`,
+          top: `${points[index].y}%`,
+          width: { xs: "90vw", md: "65vw" },
+          aspectRatio: "1",
+          transform: "translate(-50%, -50%)",
+          transition: dragging
+            ? "none"
+            : "left 920ms cubic-bezier(0.22, 1, 0.36, 1), top 920ms cubic-bezier(0.22, 1, 0.36, 1)",
+          "@media (prefers-reduced-motion: reduce)": { transition: "none" },
+        }}
+      >
         <Box
-          key={index}
           sx={{
             position: "absolute",
-            ...positions[index],
-            width: { xs: "90vw", md: "65vw" },
-            aspectRatio: "1",
+            inset: 0,
             borderRadius: "50%",
             backgroundColor: color,
             filter: { xs: "blur(55px)", md: "blur(90px)" },
-            opacity: index === 0 ? 0.78 : 0.68,
+            opacity: points[index].opacity,
             willChange: "transform",
             transition: dragging
               ? "none"
-              : "background-color 720ms cubic-bezier(0.22, 1, 0.36, 1)",
+              : "background-color 720ms cubic-bezier(0.22, 1, 0.36, 1), opacity 720ms ease",
             animation: `${index % 2 === 0 ? "meshFloatOne" : "meshFloatTwo"} ${
               24 + index * 2
             }s ease-in-out infinite alternate`,
@@ -139,8 +200,8 @@ const MeshGradient = ({ palette, dragging }: { palette: string[]; dragging: bool
             },
           }}
         />
-      );
-    })}
+      </Box>
+    ))}
   </Box>
 );
 
@@ -182,16 +243,19 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     [],
   );
 
-  const projectPalette = useCallback(
+  const projectVisual = useCallback(
     (index: number) => {
       const project = projects[modulo(index, projects.length)];
-      return normalizePalette(project.heroPaletteComputed);
+      return {
+        palette: normalizePalette(project.heroPaletteComputed),
+        points: createMeshLayout(project),
+      };
     },
     [projects],
   );
 
-  const backgroundPalette = useMemo(() => {
-    const current = projectPalette(activeStep);
+  const backgroundVisual = useMemo(() => {
+    const current = projectVisual(activeStep);
     if (!dragOffset) return current;
 
     const direction = dragOffset < 0 ? 1 : -1;
@@ -199,12 +263,13 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
       1,
       Math.abs(dragOffset) / Math.max(160, trackWidth * 0.28),
     );
-    return mixPalettes(
-      current,
-      projectPalette(activeStep + direction),
-      distance,
-    );
-  }, [activeStep, dragOffset, projectPalette, trackWidth]);
+    const next = projectVisual(activeStep + direction);
+    return {
+      palette: mixPalettes(current.palette, next.palette, distance),
+      points: mixMeshLayouts(current.points, next.points, distance),
+    };
+  }, [activeStep, dragOffset, projectVisual, trackWidth]);
+  const backgroundPalette = backgroundVisual.palette;
   const foreground = readableForeground(backgroundPalette);
   const virtualItems = useMemo(
     () =>
@@ -359,7 +424,11 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         },
       }}
     >
-      <MeshGradient palette={backgroundPalette} dragging={dragging} />
+      <MeshGradient
+        palette={backgroundPalette}
+        points={backgroundVisual.points}
+        dragging={dragging}
+      />
       <Box
         sx={{
           position: "relative",
