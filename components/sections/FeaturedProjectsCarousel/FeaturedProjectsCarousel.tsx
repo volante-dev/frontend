@@ -599,51 +599,81 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
                     "linear-gradient(180deg, rgba(10, 16, 15, 0.02) 35%, rgba(10, 16, 15, 0.82) 100%)",
                 }}
               />
-              <Box
-                sx={{
-                  position: "absolute",
-                  left: { xs: active ? "30px" : "24px", md: active ? "42px" : "28px" },
-                  right: { xs: active ? "20px" : "16px", md: active ? "32px" : "20px" },
-                  bottom: { xs: active ? "34px" : "28px", md: active ? "42px" : "32px" },
-                  transition:
-                    "left 820ms cubic-bezier(0.22, 1, 0.36, 1), right 820ms cubic-bezier(0.22, 1, 0.36, 1), bottom 820ms cubic-bezier(0.22, 1, 0.36, 1)",
-                }}
-              >
-                <Typography
-                  component="h3"
-                  sx={{
-                    fontFamily: typography.fontFamilyDisplay,
-                    fontSize: active
-                      ? { xs: "clamp(2.5rem, 13vw, 4.8rem)", md: "clamp(4rem, 7vw, 6.5rem)" }
-                      : { xs: "clamp(1.8rem, 8vw, 3rem)", md: "clamp(2rem, 3.6vw, 3.6rem)" },
-                    fontWeight: 200,
-                    lineHeight: 0.95,
-                    letterSpacing: "0.01em",
-                    color: colors.white,
-                    textWrap: "balance",
-                    transition: "font-size 820ms cubic-bezier(0.22, 1, 0.36, 1)",
-                  }}
-                >
-                  {project.title}
-                </Typography>
-                {meta && (
-                  <Typography
-                    component="p"
+              {([true, false] as const).map((activeCopy) => {
+                const shown = activeCopy === active;
+                return (
+                  <Box
+                    key={activeCopy ? "active-copy" : "compact-copy"}
+                    aria-hidden
                     sx={{
-                      mt: { xs: 1, md: 1.5 },
-                      color: colors.white,
-                      opacity: 0.82,
-                      fontSize: active
-                        ? { xs: "0.85rem", md: "1rem" }
-                        : { xs: "0.7rem", md: "0.78rem" },
-                      lineHeight: 1.4,
-                      transition: "font-size 820ms cubic-bezier(0.22, 1, 0.36, 1)",
+                      position: "absolute",
+                      left: activeCopy
+                        ? { xs: "30px", md: "42px" }
+                        : { xs: "24px", md: "28px" },
+                      bottom: activeCopy
+                        ? { xs: "34px", md: "42px" }
+                        : { xs: "28px", md: "32px" },
+                      width: activeCopy
+                        ? {
+                            xs: "calc(var(--carousel-active-width) - 50px)",
+                            md: "calc(var(--carousel-active-width) - 74px)",
+                          }
+                        : {
+                            xs: "calc(var(--carousel-side-width) - 40px)",
+                            md: "calc(var(--carousel-side-width) - 48px)",
+                          },
+                      opacity: shown ? 1 : 0,
+                      transform: `translate3d(0, ${shown ? 0 : 8}px, 0)`,
+                      pointerEvents: "none",
+                      transition: shown
+                        ? "opacity 300ms ease 180ms, transform 420ms cubic-bezier(0.22, 1, 0.36, 1) 180ms"
+                        : "opacity 160ms ease, transform 220ms ease",
+                      "@media (prefers-reduced-motion: reduce)": {
+                        transition: "none",
+                      },
                     }}
                   >
-                    {meta}
-                  </Typography>
-                )}
-              </Box>
+                    <Typography
+                      component="h3"
+                      sx={{
+                        fontFamily: typography.fontFamilyDisplay,
+                        fontSize: activeCopy
+                          ? {
+                              xs: "clamp(2.5rem, 13vw, 4.8rem)",
+                              md: "clamp(4rem, 7vw, 6.5rem)",
+                            }
+                          : {
+                              xs: "clamp(1.8rem, 8vw, 3rem)",
+                              md: "clamp(2rem, 3.6vw, 3.6rem)",
+                            },
+                        fontWeight: 200,
+                        lineHeight: 0.95,
+                        letterSpacing: "0.01em",
+                        color: colors.white,
+                        textWrap: "balance",
+                      }}
+                    >
+                      {project.title}
+                    </Typography>
+                    {meta && (
+                      <Typography
+                        component="p"
+                        sx={{
+                          mt: activeCopy ? { xs: 1, md: 1.5 } : 1,
+                          color: colors.white,
+                          opacity: 0.82,
+                          fontSize: activeCopy
+                            ? { xs: "0.85rem", md: "1rem" }
+                            : { xs: "0.7rem", md: "0.78rem" },
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {meta}
+                      </Typography>
+                    )}
+                  </Box>
+                );
+              })}
             </Box>
           );
         })}
