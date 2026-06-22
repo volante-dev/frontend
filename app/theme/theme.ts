@@ -135,9 +135,10 @@ const theme = createTheme({
           backgroundColor: colors.offWhite,
           color: colors.green,
           position: "relative",
+          isolation: "isolate",
           border: "none",
           boxShadow: "0 6px 20px rgba(63, 94, 90, 0.20)",
-          transition: "box-shadow 0.6s ease",
+          transition: "box-shadow 0.45s ease, transform 0.45s ease",
           "&::before": {
             content: '""',
             position: "absolute",
@@ -151,11 +152,26 @@ const theme = createTheme({
             maskComposite: "exclude",
             pointerEvents: "none",
           },
-          "&:hover": {
-            backgroundColor: colors.offWhite,
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            borderRadius: "inherit",
             boxShadow:
               "0 10px 32px rgba(63, 94, 90, 0.50), 0 4px 16px rgba(216, 202, 170, 0.40)",
-            animation: `${pulseGlow} 2s ease-in-out 0.6s infinite`,
+            opacity: 0,
+            transition: "opacity 0.45s ease",
+            animation: `${pulseGlow} 2s ease-in-out infinite`,
+            pointerEvents: "none",
+            zIndex: -1,
+          },
+          "&:hover": {
+            backgroundColor: colors.offWhite,
+            boxShadow: "0 8px 24px rgba(63, 94, 90, 0.24)",
+            transform: "translateY(-1px)",
+          },
+          "&:hover::after": {
+            opacity: 1,
           },
         },
         outlined: {

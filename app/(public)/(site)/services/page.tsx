@@ -1,10 +1,10 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import ServicesList from "@/components/sections/ServicesList/ServicesList";
-import ContactForm from "@/components/sections/ContactForm/ContactForm";
+import ServicesContactCta from "@/components/sections/ServicesContactCta/ServicesContactCta";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
-import { getTranslations, localizeField, t } from "@/lib/i18n";
+import { getLocalizedHref, getTranslations, localizeField, t } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
 import type { Metadata } from "next";
 import { createRouteMetadata } from "@/lib/seo-pages";
@@ -67,7 +67,10 @@ const ServicesPage = async ({
       </Box>
 
       <ServicesList services={services} />
-      <ContactForm />
+      <ServicesContactCta
+        href={getLocalizedHref(locale, "contact")}
+        label={t(translations, "hero.cta.contact", "Travailler ensemble")}
+      />
     </>
   );
 };

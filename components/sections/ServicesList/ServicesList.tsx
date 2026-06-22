@@ -48,7 +48,7 @@ const ServicesList = ({ services }: ServicesListProps) => {
         }}
       >
         {/* Left — heading */}
-        <Box sx={{ position: { md: "sticky" }, top: { md: 48 } }}>
+        <Box sx={{ position: { md: "sticky" }, top: { md: 112 } }}>
           <Typography variant="subtitle2" sx={{ mb: 2, color: colors.green }}>
             {t("services.eyebrow", "Ce que nous faisons")}
           </Typography>
