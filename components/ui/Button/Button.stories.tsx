@@ -6,7 +6,10 @@ const meta: Meta<typeof Button> = {
   component: Button,
   tags: ["autodocs"],
   argTypes: {
-    variant: { control: "select", options: ["contained", "outlined", "text"] },
+    variant: {
+      control: "select",
+      options: ["contained", "outlined", "liquidGlass", "text"],
+    },
     size: { control: "select", options: ["small", "medium", "large"] },
     loading: { control: "boolean" },
     disabled: { control: "boolean" },
@@ -26,6 +29,22 @@ export const Outlined: Story = {
 
 export const Text: Story = {
   args: { variant: "text", children: "En savoir plus" },
+};
+
+export const LiquidGlass: Story = {
+  args: { variant: "liquidGlass", children: "Voir tout" },
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          padding: 48,
+          background: "linear-gradient(135deg, #5A817B, #D8CAAA)",
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export const Loading: Story = {

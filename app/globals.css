@@ -18,6 +18,18 @@ body {
   color: var(--foreground);
 }
 
+.project-detail-shell {
+  min-height: 100svh;
+}
+
+@media (min-width: 900px) {
+  .project-detail-shell {
+    height: 100svh;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+
 .page-transition-surface {
   min-height: 100vh;
   background: var(--page-transition-background);

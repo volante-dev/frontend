@@ -8,7 +8,6 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -455,27 +454,21 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton
+          <Button
+            variant="liquidGlass"
             aria-label={t("carousel.previous", "Réalisation précédente")}
             onClick={() => goTo(-1)}
-            sx={{ color: "inherit", border: "1px solid currentColor" }}
+            sx={{ minWidth: 44, width: 44, height: 44, p: 0, borderRadius: "50%" }}
           >
             <ArrowBackIcon fontSize="small" />
-          </IconButton>
-          <IconButton
+          </Button>
+          <Button
+            variant="liquidGlass"
             aria-label={t("carousel.next", "Réalisation suivante")}
             onClick={() => goTo(1)}
-            sx={{ color: "inherit", border: "1px solid currentColor" }}
+            sx={{ minWidth: 44, width: 44, height: 44, p: 0, borderRadius: "50%" }}
           >
             <ArrowForwardIcon fontSize="small" />
-          </IconButton>
-          <Button
-            variant="outlined"
-            component={Link}
-            href={portfolioHref}
-            sx={{ ml: 1, color: "inherit", borderColor: "currentColor" }}
-          >
-            {t("portfolio.cta.viewAll", "Voir tout")}
           </Button>
         </Box>
       </Box>
@@ -704,6 +697,20 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         >
           {dragging ? (dragOffset < 0 ? "→" : "←") : "↔"}
         </Box>
+      </Box>
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 1,
+          display: "flex",
+          justifyContent: "center",
+          px: 2,
+          mt: { xs: 4, md: 6 },
+        }}
+      >
+        <Button variant="liquidGlass" component={Link} href={portfolioHref}>
+          {t("portfolio.cta.viewAll", "Voir tout")}
+        </Button>
       </Box>
     </Box>
   );
