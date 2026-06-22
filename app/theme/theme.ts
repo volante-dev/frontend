@@ -255,8 +255,17 @@ const theme = createTheme({
         root: {
           color: colors.green,
           textDecoration: "none",
+          textUnderlineOffset: "0.18em",
+          transition: "color 180ms ease, text-decoration-color 180ms ease",
           "&:hover": {
+            color: colors.greenDark,
             textDecoration: "underline",
+            textDecorationColor: "currentColor",
+          },
+          "&:focus-visible": {
+            outline: `2px solid ${colors.green}`,
+            outlineOffset: 4,
+            borderRadius: 2,
           },
         },
       },
@@ -271,6 +280,22 @@ const theme = createTheme({
         "::selection": {
           backgroundColor: colors.green,
           color: colors.white,
+        },
+        "a:not(.MuiButtonBase-root)": {
+          color: colors.green,
+          textDecoration: "none",
+          textUnderlineOffset: "0.18em",
+          transition: "color 180ms ease, text-decoration-color 180ms ease",
+        },
+        "a:not(.MuiButtonBase-root):hover": {
+          color: colors.greenDark,
+          textDecoration: "underline",
+          textDecorationColor: "currentColor",
+        },
+        "a:not(.MuiButtonBase-root):focus-visible": {
+          outline: `2px solid ${colors.green}`,
+          outlineOffset: 4,
+          borderRadius: 2,
         },
       },
     },
