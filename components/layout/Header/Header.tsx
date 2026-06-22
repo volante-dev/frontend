@@ -108,6 +108,7 @@ const Header = () => {
       variant="h6"
       component={Link}
       href={homeHref}
+      data-link-variant="plain"
       sx={{
         fontWeight: 700,
         fontSize: "1rem",

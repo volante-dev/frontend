@@ -64,6 +64,9 @@ const ContactPage = async ({
         <Typography variant="body1">
           <a href="mailto:yasmine@studio-volante.fr">yasmine@studio-volante.fr</a>
         </Typography>
+        <Typography variant="body1">
+          <a href="mailto:william@studio-volante.fr">william@studio-volante.fr</a>
+        </Typography>
         {process.env.NEXT_PUBLIC_STUDIO_ADDRESS_LABEL && (
           <Typography variant="body1">
             {process.env.NEXT_PUBLIC_STUDIO_ADDRESS_LABEL}

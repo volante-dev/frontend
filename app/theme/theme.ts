@@ -13,6 +13,27 @@ const pulseGlow = keyframes`
   }
 `;
 
+const linkUnderlineStyle = {
+  color: colors.green,
+  textDecoration: "none",
+  backgroundImage:
+    "linear-gradient(currentColor, currentColor), linear-gradient(rgba(90, 129, 123, 0.22), rgba(90, 129, 123, 0.22))",
+  backgroundPosition: "0 100%, 0 100%",
+  backgroundRepeat: "no-repeat",
+  backgroundSize: "0% 1px, 100% 1px",
+  paddingBottom: "0.12em",
+  transition: "color 180ms ease, background-size 260ms cubic-bezier(0.22, 1, 0.36, 1)",
+  "&:hover": {
+    color: colors.greenDark,
+    backgroundSize: "100% 1px, 100% 1px",
+  },
+  "&:focus-visible": {
+    outline: `2px solid ${colors.green}`,
+    outlineOffset: 4,
+    borderRadius: 2,
+  },
+} as const;
+
 const theme = createTheme({
   palette: {
     mode: "light",
@@ -252,22 +273,7 @@ const theme = createTheme({
 
     MuiLink: {
       styleOverrides: {
-        root: {
-          color: colors.green,
-          textDecoration: "none",
-          textUnderlineOffset: "0.18em",
-          transition: "color 180ms ease, text-decoration-color 180ms ease",
-          "&:hover": {
-            color: colors.greenDark,
-            textDecoration: "underline",
-            textDecorationColor: "currentColor",
-          },
-          "&:focus-visible": {
-            outline: `2px solid ${colors.green}`,
-            outlineOffset: 4,
-            borderRadius: 2,
-          },
-        },
+        root: linkUnderlineStyle,
       },
     },
 
@@ -281,22 +287,7 @@ const theme = createTheme({
           backgroundColor: colors.green,
           color: colors.white,
         },
-        "a:not(.MuiButtonBase-root)": {
-          color: colors.green,
-          textDecoration: "none",
-          textUnderlineOffset: "0.18em",
-          transition: "color 180ms ease, text-decoration-color 180ms ease",
-        },
-        "a:not(.MuiButtonBase-root):hover": {
-          color: colors.greenDark,
-          textDecoration: "underline",
-          textDecorationColor: "currentColor",
-        },
-        "a:not(.MuiButtonBase-root):focus-visible": {
-          outline: `2px solid ${colors.green}`,
-          outlineOffset: 4,
-          borderRadius: 2,
-        },
+        "a:not(.MuiButtonBase-root):not([data-link-variant='plain'])": linkUnderlineStyle,
       },
     },
   },
