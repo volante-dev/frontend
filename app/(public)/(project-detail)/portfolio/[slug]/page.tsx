@@ -39,7 +39,6 @@ const getProject = async (slug: string, allowDraftPreview = false) =>
         orderBy: { order: "asc" },
         include: {
           mediaAsset: true,
-          posterAsset: true,
         },
       },
     },
@@ -142,7 +141,7 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
           ),
           mediaType: slide.mediaType,
           mediaUrl: slide.mediaUrl,
-          posterUrl: slide.posterUrl,
+          posterUrl: slide.mediaAsset?.posterUrl ?? slide.posterUrl,
           alt:
             localizeField(
               slide.mediaAsset?.alt ?? slide.alt ?? "",
@@ -206,14 +205,18 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
     creator: { "@id": `${siteUrl.origin}/#organization` },
     creditText: project.credits || undefined,
     video: project.slides
-      .filter((slide) => slide.mediaType === "VIDEO" && slide.posterUrl)
+      .filter(
+        (slide) =>
+          slide.mediaType === "VIDEO" &&
+          (slide.mediaAsset?.posterUrl || slide.posterUrl),
+      )
       .map((slide) => ({
         "@type": "VideoObject",
         name: localizeField(slide.title, slide.titleEn, locale),
         description: stripHtml(
           localizeField(slide.contentHtml, slide.contentHtmlEn, locale),
         ),
-        thumbnailUrl: slide.posterUrl,
+        thumbnailUrl: slide.mediaAsset?.posterUrl ?? slide.posterUrl,
         contentUrl: slide.mediaUrl,
         uploadDate: project.publishedAt?.toISOString(),
         inLanguage: locale === "fr" ? "fr-FR" : "en-GB",
