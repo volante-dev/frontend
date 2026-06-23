@@ -10,6 +10,7 @@ import { createRouteMetadata } from "@/lib/seo-pages";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
 import FoundersBlock from "@/components/sections/FoundersBlock/FoundersBlock";
 import type { Founder } from "@/components/sections/FoundersBlock/FoundersBlock";
+import RichText from "@/components/ui/RichText/RichText";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,14 @@ const getStudioPageContent = async () => {
     return null;
   }
 };
+
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 
 const StudioPage = async ({
   params,
@@ -172,6 +181,32 @@ const StudioPage = async ({
           founders,
         }
       : null;
+  const historyTitle = studioContent
+    ? localizeField(
+        studioContent.historyTitle,
+        studioContent.historyTitleEn,
+        locale,
+      )
+    : t(translations, "studio.history.heading", "Notre histoire");
+  const historyContentHtml = studioContent
+    ? localizeField(
+        studioContent.historyContentHtml,
+        studioContent.historyContentHtmlEn,
+        locale,
+      )
+    : `<p>${escapeHtml(
+        t(
+          translations,
+          "studio.history.body1",
+          "Studio Volante est né de la conviction que la communication doit être aussi bien pensée qu'elle est belle. Fondé par des créatifs passionnés, le studio accompagne des marques de toutes tailles dans la construction d'une identité forte et cohérente.",
+        ),
+      )}</p><p>${escapeHtml(
+        t(
+          translations,
+          "studio.history.body2",
+          "Notre approche est toujours stratégique avant d'être esthétique : comprendre le positionnement, les cibles, les ambitions — puis créer.",
+        ),
+      )}</p>`;
 
   return (
     <>
@@ -211,17 +246,8 @@ const StudioPage = async ({
             gap: { xs: 4, md: 8 },
           }}
         >
-          <Typography variant="h2">
-            {t(translations, "studio.history.heading", "Notre histoire")}
-          </Typography>
-          <Box>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {t(translations, "studio.history.body1", "Studio Volante est né de la conviction que la communication doit être aussi bien pensée qu'elle est belle. Fondé par des créatifs passionnés, le studio accompagne des marques de toutes tailles dans la construction d'une identité forte et cohérente.")}
-            </Typography>
-            <Typography variant="body1">
-              {t(translations, "studio.history.body2", "Notre approche est toujours stratégique avant d'être esthétique : comprendre le positionnement, les cibles, les ambitions — puis créer.")}
-            </Typography>
-          </Box>
+          <Typography variant="h2">{historyTitle}</Typography>
+          <RichText html={historyContentHtml} />
         </Box>
       </Box>
 

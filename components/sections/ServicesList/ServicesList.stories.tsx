@@ -6,7 +6,7 @@ const services = [
     id: "1",
     title: "Identité visuelle",
     description:
-      "Création de systèmes d'identité cohérents et mémorables — logo, typographie, palette chromatique, charte graphique complète.",
+      "<p>Création de systèmes d'identité cohérents et mémorables — logo, typographie, palette chromatique, charte graphique complète.</p>",
     order: 1,
     active: true,
   },
@@ -14,14 +14,14 @@ const services = [
     id: "2",
     title: "Direction artistique",
     description:
-      "Définition de l'univers visuel de vos campagnes, shootings et contenus digitaux.",
+      "<p>Définition de l'univers visuel de vos campagnes, shootings et contenus digitaux.</p>",
     order: 2,
     active: true,
   },
   {
     id: "3",
     title: "Stratégie de contenu",
-    description: "Conception éditoriale et production de contenus adaptés à chaque canal.",
+    description: "<p>Conception éditoriale et production de contenus adaptés à chaque canal.</p>",
     order: 3,
     active: true,
   },

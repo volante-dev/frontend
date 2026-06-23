@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import { colors } from "@/app/theme/tokens";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
+import RichText from "@/components/ui/RichText/RichText";
 
 export interface Service {
   id: string;
@@ -13,6 +14,8 @@ export interface Service {
   titleEn?: string | null;
   description: string;
   descriptionEn?: string | null;
+  descriptionHtml?: string | null;
+  descriptionHtmlEn?: string | null;
   icon?: string | null;
   order: number;
   active: boolean;
@@ -123,9 +126,10 @@ const ServicesList = ({ services }: ServicesListProps) => {
                   }}
                 >
                   <Box sx={{ overflow: "hidden" }}>
-                    <Typography variant="body1" sx={{ pb: { xs: 3, md: 4 } }}>
-                      {service.description}
-                    </Typography>
+                    <RichText
+                      html={service.description}
+                      sx={{ pb: { xs: 3, md: 4 } }}
+                    />
                   </Box>
                 </Box>
               </Box>

@@ -29,6 +29,10 @@ const fallbackServices = [
       "Création de systèmes d'identité cohérents et mémorables — logo, typographie, palette chromatique, charte graphique complète.",
     descriptionEn:
       "Creation of coherent and memorable identity systems — logo, typography, colour palette, complete brand guidelines.",
+    descriptionHtml:
+      "<p>Création de systèmes d'identité cohérents et mémorables — logo, typographie, palette chromatique, charte graphique complète.</p>",
+    descriptionHtmlEn:
+      "<p>Creation of coherent and memorable identity systems — logo, typography, colour palette, complete brand guidelines.</p>",
     icon: null,
     order: 1,
     active: true,
@@ -41,6 +45,10 @@ const fallbackServices = [
       "Définition de l'univers visuel de vos campagnes, shootings et contenus digitaux. Un regard éditorial fort pour des communications qui marquent.",
     descriptionEn:
       "Defining the visual universe of your campaigns, shoots and digital content. A strong editorial eye for communications that leave a mark.",
+    descriptionHtml:
+      "<p>Définition de l'univers visuel de vos campagnes, shootings et contenus digitaux. Un regard éditorial fort pour des communications qui marquent.</p>",
+    descriptionHtmlEn:
+      "<p>Defining the visual universe of your campaigns, shoots and digital content. A strong editorial eye for communications that leave a mark.</p>",
     icon: null,
     order: 2,
     active: true,
@@ -53,6 +61,10 @@ const fallbackServices = [
       "Conception éditoriale et production de contenus adaptés à chaque canal — réseaux sociaux, site web, print, motion.",
     descriptionEn:
       "Editorial design and content production tailored to every channel — social media, website, print, motion.",
+    descriptionHtml:
+      "<p>Conception éditoriale et production de contenus adaptés à chaque canal — réseaux sociaux, site web, print, motion.</p>",
+    descriptionHtmlEn:
+      "<p>Editorial design and content production tailored to every channel — social media, website, print, motion.</p>",
     icon: null,
     order: 3,
     active: true,
@@ -97,7 +109,11 @@ const HomePage = async ({
   const localizedServices = services.map((s) => ({
     ...s,
     title: localizeField(s.title, s.titleEn, locale),
-    description: localizeField(s.description, s.descriptionEn, locale),
+    description: localizeField(
+      s.descriptionHtml ?? `<p>${s.description}</p>`,
+      s.descriptionHtmlEn ?? s.descriptionEn,
+      locale,
+    ),
   }));
   const localizedProjects = projects.map((p) => ({
     ...p,

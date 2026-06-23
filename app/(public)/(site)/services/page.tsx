@@ -39,7 +39,11 @@ const ServicesPage = async ({
   const services = rawServices.map((s) => ({
     ...s,
     title: localizeField(s.title, s.titleEn, locale),
-    description: localizeField(s.description, s.descriptionEn, locale),
+    description: localizeField(
+      s.descriptionHtml ?? `<p>${s.description}</p>`,
+      s.descriptionHtmlEn ?? s.descriptionEn,
+      locale,
+    ),
   }));
 
   return (

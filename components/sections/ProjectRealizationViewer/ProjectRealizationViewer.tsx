@@ -437,9 +437,15 @@ const DesktopViewer = ({ projectTitle, projectDescription, facts, slides }: Proj
                 "& p": { typography: "body1", mb: 2 },
                 "& h3": { typography: "h3", mt: 4, mb: 1.5 },
                 "& h4": { typography: "h4", mt: 3, mb: 1 },
-                "& ul, & ol": { pl: 3, my: 2 },
-                "& li": { mb: 0.75 },
-                "& a": { color: colors.green, textDecorationColor: colors.greenLight },
+                "& ul": { listStyleType: "disc", pl: 3, my: 2 },
+                "& ol": { listStyleType: "decimal", pl: 3, my: 2 },
+                "& li": { display: "list-item", mb: 0.75 },
+                "& a": {
+                  color: colors.green,
+                  textDecoration: "underline",
+                  textDecorationColor: colors.greenLight,
+                  textUnderlineOffset: "0.18em",
+                },
               }}
               dangerouslySetInnerHTML={{ __html: activeSlide.contentHtml }}
             />
@@ -558,9 +564,15 @@ const MobileSlide = ({ slide, index }: { slide: ProjectRealizationSlide; index: 
             "& p": { typography: "body2", mb: 1.5, color: colors.mutedBlack },
             "& h3": { typography: "h4", mt: 3, mb: 1 },
             "& h4": { typography: "h5", mt: 2.5, mb: 1 },
-            "& ul, & ol": { pl: 2.5, my: 1.5 },
-            "& li": { mb: 0.75 },
-            "& a": { color: colors.green, textDecorationColor: colors.greenLight },
+            "& ul": { listStyleType: "disc", pl: 2.5, my: 1.5 },
+            "& ol": { listStyleType: "decimal", pl: 2.5, my: 1.5 },
+            "& li": { display: "list-item", mb: 0.75 },
+            "& a": {
+              color: colors.green,
+              textDecoration: "underline",
+              textDecorationColor: colors.greenLight,
+              textUnderlineOffset: "0.18em",
+            },
           }}
           dangerouslySetInnerHTML={{ __html: slide.contentHtml }}
         />
