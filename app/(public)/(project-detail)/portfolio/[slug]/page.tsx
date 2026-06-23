@@ -31,11 +31,16 @@ const getProject = async (slug: string, allowDraftPreview = false) =>
       ...(allowDraftPreview ? {} : { publishedAt: { not: null } }),
     },
     include: {
+      imageAsset: true,
       sectorEntry: true,
       locationEntry: true,
       deliveredServiceEntries: { orderBy: { label: "asc" } },
       slides: {
         orderBy: { order: "asc" },
+        include: {
+          mediaAsset: true,
+          posterAsset: true,
+        },
       },
     },
   });
@@ -138,7 +143,12 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
           mediaType: slide.mediaType,
           mediaUrl: slide.mediaUrl,
           posterUrl: slide.posterUrl,
-          alt: localizeField(slide.alt ?? "", slide.altEn, locale) || null,
+          alt:
+            localizeField(
+              slide.mediaAsset?.alt ?? slide.alt ?? "",
+              slide.mediaAsset?.altEn ?? slide.altEn,
+              locale,
+            ) || null,
         }))
       : [
           {
@@ -147,7 +157,11 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
             contentHtml: sanitizeRichTextHtml(`<p>${projectDescription}</p>`),
             mediaType: "IMAGE",
             mediaUrl: project.imageUrl,
-            alt: projectTitle,
+            alt: localizeField(
+              project.imageAsset?.alt ?? projectTitle,
+              project.imageAsset?.altEn,
+              locale,
+            ),
           },
         ];
 

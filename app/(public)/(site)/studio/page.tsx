@@ -66,6 +66,10 @@ const getStudioPageContent = async () => {
   try {
     return await prisma.studioPageContent.findUnique({
       where: { id: "studio" },
+      include: {
+        founderOneImageAsset: true,
+        founderTwoImageAsset: true,
+      },
     });
   } catch {
     return null;
@@ -120,8 +124,11 @@ const StudioPage = async ({
           ),
           imageUrl: studioContent.founderOneImageUrl,
           imageAlt: localizeField(
-            studioContent.founderOneImageAlt || studioContent.founderOneName,
-            studioContent.founderOneImageAltEn,
+            studioContent.founderOneImageAsset?.alt ||
+              studioContent.founderOneImageAlt ||
+              studioContent.founderOneName,
+            studioContent.founderOneImageAsset?.altEn ||
+              studioContent.founderOneImageAltEn,
             locale,
           ),
         },
@@ -143,8 +150,11 @@ const StudioPage = async ({
           ),
           imageUrl: studioContent.founderTwoImageUrl,
           imageAlt: localizeField(
-            studioContent.founderTwoImageAlt || studioContent.founderTwoName,
-            studioContent.founderTwoImageAltEn,
+            studioContent.founderTwoImageAsset?.alt ||
+              studioContent.founderTwoImageAlt ||
+              studioContent.founderTwoName,
+            studioContent.founderTwoImageAsset?.altEn ||
+              studioContent.founderTwoImageAltEn,
             locale,
           ),
         },
