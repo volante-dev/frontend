@@ -8,6 +8,8 @@ import prisma from "@/lib/prisma";
 import type { Metadata } from "next";
 import { createRouteMetadata } from "@/lib/seo-pages";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
+import FoundersBlock from "@/components/sections/FoundersBlock/FoundersBlock";
+import type { Founder } from "@/components/sections/FoundersBlock/FoundersBlock";
 
 export const dynamic = "force-dynamic";
 
@@ -59,15 +61,26 @@ const getStudioValues = async () => {
   }
 };
 
+const getStudioPageContent = async () => {
+  try {
+    return await prisma.studioPageContent.findUnique({
+      where: { id: "studio" },
+    });
+  } catch {
+    return null;
+  }
+};
+
 const StudioPage = async ({
   params,
 }: {
   params?: Promise<{ locale?: string }>;
 }) => {
   const locale = resolveLocale((await params)?.locale);
-  const [translations, rawValues] = await Promise.all([
+  const [translations, rawValues, studioContent] = await Promise.all([
     getTranslations(locale),
     getStudioValues(),
+    getStudioPageContent(),
   ]);
   const values = rawValues.map((value) => ({
     key: value.id,
@@ -78,6 +91,87 @@ const StudioPage = async ({
       locale,
     ),
   }));
+  const founders: Founder[] = studioContent
+    ? [
+        {
+          name: localizeField(
+            studioContent.founderOneName,
+            studioContent.founderOneNameEn,
+            locale,
+          ),
+          role: localizeField(
+            studioContent.founderOneRole,
+            studioContent.founderOneRoleEn,
+            locale,
+          ),
+          description: localizeField(
+            studioContent.founderOneDescription,
+            studioContent.founderOneDescriptionEn,
+            locale,
+          ),
+          imageUrl: studioContent.founderOneImageUrl,
+          imageAlt: localizeField(
+            studioContent.founderOneImageAlt || studioContent.founderOneName,
+            studioContent.founderOneImageAltEn,
+            locale,
+          ),
+        },
+        {
+          name: localizeField(
+            studioContent.founderTwoName,
+            studioContent.founderTwoNameEn,
+            locale,
+          ),
+          role: localizeField(
+            studioContent.founderTwoRole,
+            studioContent.founderTwoRoleEn,
+            locale,
+          ),
+          description: localizeField(
+            studioContent.founderTwoDescription,
+            studioContent.founderTwoDescriptionEn,
+            locale,
+          ),
+          imageUrl: studioContent.founderTwoImageUrl,
+          imageAlt: localizeField(
+            studioContent.founderTwoImageAlt || studioContent.founderTwoName,
+            studioContent.founderTwoImageAltEn,
+            locale,
+          ),
+        },
+      ]
+    : [];
+  const foundersBlock =
+    studioContent &&
+    studioContent.eyebrow.trim() &&
+    studioContent.title.trim() &&
+    studioContent.intro.trim() &&
+    founders.every(
+      (founder) =>
+        founder.name.trim() &&
+        founder.role.trim() &&
+        founder.description.trim() &&
+        founder.imageUrl.trim(),
+    )
+      ? {
+          eyebrow: localizeField(
+            studioContent.eyebrow,
+            studioContent.eyebrowEn,
+            locale,
+          ),
+          title: localizeField(
+            studioContent.title,
+            studioContent.titleEn,
+            locale,
+          ),
+          intro: localizeField(
+            studioContent.intro,
+            studioContent.introEn,
+            locale,
+          ),
+          founders,
+        }
+      : null;
 
   return (
     <>
@@ -98,6 +192,8 @@ const StudioPage = async ({
           </Typography>
         </Box>
       </Box>
+
+      {foundersBlock && <FoundersBlock {...foundersBlock} />}
 
       <Box
         sx={{
