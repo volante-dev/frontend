@@ -97,7 +97,8 @@ const FoundersBlock = ({
                 sx={{
                   display: "block",
                   width: "100%",
-                  aspectRatio: "0.74",
+                  maxHeight: { xs: 420, md: 360, lg: 390 },
+                  aspectRatio: { xs: "0.86", md: "0.8" },
                   objectFit: "cover",
                   bgcolor: colors.blueGray,
                 }}
