@@ -24,10 +24,9 @@ type RichTextProps = {
 };
 
 const RichText = ({ html, sx }: RichTextProps) => (
-  <Box
-    sx={[publicRichTextSx, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
-    dangerouslySetInnerHTML={{ __html: html }}
-  />
+  <Box sx={[publicRichTextSx, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}>
+    <div dangerouslySetInnerHTML={{ __html: typeof html === "string" ? html : "" }} />
+  </Box>
 );
 
 export default RichText;
