@@ -525,6 +525,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
               key={virtualIndex}
               component={Link}
               href={`${portfolioHref}/${project.slug}`}
+              data-link-variant="plain"
               aria-label={`${project.title}${meta ? ` — ${meta}` : ""}`}
               aria-current={active ? "true" : undefined}
               aria-hidden={!visible}
