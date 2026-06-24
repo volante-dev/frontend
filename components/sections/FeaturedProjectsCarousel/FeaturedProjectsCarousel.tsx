@@ -69,6 +69,47 @@ const normalizePalette = (palette: string[] | undefined) =>
     normalizeHex(palette?.[index], fallback),
   );
 
+const inferMediaTypeFromUrl = (value: string) =>
+  /\.(mp4|mov|webm)(?:[?#].*)?$/i.test(value) ? "VIDEO" : "IMAGE";
+
+const coverMediaSx = {
+  position: "absolute",
+  inset: 0,
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  pointerEvents: "none",
+  transition: "transform 900ms cubic-bezier(0.22, 1, 0.36, 1)",
+} as const;
+
+const ProjectCoverMedia = ({ project }: { project: Project }) => {
+  const mediaType = project.coverMediaType ?? inferMediaTypeFromUrl(project.imageUrl);
+
+  return mediaType === "VIDEO" ? (
+    <Box
+      component="video"
+      src={project.imageUrl}
+      poster={project.coverPosterUrl ?? undefined}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      sx={coverMediaSx}
+    />
+  ) : (
+    <Box
+      component="img"
+      src={project.imageUrl}
+      alt=""
+      width={1600}
+      height={1200}
+      loading="lazy"
+      sx={coverMediaSx}
+    />
+  );
+};
+
 const hexToRgb = (color: string) => ({
   r: Number.parseInt(color.slice(1, 3), 16),
   g: Number.parseInt(color.slice(3, 5), 16),
@@ -565,26 +606,10 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
                   outline: `3px solid ${colors.white}`,
                   outlineOffset: -5,
                 },
-                "&:hover img": { transform: "scale(1.025)" },
+                "&:hover img, &:hover video": { transform: "scale(1.025)" },
               }}
             >
-              <Box
-                component="img"
-                src={project.imageUrl}
-                alt=""
-                width={1600}
-                height={1200}
-                loading="lazy"
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  pointerEvents: "none",
-                  transition: "transform 900ms cubic-bezier(0.22, 1, 0.36, 1)",
-                }}
-              />
+              <ProjectCoverMedia project={project} />
               <Box
                 sx={{
                   position: "absolute",

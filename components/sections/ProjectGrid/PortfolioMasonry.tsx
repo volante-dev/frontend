@@ -15,6 +15,46 @@ type PortfolioMasonryProps = {
 
 const isHero = (project: Project) => project.portfolioSize === "HERO";
 
+const inferMediaTypeFromUrl = (value: string) =>
+  /\.(mp4|mov|webm)(?:[?#].*)?$/i.test(value) ? "VIDEO" : "IMAGE";
+
+const mediaSx = {
+  position: "absolute",
+  inset: 0,
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+} as const;
+
+const ProjectCoverMedia = ({ project }: { project: Project }) => {
+  const mediaType = project.coverMediaType ?? inferMediaTypeFromUrl(project.imageUrl);
+
+  return mediaType === "VIDEO" ? (
+    <Box
+      component="video"
+      src={project.imageUrl}
+      poster={project.coverPosterUrl ?? undefined}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      sx={mediaSx}
+    />
+  ) : (
+    <Box
+      component="img"
+      src={project.imageUrl}
+      alt={project.title}
+      width={1200}
+      height={900}
+      loading="lazy"
+      sx={mediaSx}
+    />
+  );
+};
+
 const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
   const { localizedHref } = useI18n();
   const portfolioHref = localizedHref("portfolio");
@@ -63,7 +103,7 @@ const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
                   ? `${desktopPlacement.rowStart} / span ${desktopPlacement.rowSpan}`
                   : "auto",
               },
-              "&:hover img": {
+              "&:hover img, &:hover video": {
                 transform: "scale(1.025)",
               },
               "&:hover .portfolio-masonry-gradient, &:hover .portfolio-masonry-title": {
@@ -74,22 +114,7 @@ const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
               },
             }}
           >
-            <Box
-              component="img"
-              src={project.imageUrl}
-              alt={project.title}
-              width={1200}
-              height={900}
-              loading="lazy"
-              sx={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
-              }}
-            />
+            <ProjectCoverMedia project={project} />
             <Box
               className="portfolio-masonry-gradient"
               sx={{

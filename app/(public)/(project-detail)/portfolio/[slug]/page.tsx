@@ -66,6 +66,12 @@ export const generateMetadata = async ({
     project.descriptionEn,
     locale,
   );
+  const coverMediaType =
+    project.imageAsset?.mediaType ?? inferMediaTypeFromUrl(project.imageUrl);
+  const metadataImage =
+    coverMediaType === "VIDEO"
+      ? project.imageAsset?.posterUrl ?? project.imageUrl
+      : project.imageUrl;
 
   return createPageMetadata({
     locale,
@@ -73,7 +79,7 @@ export const generateMetadata = async ({
     alternatePathname: projectPath(locale === "fr" ? "en" : "fr", slug),
     title,
     description,
-    image: project.imageUrl,
+    image: metadataImage,
     type: "article",
     noIndex: query.preview === "true" || Boolean(query.token),
   });
@@ -90,6 +96,9 @@ const escapeHtml = (value: string) =>
 const stripHtml = (value: string) =>
   value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
+const inferMediaTypeFromUrl = (value: string) =>
+  /\.(mp4|mov|webm)(?:[?#].*)?$/i.test(value) ? "VIDEO" : "IMAGE";
+
 const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => {
   const { slug, locale: localeParam } = await params;
   const locale = resolveLocale(localeParam);
@@ -103,6 +112,12 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
 
   const projectTitle = localizeField(project.title, project.titleEn, locale);
   const projectDescription = localizeField(project.description, project.descriptionEn, locale);
+  const coverMediaType =
+    project.imageAsset?.mediaType ?? inferMediaTypeFromUrl(project.imageUrl);
+  const seoImage =
+    coverMediaType === "VIDEO"
+      ? project.imageAsset?.posterUrl ?? project.imageUrl
+      : project.imageUrl;
   const sector = project.sectorEntry
     ? localizeField(project.sectorEntry.label, project.sectorEntry.labelEn, locale)
     : "";
@@ -150,15 +165,16 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
             ) || null,
         }))
       : [
-          {
-            id: `${project.id}-fallback`,
-            title: projectTitle,
-            contentHtml: sanitizeRichTextHtml(`<p>${projectDescription}</p>`),
-            mediaType: "IMAGE",
-            mediaUrl: project.imageUrl,
-            alt: localizeField(
-              project.imageAsset?.alt ?? projectTitle,
-              project.imageAsset?.altEn,
+        {
+          id: `${project.id}-fallback`,
+          title: projectTitle,
+          contentHtml: sanitizeRichTextHtml(`<p>${projectDescription}</p>`),
+          mediaType: coverMediaType,
+          mediaUrl: project.imageUrl,
+          posterUrl: project.imageAsset?.posterUrl,
+          alt: localizeField(
+            project.imageAsset?.alt ?? projectTitle,
+            project.imageAsset?.altEn,
               locale,
             ),
           },
@@ -192,7 +208,7 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
     description: projectDescription,
     url: toAbsoluteUrl(pathname),
     mainEntityOfPage: toAbsoluteUrl(pathname),
-    image: project.imageUrl,
+    image: seoImage,
     inLanguage: locale === "fr" ? "fr-FR" : "en-GB",
     datePublished: project.publishedAt?.toISOString(),
     dateModified: project.updatedAt.toISOString(),

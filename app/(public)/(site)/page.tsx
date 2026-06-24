@@ -87,12 +87,19 @@ const getProjects = async () => {
     return await prisma.project.findMany({
       where: { publishedAt: { not: null }, featured: true },
       orderBy: [{ order: "asc" }, { publishedAt: "desc" }],
-      include: { sectorEntry: true, locationEntry: true },
+      include: {
+        sectorEntry: true,
+        locationEntry: true,
+        imageAsset: { select: { mediaType: true, posterUrl: true } },
+      },
     });
   } catch {
     return [];
   }
 };
+
+const inferMediaTypeFromUrl = (value: string) =>
+  /\.(mp4|mov|webm)(?:[?#].*)?$/i.test(value) ? "VIDEO" : "IMAGE";
 
 const HomePage = async ({
   params,
@@ -115,7 +122,7 @@ const HomePage = async ({
       locale,
     ),
   }));
-  const localizedProjects = projects.map((p) => ({
+  const localizedProjects = projects.map(({ imageAsset, ...p }) => ({
     ...p,
     title: localizeField(p.title, p.titleEn, locale),
     description: localizeField(p.description, p.descriptionEn, locale),
@@ -127,6 +134,8 @@ const HomePage = async ({
       (p.locationEntry
         ? localizeField(p.locationEntry.label, p.locationEntry.labelEn, locale)
         : "") || null,
+    coverMediaType: imageAsset?.mediaType ?? inferMediaTypeFromUrl(p.imageUrl),
+    coverPosterUrl: imageAsset?.posterUrl ?? null,
   }));
 
   const heroVideoSrc = process.env.NEXT_PUBLIC_HERO_VIDEO_URL;

@@ -6,6 +6,8 @@ export interface Project {
   description: string;
   descriptionEn?: string | null;
   imageUrl: string;
+  coverMediaType?: "IMAGE" | "VIDEO";
+  coverPosterUrl?: string | null;
   heroPaletteComputed?: string[];
   sector?: string | null;
   projectLocation?: string | null;

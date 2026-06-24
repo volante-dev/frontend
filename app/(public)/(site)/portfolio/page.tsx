@@ -11,6 +11,9 @@ import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
 
 export const dynamic = "force-dynamic";
 
+const inferMediaTypeFromUrl = (value: string) =>
+  /\.(mp4|mov|webm)(?:[?#].*)?$/i.test(value) ? "VIDEO" : "IMAGE";
+
 export const generateMetadata = async ({
   params,
 }: {
@@ -34,16 +37,21 @@ const PortfolioPage = async ({
           { publishedAt: "asc" },
           { id: "asc" },
         ],
+        include: {
+          imageAsset: { select: { mediaType: true, posterUrl: true } },
+        },
       })
       .catch(() => []),
     getTranslations(locale),
   ]);
 
-  const projects = rawProjects.map((p) => ({
+  const projects = rawProjects.map(({ imageAsset, ...p }) => ({
     ...p,
     title: locale === "en" && p.titleEn ? p.titleEn : p.title,
     description:
       locale === "en" && p.descriptionEn ? p.descriptionEn : p.description,
+    coverMediaType: imageAsset?.mediaType ?? inferMediaTypeFromUrl(p.imageUrl),
+    coverPosterUrl: imageAsset?.posterUrl ?? null,
   }));
 
   return (
