@@ -2,11 +2,14 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import ContactForm from "@/components/sections/ContactForm/ContactForm";
 import { colors } from "@/app/theme/tokens";
-import { getTranslations, t } from "@/lib/i18n";
+import { getTranslations } from "@/lib/i18n";
+import { getPageHeaderContent } from "@/lib/page-header-content";
 import { resolveLocale } from "@/lib/i18n-config";
 import type { Metadata } from "next";
 import { createRouteMetadata } from "@/lib/seo-pages";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
+
+export const dynamic = "force-dynamic";
 
 export const generateMetadata = async ({
   params,
@@ -22,6 +25,7 @@ const ContactPage = async ({
 }) => {
   const locale = resolveLocale((await params)?.locale);
   const translations = await getTranslations(locale);
+  const pageHeader = await getPageHeaderContent("contact", locale, translations);
 
   return (
     <>
@@ -35,14 +39,10 @@ const ContactPage = async ({
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
           <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
-            {t(translations, "contact.page.eyebrow", "Nous contacter")}
+            {pageHeader.eyebrow}
           </Typography>
           <Typography variant="h1" sx={{ maxWidth: 600 }}>
-            {t(
-              translations,
-              "contact.page.heading",
-              "Parlons de votre projet.",
-            )}
+            {pageHeader.title}
           </Typography>
         </Box>
       </Box>

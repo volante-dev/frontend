@@ -3,6 +3,7 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import { colors } from "@/app/theme/tokens";
 import { getTranslations, localizeField, t } from "@/lib/i18n";
+import { getPageHeaderContent } from "@/lib/page-header-content";
 import { resolveLocale } from "@/lib/i18n-config";
 import prisma from "@/lib/prisma";
 import { sanitizeRichTextHtml } from "@/lib/sanitize-html";
@@ -96,6 +97,7 @@ const StudioPage = async ({
     getStudioValues(),
     getStudioPageContent(),
   ]);
+  const pageHeader = await getPageHeaderContent("studio", locale, translations);
   const values = rawValues.map((value) => ({
     key: value.id,
     title: localizeField(value.title, value.titleEn, locale),
@@ -235,10 +237,10 @@ const StudioPage = async ({
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
           <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
-            {t(translations, "studio.page.eyebrow", "Qui sommes-nous")}
+            {pageHeader.eyebrow}
           </Typography>
           <Typography variant="h1" sx={{ maxWidth: 700 }}>
-            {t(translations, "studio.page.heading", "Un studio indépendant, une vision singulière.")}
+            {pageHeader.title}
           </Typography>
         </Box>
       </Box>

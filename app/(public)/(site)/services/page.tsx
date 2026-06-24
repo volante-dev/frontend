@@ -5,6 +5,7 @@ import ServicesContactCta from "@/components/sections/ServicesContactCta/Service
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
 import { getLocalizedHref, getTranslations, localizeField, t } from "@/lib/i18n";
+import { getPageHeaderContent } from "@/lib/page-header-content";
 import { resolveLocale } from "@/lib/i18n-config";
 import type { Metadata } from "next";
 import { createRouteMetadata } from "@/lib/seo-pages";
@@ -35,6 +36,7 @@ const ServicesPage = async ({
       .catch(() => []),
     getTranslations(locale),
   ]);
+  const pageHeader = await getPageHeaderContent("services", locale, translations);
 
   const services = rawServices.map((s) => ({
     ...s,
@@ -62,10 +64,10 @@ const ServicesPage = async ({
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
           <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
-            {t(translations, "services.page.eyebrow", "Notre expertise")}
+            {pageHeader.eyebrow}
           </Typography>
           <Typography variant="h1" sx={{ maxWidth: 700 }}>
-            {t(translations, "services.page.heading", "Des services pensés pour faire rayonner votre marque.")}
+            {pageHeader.title}
           </Typography>
         </Box>
       </Box>

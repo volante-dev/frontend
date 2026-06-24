@@ -3,7 +3,8 @@ import Typography from "@mui/material/Typography";
 import PortfolioMasonry from "@/components/sections/ProjectGrid/PortfolioMasonry";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
-import { getTranslations, t } from "@/lib/i18n";
+import { getTranslations } from "@/lib/i18n";
+import { getPageHeaderContent } from "@/lib/page-header-content";
 import { resolveLocale } from "@/lib/i18n-config";
 import type { Metadata } from "next";
 import { createRouteMetadata } from "@/lib/seo-pages";
@@ -44,6 +45,7 @@ const PortfolioPage = async ({
       .catch(() => []),
     getTranslations(locale),
   ]);
+  const pageHeader = await getPageHeaderContent("portfolio", locale, translations);
 
   const projects = rawProjects.map(({ imageAsset, ...p }) => ({
     ...p,
@@ -65,10 +67,10 @@ const PortfolioPage = async ({
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
           <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
-            {t(translations, "portfolio.page.eyebrow", "Nos réalisations")}
+            {pageHeader.eyebrow}
           </Typography>
           <Typography variant="h1" sx={{ maxWidth: 700 }}>
-            {t(translations, "portfolio.page.heading", "Des projets construits avec exigence.")}
+            {pageHeader.title}
           </Typography>
         </Box>
       </Box>
