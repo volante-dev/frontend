@@ -1,7 +1,4 @@
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import PortfolioMasonry from "@/components/sections/ProjectGrid/PortfolioMasonry";
-import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
 import { getTranslations } from "@/lib/i18n";
 import { getPageHeaderContent } from "@/lib/page-header-content";
@@ -59,23 +56,7 @@ const PortfolioPage = async ({
   return (
     <>
       <RouteBreadcrumbJsonLd locale={locale} route="portfolio" label="Portfolio" />
-      <Box
-        sx={{
-          py: { xs: 8, md: 12 },
-          px: { xs: 2, md: 4 },
-        }}
-      >
-        <Box sx={{ maxWidth: 1200, mx: "auto" }}>
-          <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
-            {pageHeader.eyebrow}
-          </Typography>
-          <Typography variant="h1" sx={{ maxWidth: 700 }}>
-            {pageHeader.title}
-          </Typography>
-        </Box>
-      </Box>
-
-      <PortfolioMasonry projects={projects} />
+      <PortfolioMasonry projects={projects} header={pageHeader} />
     </>
   );
 };

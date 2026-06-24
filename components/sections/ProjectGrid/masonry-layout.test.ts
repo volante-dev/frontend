@@ -73,4 +73,43 @@ describe("getDesktopMasonryPlacements", () => {
     expect(placements.get("G")).toMatchObject({ columnStart: 1, rowStart: 4 });
     expect(placements.get("X2")).toMatchObject({ columnStart: 3, rowStart: 5 });
   });
+
+  it("can start after a reserved hero band", () => {
+    const placements = getDesktopMasonryPlacements(
+      [
+        item("A"),
+        item("B", "HERO"),
+        item("C"),
+        item("D"),
+      ],
+      { rowStart: 3 },
+    );
+
+    expect(placements.get("A")).toMatchObject({ columnStart: 1, rowStart: 3 });
+    expect(placements.get("B")).toMatchObject({ columnStart: 1, rowStart: 4 });
+    expect(placements.get("C")).toMatchObject({ columnStart: 3, rowStart: 4 });
+  });
+
+  it("can promote normal bands to avoid full normal rows", () => {
+    const placements = getDesktopMasonryPlacements(
+      [
+        item("A"),
+        item("B"),
+        item("C"),
+        item("D"),
+        item("E"),
+        item("F"),
+      ],
+      { promoteNormalBands: true },
+    );
+
+    expect(placements.get("A")).toEqual({
+      columnStart: 1,
+      rowStart: 1,
+      columnSpan: 2,
+      rowSpan: 2,
+    });
+    expect(placements.get("E")).toMatchObject({ columnStart: 4, rowStart: 2 });
+    expect(placements.get("F")).toMatchObject({ columnStart: 3, rowStart: 3 });
+  });
 });

@@ -7,10 +7,17 @@ import { useMemo } from "react";
 import { colors, typography } from "@/app/theme/tokens";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 import type { Project } from "./project-types";
-import { getDesktopMasonryPlacements } from "./masonry-layout";
+import {
+  getDesktopMasonryPlacements,
+  type DesktopMasonryPlacement,
+} from "./masonry-layout";
 
 type PortfolioMasonryProps = {
   projects: Project[];
+  header: {
+    eyebrow: string;
+    title: string;
+  };
 };
 
 const isHero = (project: Project) => project.portfolioSize === "HERO";
@@ -55,13 +62,97 @@ const ProjectCoverMedia = ({ project }: { project: Project }) => {
   );
 };
 
-const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
+const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
   const { localizedHref } = useI18n();
   const portfolioHref = localizedHref("portfolio");
+  const firstProject = projects[0];
+  const remainingProjects = useMemo(() => projects.slice(1), [projects]);
   const desktopPlacements = useMemo(
-    () => getDesktopMasonryPlacements(projects),
-    [projects],
+    () =>
+      getDesktopMasonryPlacements(remainingProjects, {
+        rowStart: 3,
+        promoteNormalBands: true,
+      }),
+    [remainingProjects],
   );
+
+  const renderProject = (project: Project, forcedHero = false) => {
+    const hero = forcedHero || isHero(project);
+    const desktopPlacement: DesktopMasonryPlacement | undefined = forcedHero
+      ? { columnStart: 3, rowStart: 1, columnSpan: 2, rowSpan: 2 }
+      : desktopPlacements.get(project.id);
+
+    return (
+      <Box
+        key={project.id}
+        component={Link}
+        href={`${portfolioHref}/${project.slug}`}
+        sx={{
+          position: "relative",
+          display: "block",
+          overflow: "hidden",
+          minHeight: 0,
+          color: colors.white,
+          textDecoration: "none",
+          backgroundColor: colors.mutedBlack,
+          gridColumn: {
+            xs: hero ? "span 2" : "span 1",
+            md: desktopPlacement
+              ? `${desktopPlacement.columnStart} / span ${desktopPlacement.columnSpan}`
+              : "auto",
+          },
+          gridRow: {
+            xs: hero ? "span 2" : "span 1",
+            md: desktopPlacement
+              ? `${desktopPlacement.rowStart} / span ${desktopPlacement.rowSpan}`
+              : "auto",
+          },
+          "&:hover img, &:hover video": {
+            transform: "scale(1.025)",
+          },
+          "&:hover .portfolio-masonry-gradient, &:hover .portfolio-masonry-title": {
+            opacity: 1,
+          },
+          "&:focus-visible .portfolio-masonry-gradient, &:focus-visible .portfolio-masonry-title": {
+            opacity: 1,
+          },
+        }}
+      >
+        <ProjectCoverMedia project={project} />
+        <Box
+          className="portfolio-masonry-gradient"
+          sx={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: "48%",
+            background:
+              "linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0))",
+            opacity: { xs: 1, md: 0 },
+            transition: "opacity 260ms ease-in",
+          }}
+        />
+        <Typography
+          className="portfolio-masonry-title"
+          variant={hero ? "h2" : "h3"}
+          component="h3"
+          sx={{
+            fontFamily: typography.fontFamilyDisplay,
+            position: "absolute",
+            left: { xs: "20px", md: hero ? "32px" : "24px" },
+            right: { xs: "20px", md: hero ? "32px" : "24px" },
+            bottom: { xs: "12px", md: hero ? "28px" : "20px" },
+            color: colors.white,
+            opacity: { xs: 0.68, md: 0 },
+            transition: "opacity 260ms ease-in",
+          }}
+        >
+          {project.title}
+        </Typography>
+      </Box>
+    );
+  };
 
   return (
     <Box
@@ -74,81 +165,36 @@ const PortfolioMasonry = ({ projects }: PortfolioMasonryProps) => {
         gap: "2px",
       }}
     >
-      {projects.map((project) => {
-        const hero = isHero(project);
-        const desktopPlacement = desktopPlacements.get(project.id);
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          minHeight: 0,
+          px: { xs: 2.5, md: 4 },
+          py: { xs: 3, md: 4 },
+          backgroundColor: colors.offWhite,
+          border: `1px solid ${colors.blueGray}`,
+          gridColumn: { xs: "span 2", md: "1 / span 2" },
+          gridRow: { xs: "span 2", md: "1 / span 2" },
+        }}
+      >
+        <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
+          {header.eyebrow}
+        </Typography>
+        <Typography
+          variant="h1"
+          sx={{
+            maxWidth: 620,
+            color: colors.mutedBlack,
+          }}
+        >
+          {header.title}
+        </Typography>
+      </Box>
 
-        return (
-          <Box
-            key={project.id}
-            component={Link}
-            href={`${portfolioHref}/${project.slug}`}
-            sx={{
-              position: "relative",
-              display: "block",
-              overflow: "hidden",
-              minHeight: 0,
-              color: colors.white,
-              textDecoration: "none",
-              backgroundColor: colors.mutedBlack,
-              gridColumn: {
-                xs: hero ? "span 2" : "span 1",
-                md: desktopPlacement
-                  ? `${desktopPlacement.columnStart} / span ${desktopPlacement.columnSpan}`
-                  : "auto",
-              },
-              gridRow: {
-                xs: hero ? "span 2" : "span 1",
-                md: desktopPlacement
-                  ? `${desktopPlacement.rowStart} / span ${desktopPlacement.rowSpan}`
-                  : "auto",
-              },
-              "&:hover img, &:hover video": {
-                transform: "scale(1.025)",
-              },
-              "&:hover .portfolio-masonry-gradient, &:hover .portfolio-masonry-title": {
-                opacity: 1,
-              },
-              "&:focus-visible .portfolio-masonry-gradient, &:focus-visible .portfolio-masonry-title": {
-                opacity: 1,
-              },
-            }}
-          >
-            <ProjectCoverMedia project={project} />
-            <Box
-              className="portfolio-masonry-gradient"
-              sx={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: "48%",
-                background:
-                  "linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0))",
-                opacity: { xs: 1, md: 0 },
-                transition: "opacity 260ms ease-in",
-              }}
-            />
-            <Typography
-              className="portfolio-masonry-title"
-              variant={hero ? "h2" : "h3"}
-              component="h3"
-              sx={{
-                fontFamily: typography.fontFamilyDisplay,
-                position: "absolute",
-                left: { xs: "20px", md: hero ? "32px" : "24px" },
-                right: { xs: "20px", md: hero ? "32px" : "24px" },
-                bottom: { xs: "12px", md: hero ? "28px" : "20px" },
-                color: colors.white,
-                opacity: { xs: 0.68, md: 0 },
-                transition: "opacity 260ms ease-in",
-              }}
-            >
-              {project.title}
-            </Typography>
-          </Box>
-        );
-      })}
+      {firstProject && renderProject(firstProject, true)}
+      {remainingProjects.map((project) => renderProject(project))}
     </Box>
   );
 };
