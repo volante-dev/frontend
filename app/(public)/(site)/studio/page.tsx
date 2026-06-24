@@ -5,6 +5,7 @@ import { colors } from "@/app/theme/tokens";
 import { getTranslations, localizeField, t } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
 import prisma from "@/lib/prisma";
+import { sanitizeRichTextHtml } from "@/lib/sanitize-html";
 import type { Metadata } from "next";
 import { createRouteMetadata } from "@/lib/seo-pages";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
@@ -117,10 +118,12 @@ const StudioPage = async ({
             studioContent.founderOneRoleEn,
             locale,
           ),
-          description: localizeField(
-            studioContent.founderOneDescription,
-            studioContent.founderOneDescriptionEn,
-            locale,
+          description: sanitizeRichTextHtml(
+            localizeField(
+              studioContent.founderOneDescription,
+              studioContent.founderOneDescriptionEn,
+              locale,
+            ),
           ),
           imageUrl: studioContent.founderOneImageUrl,
           imageAlt: localizeField(
@@ -143,10 +146,12 @@ const StudioPage = async ({
             studioContent.founderTwoRoleEn,
             locale,
           ),
-          description: localizeField(
-            studioContent.founderTwoDescription,
-            studioContent.founderTwoDescriptionEn,
-            locale,
+          description: sanitizeRichTextHtml(
+            localizeField(
+              studioContent.founderTwoDescription,
+              studioContent.founderTwoDescriptionEn,
+              locale,
+            ),
           ),
           imageUrl: studioContent.founderTwoImageUrl,
           imageAlt: localizeField(

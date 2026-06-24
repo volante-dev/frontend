@@ -1,6 +1,7 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { colors, typography } from "@/app/theme/tokens";
+import RichText from "@/components/ui/RichText/RichText";
 
 export type Founder = {
   name: string;
@@ -128,7 +129,15 @@ const FoundersBlock = ({
                 >
                   {founder.role}
                 </Typography>
-                <Typography variant="body1">{founder.description}</Typography>
+                <RichText
+                  html={founder.description}
+                  sx={{
+                    "& p": { mb: 1.5 },
+                    "& p:last-child": { mb: 0 },
+                    "& h3": { mt: 2.5 },
+                    "& h4": { mt: 2 },
+                  }}
+                />
               </Box>
             </Box>
           ))}
