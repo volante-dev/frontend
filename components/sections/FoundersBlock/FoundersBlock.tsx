@@ -26,6 +26,9 @@ const FoundersBlock = ({
 }: FoundersBlockProps) => {
   if (founders.length !== 2) return null;
 
+  const trimmedEyebrow = eyebrow.trim();
+  const trimmedTitle = title.trim();
+
   return (
     <Box
       component="section"
@@ -39,20 +42,22 @@ const FoundersBlock = ({
         sx={{
           maxWidth: 1200,
           mx: "auto",
-          pt: { xs: 4, md: 6 },
-          borderTop: `1px solid ${colors.blueGray}`,
         }}
       >
-        <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
-          {eyebrow}
-        </Typography>
-        <Typography
-          variant="h1"
-          component="h2"
-          sx={{ maxWidth: 920, mb: { xs: 3, md: 4 } }}
-        >
-          {title}
-        </Typography>
+        {trimmedEyebrow && (
+          <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
+            {trimmedEyebrow}
+          </Typography>
+        )}
+        {trimmedTitle && (
+          <Typography
+            variant="h1"
+            component="h2"
+            sx={{ maxWidth: 920, mb: { xs: 3, md: 4 } }}
+          >
+            {trimmedTitle}
+          </Typography>
+        )}
         <Typography
           variant="subtitle1"
           sx={{

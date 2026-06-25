@@ -169,8 +169,6 @@ const StudioPage = async ({
     : [];
   const foundersBlock =
     studioContent &&
-    studioContent.eyebrow.trim() &&
-    studioContent.title.trim() &&
     studioContent.intro.trim() &&
     founders.every(
       (founder) =>
