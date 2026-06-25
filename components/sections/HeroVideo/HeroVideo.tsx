@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import { colors } from "@/app/theme/tokens";
 import VideoToggleButton from "@/components/ui/VideoToggleButton/VideoToggleButton";
@@ -10,29 +10,18 @@ interface HeroVideoProps {
   poster?: string;
 }
 
-const inferVideoTypeFromUrl = (value: string) => {
-  if (/\.webm(?:[?#].*)?$/i.test(value)) return "video/webm";
-  if (/\.mov(?:[?#].*)?$/i.test(value)) return "video/quicktime";
-
-  return "video/mp4";
-};
-
 const HeroVideo = ({ src, poster }: HeroVideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
 
-  useEffect(() => {
-    if (!videoRef.current || !src) return;
-
-    if (playing) {
-      void videoRef.current.play().catch(() => setPlaying(false));
-    } else {
-      videoRef.current.pause();
-    }
-  }, [playing, src]);
-
   const handleToggle = () => {
-    setPlaying((value) => !value);
+    if (!videoRef.current) return;
+    if (playing) {
+      videoRef.current.pause();
+    } else {
+      void videoRef.current.play();
+    }
+    setPlaying((v) => !v);
   };
 
   return (
@@ -50,15 +39,13 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
     >
       {src && (
         <video
-          key={src}
           ref={videoRef}
+          autoPlay
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           poster={poster}
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
           style={{
             position: "absolute",
             inset: 0,
@@ -67,7 +54,7 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
             objectFit: "cover",
           }}
         >
-          <source src={src} type={inferVideoTypeFromUrl(src)} />
+          <source src={src} type="video/mp4" />
         </video>
       )}
 
