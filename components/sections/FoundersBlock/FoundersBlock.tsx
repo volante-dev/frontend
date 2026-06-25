@@ -35,7 +35,8 @@ const FoundersBlock = ({
       sx={{
         py: { xs: 8, md: 12 },
         px: { xs: 2, md: 4 },
-        borderBottom: `1px solid ${colors.blueGray}`,
+        backgroundColor: colors.greenDark,
+        borderBottom: "1px solid rgba(255, 255, 255, 0.16)",
       }}
     >
       <Box
@@ -45,7 +46,10 @@ const FoundersBlock = ({
         }}
       >
         {trimmedEyebrow && (
-          <Typography variant="subtitle2" sx={{ mb: 3, color: colors.green }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ mb: 3, color: colors.blueGrayDark }}
+          >
             {trimmedEyebrow}
           </Typography>
         )}
@@ -53,7 +57,7 @@ const FoundersBlock = ({
           <Typography
             variant="h1"
             component="h2"
-            sx={{ maxWidth: 920, mb: { xs: 3, md: 4 } }}
+            sx={{ maxWidth: 920, mb: { xs: 3, md: 4 }, color: colors.white }}
           >
             {trimmedTitle}
           </Typography>
@@ -62,7 +66,7 @@ const FoundersBlock = ({
           variant="subtitle1"
           sx={{
             maxWidth: 620,
-            color: colors.mutedBlack,
+            color: colors.white,
             mb: { xs: 6, md: 8 },
           }}
         >
@@ -78,7 +82,7 @@ const FoundersBlock = ({
               lg: "minmax(220px, 296px) minmax(220px, 1fr) minmax(220px, 296px) minmax(220px, 1fr)",
             },
             gap: { xs: 3, md: 5, lg: 6 },
-            alignItems: "center",
+            alignItems: "start",
           }}
         >
           {founders.map((founder) => (
@@ -106,14 +110,16 @@ const FoundersBlock = ({
                   maxHeight: { xs: 420, md: 360, lg: 390 },
                   aspectRatio: { xs: "0.86", md: "0.8" },
                   objectFit: "cover",
-                  bgcolor: colors.blueGray,
+                  bgcolor: colors.green,
+                  boxShadow: "0 5px 30px rgba(0, 0, 0, 0.25)",
                 }}
               />
               <Box
                 sx={{
-                  alignSelf: "center",
+                  alignSelf: "start",
                   mb: { xs: 4, md: 0 },
                   maxWidth: { xs: "none", lg: 340 },
+                  pt: { xs: 0, md: "20px" },
                 }}
               >
                 <Typography
@@ -123,6 +129,7 @@ const FoundersBlock = ({
                     mb: 1.5,
                     fontFamily: typography.fontFamilyDisplay,
                     fontSize: { xs: "2.25rem", md: "2.5rem" },
+                    color: colors.white,
                   }}
                 >
                   {founder.name}
@@ -130,17 +137,22 @@ const FoundersBlock = ({
                 <Typography
                   variant="subtitle2"
                   component="p"
-                  sx={{ mb: 3, color: colors.green }}
+                  sx={{ mb: 3, color: colors.blueGrayDark }}
                 >
                   {founder.role}
                 </Typography>
                 <RichText
                   html={founder.description}
                   sx={{
-                    "& p": { mb: 1.5 },
+                    color: colors.white,
+                    "& p": { mb: 1.5, color: colors.white },
                     "& p:last-child": { mb: 0 },
-                    "& h3": { mt: 2.5 },
-                    "& h4": { mt: 2 },
+                    "& h3": { mt: 2.5, color: colors.white },
+                    "& h4": { mt: 2, color: colors.white },
+                    "& a": {
+                      color: colors.white,
+                      textDecorationColor: colors.blueGrayDark,
+                    },
                   }}
                 />
               </Box>
