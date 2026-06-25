@@ -25,6 +25,13 @@ const isHero = (project: Project) => project.portfolioSize === "HERO";
 const inferMediaTypeFromUrl = (value: string) =>
   /\.(mp4|mov|webm)(?:[?#].*)?$/i.test(value) ? "VIDEO" : "IMAGE";
 
+const truncateMobileDescription = (value: string, maxLength = 140) => {
+  const normalized = value.trim().replace(/\s+/g, " ");
+  if (normalized.length <= maxLength) return normalized;
+
+  return `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
+};
+
 const mediaSx = {
   position: "absolute",
   inset: 0,
@@ -63,7 +70,7 @@ const ProjectCoverMedia = ({ project }: { project: Project }) => {
 };
 
 const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
-  const { localizedHref } = useI18n();
+  const { localizedHref, locale } = useI18n();
   const portfolioHref = localizedHref("portfolio");
   const firstProject = projects[0];
   const remainingProjects = useMemo(() => projects.slice(1), [projects]);
@@ -78,6 +85,7 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
 
   const renderProject = (project: Project, forcedHero = false) => {
     const hero = forcedHero || isHero(project);
+    const heroDescription = project.description.trim();
     const desktopPlacement: DesktopMasonryPlacement | undefined = forcedHero
       ? { columnStart: 3, rowStart: 1, columnSpan: 2, rowSpan: 2 }
       : desktopPlacements.get(project.id);
@@ -110,10 +118,10 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
           "&:hover img, &:hover video": {
             transform: "scale(1.025)",
           },
-          "&:hover .portfolio-masonry-gradient, &:hover .portfolio-masonry-title": {
+          "&:hover .portfolio-masonry-gradient, &:hover .portfolio-masonry-copy": {
             opacity: 1,
           },
-          "&:focus-visible .portfolio-masonry-gradient, &:focus-visible .portfolio-masonry-title": {
+          "&:focus-visible .portfolio-masonry-gradient, &:focus-visible .portfolio-masonry-copy": {
             opacity: 1,
           },
         }}
@@ -126,30 +134,67 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
             left: 0,
             right: 0,
             bottom: 0,
-            height: "48%",
+            height: hero ? "68%" : "48%",
             background:
               "linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0))",
             opacity: { xs: 1, md: 0 },
             transition: "opacity 260ms ease-in",
           }}
         />
-        <Typography
-          className="portfolio-masonry-title"
-          variant={hero ? "h2" : "h3"}
-          component="h3"
+        <Box
+          className="portfolio-masonry-copy"
           sx={{
-            fontFamily: typography.fontFamilyDisplay,
             position: "absolute",
             left: { xs: "20px", md: hero ? "32px" : "24px" },
             right: { xs: "20px", md: hero ? "32px" : "24px" },
             bottom: { xs: "12px", md: hero ? "28px" : "20px" },
-            color: colors.white,
             opacity: { xs: 0.68, md: 0 },
             transition: "opacity 260ms ease-in",
           }}
         >
-          {project.title}
-        </Typography>
+          <Typography
+            variant={hero ? "h2" : "h3"}
+            component="h3"
+            sx={{
+              fontFamily: typography.fontFamilyDisplay,
+              color: colors.white,
+            }}
+          >
+            {project.title}
+          </Typography>
+          {hero && heroDescription && (
+            <>
+              <Typography
+                variant="body2"
+                sx={{
+                  display: { xs: "none", md: "block" },
+                  mt: 1.5,
+                  maxWidth: 520,
+                  color: colors.white,
+                  textShadow: "0 1px 8px rgba(0, 0, 0, 0.35)",
+                }}
+              >
+                {heroDescription}
+              </Typography>
+              <Typography
+                variant="body2"
+                lang={locale}
+                sx={{
+                  display: { xs: "block", md: "none" },
+                  mt: 1,
+                  maxWidth: 520,
+                  color: colors.white,
+                  lineHeight: 1.45,
+                  hyphens: "auto",
+                  overflowWrap: "break-word",
+                  textShadow: "0 1px 8px rgba(0, 0, 0, 0.35)",
+                }}
+              >
+                {truncateMobileDescription(heroDescription)}
+              </Typography>
+            </>
+          )}
+        </Box>
       </Box>
     );
   };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Collapse from "@mui/material/Collapse";
@@ -15,16 +15,20 @@ import type { Locale, RouteKey } from "@/lib/i18n";
 import { useLiquidGlass } from "@/components/ui/LiquidGlass/useLiquidGlass";
 import LiquidGlassFilter from "@/components/ui/LiquidGlass/LiquidGlassFilter";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
+import { useHeaderActivePill } from "./useHeaderActivePill";
 
 const navRoutes: { key: RouteKey; label: Record<Locale, string> }[] = [
   { key: "services", label: { fr: "Services", en: "Services" } },
   { key: "portfolio", label: { fr: "Portfolio", en: "Portfolio" } },
   { key: "studio", label: { fr: "Studio", en: "Studio" } },
+  { key: "contact", label: { fr: "Contact", en: "Contact" } },
 ];
 
+const headerTint = "205, 205, 205";
+
 const pillBase = {
-  backgroundColor: "rgba(247, 248, 249, 0.65)",
-  border: "1px solid rgba(255, 255, 255, 0.8)",
+  backgroundColor: `rgba(${headerTint}, 0.65)`,
+  border: `1px solid rgba(${headerTint}, 0.8)`,
   boxShadow: "0 4px 24px rgba(0, 0, 0, 0.12)",
   overflow: "hidden",
   color: colors.mutedBlack,
@@ -42,7 +46,27 @@ const Header = () => {
   const targetLocale: Locale = locale === "en" ? "fr" : "en";
   const alternatePath = alternateHref(targetLocale);
   const homeHref = localizedHref("home");
-  const contactHref = localizedHref("contact");
+  const navItems = useMemo(
+    () => navRoutes.map((route) => ({ ...route, href: localizedHref(route.key) })),
+    [localizedHref],
+  );
+  const {
+    setContainerNode: setDesktopPillContainer,
+    registerItem: registerDesktopPillItem,
+    pill: desktopPillState,
+  } = useHeaderActivePill({
+    pathname,
+    items: navItems,
+  });
+  const {
+    setContainerNode: setMobilePillContainer,
+    registerItem: registerMobilePillItem,
+    pill: mobilePillState,
+  } = useHeaderActivePill({
+    pathname,
+    items: navItems,
+    enabled: open,
+  });
 
   useEffect(() => {
     if (!langOpen) return;
@@ -88,12 +112,12 @@ const Header = () => {
   };
 
   // Liquid glass needs a near-transparent background so refraction stays visible;
-  // the specular ring in the filter replaces the 1px white border
+  // the specular ring in the filter replaces the 1px border
   const desktopGlassSx = glassActive
     ? {
         backdropFilter: `url(#${filterId})`,
         WebkitBackdropFilter: `url(#${filterId})`,
-        backgroundColor: "rgba(255, 255, 255, 0.35)",
+        backgroundColor: `rgba(${headerTint}, 0.35)`,
         border: "none",
         boxShadow: "0 4px 16px rgba(0, 0, 0, 0.16)",
         transform: "translateZ(0)",
@@ -121,6 +145,31 @@ const Header = () => {
       {text}
     </Typography>
   );
+
+  const activePill = (pill: typeof desktopPillState) =>
+    pill.mounted ? (
+      <Box
+        aria-hidden
+        sx={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          width: pill.width,
+          height: pill.height,
+          borderRadius: "999px",
+          backgroundColor: `rgba(${headerTint}, 0.15)`,
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          border: `1px solid rgba(${headerTint}, 0.28)`,
+          opacity: pill.visible ? 1 : 0,
+          pointerEvents: "none",
+          transform: `translate3d(${pill.x}px, ${pill.y + pill.offsetY}px, 0)`,
+          transition:
+            "opacity 220ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1), width 320ms cubic-bezier(0.22, 1, 0.36, 1), height 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+          zIndex: 0,
+        }}
+      />
+    ) : null;
 
   const makeLangSwitcher = (ref: React.RefObject<HTMLDivElement | null>) => (
     <Box
@@ -228,31 +277,38 @@ const Header = () => {
       >
         {logo("STUDIO VOLANTE")}
 
-        <Box component="nav" sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
-          {navRoutes.map(({ key, label }) => {
-            const href = localizedHref(key);
-            const isActive = pathname === href || pathname.startsWith(`${href}/`);
-            return (
+        <Box
+          ref={setDesktopPillContainer}
+          component="nav"
+          sx={{
+            position: "relative",
+            display: "flex",
+            gap: 0.5,
+            alignItems: "center",
+            isolation: "isolate",
+          }}
+        >
+          {activePill(desktopPillState)}
+          {navItems.map(({ key, label, href }) => (
+            <Box
+              key={key}
+              ref={registerDesktopPillItem(key)}
+              sx={{ position: "relative", zIndex: 1, display: "inline-flex" }}
+            >
               <Button
-                key={key}
                 variant="text"
                 component={Link}
                 href={href}
-                sx={{ color: isActive ? colors.green : colors.mutedBlack, fontWeight: isActive ? 800 : 600, borderRadius: "999px" }}
+                sx={{
+                  color: colors.mutedBlack,
+                  fontWeight: 600,
+                  borderRadius: "999px",
+                }}
               >
                 {label[locale]}
               </Button>
-            );
-          })}
-
-          <Button
-            variant="text"
-            component={Link}
-            href={contactHref}
-            sx={{ color: colors.mutedBlack, fontWeight: 600, borderRadius: "999px" }}
-          >
-            Contact
-          </Button>
+            </Box>
+          ))}
 
           <Box sx={{ ml: 1 }}>{makeLangSwitcher(langDesktopRef)}</Box>
         </Box>
@@ -287,38 +343,41 @@ const Header = () => {
         <Collapse in={open}>
           <Box sx={{ px: 2, pb: 2 }}>
             <Divider sx={{ mb: 1, borderColor: "rgba(232, 236, 240, 0.5)" }} />
-            {navRoutes.map(({ key, label }) => {
-              const href = localizedHref(key);
-              const isActive = pathname === href || pathname.startsWith(`${href}/`);
-              return (
-                <Button
-                  key={key}
-                  fullWidth
-                  variant="text"
-                  component={Link}
-                  href={href}
-                  onClick={() => setOpenPath(null)}
-                  sx={{
-                    justifyContent: "flex-start",
-                    color: isActive ? colors.green : colors.mutedBlack,
-                    fontWeight: isActive ? 800 : 600,
-                    borderRadius: "999px",
-                  }}
-                >
-                  {label[locale]}
-                </Button>
-              );
-            })}
-            <Button
-              fullWidth
-              variant="text"
-              component={Link}
-              href={contactHref}
-              onClick={() => setOpenPath(null)}
-              sx={{ justifyContent: "flex-start", color: colors.mutedBlack, fontWeight: 600, borderRadius: "999px" }}
+            <Box
+              ref={setMobilePillContainer}
+              component="nav"
+              sx={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                isolation: "isolate",
+              }}
             >
-              Contact
-            </Button>
+              {activePill(mobilePillState)}
+              {navItems.map(({ key, label, href }) => (
+                <Box
+                  key={key}
+                  ref={registerMobilePillItem(key)}
+                  sx={{ position: "relative", zIndex: 1, display: "block" }}
+                >
+                  <Button
+                    fullWidth
+                    variant="text"
+                    component={Link}
+                    href={href}
+                    onClick={() => setOpenPath(null)}
+                    sx={{
+                      justifyContent: "flex-start",
+                      color: colors.mutedBlack,
+                      fontWeight: 600,
+                      borderRadius: "999px",
+                    }}
+                  >
+                    {label[locale]}
+                  </Button>
+                </Box>
+              ))}
+            </Box>
           </Box>
         </Collapse>
       </Box>
