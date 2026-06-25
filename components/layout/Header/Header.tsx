@@ -159,6 +159,7 @@ const Header = () => {
         href={alternatePath}
         prefetch={false}
         onClick={closeMenusForLanguageNavigation}
+        data-link-variant="plain"
         sx={{
           display: "inline-flex",
           alignItems: "center",
