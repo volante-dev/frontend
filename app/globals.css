@@ -18,6 +18,15 @@ body {
   color: var(--foreground);
 }
 
+.hero-video-media::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+.hero-video-media::-webkit-media-controls {
+  display: none !important;
+}
+
 .project-detail-shell {
   min-height: 100svh;
 }

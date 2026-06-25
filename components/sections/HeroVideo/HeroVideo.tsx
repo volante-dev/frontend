@@ -39,6 +39,7 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
     >
       {src && (
         <video
+          className="hero-video-media"
           ref={videoRef}
           autoPlay
           muted
@@ -52,6 +53,7 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            pointerEvents: "none",
           }}
         >
           <source src={src} type="video/mp4" />
