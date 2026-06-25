@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import { colors } from "@/app/theme/tokens";
 import VideoToggleButton from "@/components/ui/VideoToggleButton/VideoToggleButton";
@@ -10,18 +10,48 @@ interface HeroVideoProps {
   poster?: string;
 }
 
+const inferVideoTypeFromUrl = (value: string) => {
+  if (/\.webm(?:[?#].*)?$/i.test(value)) return "video/webm";
+  if (/\.mov(?:[?#].*)?$/i.test(value)) return "video/quicktime";
+
+  return "video/mp4";
+};
+
 const HeroVideo = ({ src, poster }: HeroVideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !src) return;
+
+    video.muted = true;
+    video.playsInline = true;
+
+    const play = () => {
+      void video.play().catch(() => {
+        setPlaying(false);
+      });
+    };
+
+    if (video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+      play();
+      return;
+    }
+
+    video.addEventListener("canplay", play, { once: true });
+    return () => video.removeEventListener("canplay", play);
+  }, [src]);
 
   const handleToggle = () => {
     if (!videoRef.current) return;
     if (playing) {
       videoRef.current.pause();
     } else {
-      void videoRef.current.play();
+      void videoRef.current.play().catch(() => {
+        setPlaying(false);
+      });
     }
-    setPlaying((v) => !v);
   };
 
   return (
@@ -44,8 +74,10 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           poster={poster}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
           style={{
             position: "absolute",
             inset: 0,
@@ -54,7 +86,7 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
             objectFit: "cover",
           }}
         >
-          <source src={src} type="video/mp4" />
+          <source src={src} type={inferVideoTypeFromUrl(src)} />
         </video>
       )}
 
