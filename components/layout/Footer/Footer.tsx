@@ -86,6 +86,7 @@ const Footer = () => {
             {t("footer.contact.heading", "Contact")}
           </Typography>
           <Typography variant="body2">yasmine@studio-volante.fr</Typography>
+          <Typography variant="body2">@vlnt.studio</Typography>
         </Box>
       </Box>
 
