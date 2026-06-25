@@ -48,6 +48,7 @@ const VideoToggleButton = ({ playing, onToggle, sx }: VideoToggleButtonProps) =>
             borderRadius: "50%",
             color: colors.mutedBlack,
             transform: "translateZ(0)",
+            WebkitTapHighlightColor: "transparent",
             ...(glassActive
               ? {
                   backdropFilter: `url(#${filterId})`,
@@ -62,8 +63,22 @@ const VideoToggleButton = ({ playing, onToggle, sx }: VideoToggleButtonProps) =>
                   WebkitBackdropFilter: "blur(16px)",
                   border: "1px solid rgba(255, 255, 255, 0.8)",
                   boxShadow: "0 4px 24px rgba(0, 0, 0, 0.12)",
-                  "&:hover": { backgroundColor: "rgba(247, 248, 249, 0.85)" },
+                  "@media (hover: hover) and (pointer: fine)": {
+                    "&:hover": { backgroundColor: "rgba(247, 248, 249, 0.85)" },
+                  },
                 }),
+            "@media (hover: none), (pointer: coarse)": {
+              "&:hover, &:focus, &:active": {
+                backgroundColor: glassActive
+                  ? "rgba(255, 255, 255, 0.35)"
+                  : "rgba(247, 248, 249, 0.65)",
+              },
+              "&.Mui-focusVisible": {
+                backgroundColor: glassActive
+                  ? "rgba(255, 255, 255, 0.35)"
+                  : "rgba(247, 248, 249, 0.65)",
+              },
+            },
           },
           ...(Array.isArray(sx) ? sx : [sx]),
         ]}
