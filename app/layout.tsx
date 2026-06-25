@@ -3,9 +3,12 @@ import { headers } from "next/headers";
 import "./globals.css";
 import ThemeProvider from "./theme/ThemeProvider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
+import { GoogleTagManager } from "@next/third-parties/google";
 import { defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import { siteName, siteUrl } from "@/lib/seo";
+
+const GTM_ID = "GTM-WJZB5SHF";
 
 export const metadata: Metadata = {
   metadataBase: siteUrl,
@@ -17,6 +20,10 @@ export const metadata: Metadata = {
     "Studio Volante accompagne les marques en identité visuelle, direction artistique et stratégie de contenu à Paris et partout en France.",
   applicationName: siteName,
   category: "design",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
 };
 
 const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>) => {
@@ -26,6 +33,7 @@ const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>)
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <GoogleTagManager gtmId={GTM_ID} />
       <head>
         <script
           dangerouslySetInnerHTML={{
