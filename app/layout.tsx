@@ -13,7 +13,7 @@ const GTM_ID = "GTM-WJZB5SHF";
 export const metadata: Metadata = {
   metadataBase: siteUrl,
   title: {
-    default: "Studio Volante — Studio de communication créative à Paris",
+    default: "Studio Volante - studio créatif de la petite Ceinture",
     template: `%s — ${siteName}`,
   },
   description:
