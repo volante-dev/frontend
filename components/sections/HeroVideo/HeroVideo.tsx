@@ -22,36 +22,17 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
   const [playing, setPlaying] = useState(true);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !src) return;
+    if (!videoRef.current || !src) return;
 
-    video.muted = true;
-    video.playsInline = true;
-
-    const play = () => {
-      void video.play().catch(() => {
-        setPlaying(false);
-      });
-    };
-
-    if (video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
-      play();
-      return;
+    if (playing) {
+      void videoRef.current.play().catch(() => setPlaying(false));
+    } else {
+      videoRef.current.pause();
     }
-
-    video.addEventListener("canplay", play, { once: true });
-    return () => video.removeEventListener("canplay", play);
-  }, [src]);
+  }, [playing, src]);
 
   const handleToggle = () => {
-    if (!videoRef.current) return;
-    if (playing) {
-      videoRef.current.pause();
-    } else {
-      void videoRef.current.play().catch(() => {
-        setPlaying(false);
-      });
-    }
+    setPlaying((value) => !value);
   };
 
   return (
@@ -69,8 +50,8 @@ const HeroVideo = ({ src, poster }: HeroVideoProps) => {
     >
       {src && (
         <video
+          key={src}
           ref={videoRef}
-          autoPlay
           muted
           loop
           playsInline
