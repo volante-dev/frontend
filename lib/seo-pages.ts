@@ -9,12 +9,12 @@ const pageSeo: Record<
 > = {
   home: {
     fr: {
-      title: "Studio Volante - studio créatif de la petite Ceinture",
+      title: "Studio créatif de la petite Ceinture",
       description:
         "Studio Volante crée des identités visuelles, directions artistiques et stratégies de contenu pour les marques à Paris et partout en France.",
     },
     en: {
-      title: "Studio Volante - creative studio of the petite Ceinture",
+      title: "Creative studio of the petite Ceinture",
       description:
         "Studio Volante creates visual identities, art direction and content strategies for brands in Paris, France and beyond.",
     },

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   metadataBase: siteUrl,
   title: {
     default: "Studio Volante - studio créatif de la petite Ceinture",
-    template: `%s — ${siteName}`,
+    template: `${siteName} - %s`,
   },
   description:
     "Studio Volante accompagne les marques en identité visuelle, direction artistique et stratégie de contenu à Paris et partout en France.",
