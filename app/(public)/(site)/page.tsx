@@ -2,12 +2,13 @@ import HeroVideo from "@/components/sections/HeroVideo/HeroVideo";
 import Hero from "@/components/sections/Hero/Hero";
 import FeaturedProjectsCarousel from "@/components/sections/FeaturedProjectsCarousel/FeaturedProjectsCarousel";
 import prisma from "@/lib/prisma";
-import { localizeField } from "@/lib/i18n";
+import { getTranslations, localizeField } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
 import OpeningSequenceLoader from "@/components/layout/OpeningSequence/OpeningSequenceLoader";
 import HomeScrollController from "@/components/sections/HomeScrollController/HomeScrollController";
 import type { Metadata } from "next";
 import { createRouteMetadata } from "@/lib/seo-pages";
+import { getHomeHeroContent } from "@/lib/home-hero-content";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,11 @@ const HomePage = async ({
 }) => {
   const locale = resolveLocale((await params)?.locale);
 
-  const projects = await getProjects();
+  const [projects, translations] = await Promise.all([
+    getProjects(),
+    getTranslations(locale),
+  ]);
+  const heroContent = await getHomeHeroContent(locale, translations);
   const localizedProjects = projects.map(({ imageAsset, ...p }) => ({
     ...p,
     title: localizeField(p.title, p.titleEn, locale),
@@ -69,7 +74,7 @@ const HomePage = async ({
       <OpeningSequenceLoader />
       <HomeScrollController />
       <HeroVideo src={heroVideoSrc} poster={heroVideoPoster} />
-      <Hero />
+      <Hero content={heroContent} />
       {localizedProjects.length >= 2 && (
         <FeaturedProjectsCarousel projects={localizedProjects} />
       )}
