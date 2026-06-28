@@ -6,7 +6,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
-import { siteName, siteUrl } from "@/lib/seo";
+import { siteDescription, siteName, siteUrl } from "@/lib/seo";
 
 const GTM_ID = "GTM-WJZB5SHF";
 
@@ -16,8 +16,7 @@ export const metadata: Metadata = {
     default: "Studio Volante - studio créatif de la petite Ceinture",
     template: `%s - ${siteName}`,
   },
-  description:
-    "Studio Volante accompagne les marques en identité visuelle, direction artistique et stratégie de contenu à Paris et partout en France.",
+  description: siteDescription,
   applicationName: siteName,
   category: "design",
   icons: {

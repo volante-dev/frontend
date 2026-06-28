@@ -71,6 +71,7 @@ export const proxy = (request: NextRequest) => {
     const response = NextResponse.rewrite(new URL("/coming-soon", request.url), {
       request: { headers: requestHeaders },
     });
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
     return response;
   }
 

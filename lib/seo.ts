@@ -4,6 +4,10 @@ import type { RouteKey } from "./i18n-routes";
 import { getLocalizedHref } from "./i18n-routes";
 
 export const siteName = "Studio Volante";
+export const siteDescription =
+  "Studio Volante accompagne galeries, artistes, institutions culturelles, lieux de patrimoine et marques pour révéler leurs récits, images et prises de parole.";
+export const siteDescriptionEn =
+  "Studio Volante helps galleries, artists, cultural institutions, heritage venues and brands shape their stories, images and public presence.";
 export const siteUrl = new URL(
   process.env.NEXT_PUBLIC_APP_URL ?? "https://studio-volante.fr",
 );
@@ -111,8 +115,7 @@ export const getOrganizationJsonLd = () => {
     logo: absoluteUrl("/favicon.ico"),
     email: "yasmine@studio-volante.fr",
     telephone,
-    description:
-      "Studio de communication créative à Paris spécialisé en identité visuelle, direction artistique et stratégie de contenu.",
+    description: siteDescription,
     areaServed: [
       { "@type": "City", name: "Paris" },
       { "@type": "Country", name: "France" },
@@ -137,6 +140,7 @@ export const getWebsiteJsonLd = () => ({
   "@id": `${siteUrl.origin}/#website`,
   url: siteUrl.origin,
   name: siteName,
+  description: siteDescription,
   inLanguage: ["fr-FR", "en-GB"],
   publisher: { "@id": `${siteUrl.origin}/#organization` },
 });

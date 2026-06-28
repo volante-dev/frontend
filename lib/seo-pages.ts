@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { Locale } from "./i18n-config";
 import type { RouteKey } from "./i18n-routes";
-import { createPageMetadata } from "./seo";
+import { createPageMetadata, siteDescription, siteDescriptionEn } from "./seo";
 
 const pageSeo: Record<
   RouteKey,
@@ -10,13 +10,11 @@ const pageSeo: Record<
   home: {
     fr: {
       title: "Studio créatif de la petite Ceinture",
-      description:
-        "Studio Volante crée des identités visuelles, directions artistiques et stratégies de contenu pour les marques à Paris et partout en France.",
+      description: siteDescription,
     },
     en: {
       title: "Creative studio of the petite Ceinture",
-      description:
-        "Studio Volante creates visual identities, art direction and content strategies for brands in Paris, France and beyond.",
+      description: siteDescriptionEn,
     },
   },
   services: {
