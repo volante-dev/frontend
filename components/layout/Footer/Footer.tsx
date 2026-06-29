@@ -6,6 +6,7 @@ import Divider from "@mui/material/Divider";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
+import { getSiteRouteLabel } from "@/lib/site-route-config";
 
 const Footer = () => {
   const { locale, siteRoutes, t, localizedHref } = useI18n();
@@ -68,7 +69,7 @@ const Footer = () => {
                   "&:hover": { color: colors.green },
                 }}
               >
-                {locale === "en" ? route.labelEn : route.label}
+                {getSiteRouteLabel(route, locale)}
               </Box>
             </Typography>
           ))}

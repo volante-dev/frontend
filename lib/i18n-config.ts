@@ -2,10 +2,12 @@
  * Configuration de base i18n — importée par i18n.ts ET i18n-routes.ts
  * pour éviter les imports circulaires.
  */
-export type Locale = "fr" | "en";
+export type BuiltInLocale = "fr" | "en";
+export type Locale = string;
 
-export const defaultLocale: Locale = "fr";
-export const locales: Locale[] = ["fr", "en"];
+export const defaultLocale = "fr";
+export const builtInLocales: BuiltInLocale[] = ["fr", "en"];
+export const locales: Locale[] = builtInLocales;
 
 export const isLocale = (value: string | undefined): value is Locale =>
   locales.includes(value as Locale);

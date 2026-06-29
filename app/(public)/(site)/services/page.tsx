@@ -4,7 +4,7 @@ import ServicesList from "@/components/sections/ServicesList/ServicesList";
 import ServicesContactCta from "@/components/sections/ServicesContactCta/ServicesContactCta";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
-import { getTranslations, localizeField, t } from "@/lib/i18n";
+import { getTranslations, t } from "@/lib/i18n";
 import { getPageHeaderContent } from "@/lib/page-header-content";
 import { resolveLocale } from "@/lib/i18n-config";
 import type { Metadata } from "next";
@@ -12,6 +12,7 @@ import { createRouteMetadata } from "@/lib/seo-pages";
 import { getLocalizedRouteHref } from "@/lib/site-route-config";
 import { getSiteRoutes } from "@/lib/site-routes";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
+import { localizedTranslationField } from "@/lib/content-translations";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ const ServicesPage = async ({
         where: { active: true },
         orderBy: { order: "asc" },
         include: {
+          translations: true,
           portfolioExamples: {
             orderBy: { order: "asc" },
             include: {
@@ -43,6 +45,7 @@ const ServicesPage = async ({
                   id: true,
                   title: true,
                   titleEn: true,
+                  translations: true,
                   slug: true,
                   imageUrl: true,
                   imageAsset: { select: { mediaType: true, posterUrl: true } },
@@ -61,17 +64,31 @@ const ServicesPage = async ({
 
   const services = rawServices.map((s) => ({
     ...s,
-    title: localizeField(s.title, s.titleEn, locale),
-    description: localizeField(
+    title: localizedTranslationField(
+      s.translations,
+      locale,
+      "title",
+      s.title,
+      s.titleEn,
+    ),
+    description: localizedTranslationField(
+      s.translations,
+      locale,
+      "descriptionHtml",
       s.descriptionHtml ?? `<p>${s.description}</p>`,
       s.descriptionHtmlEn ?? s.descriptionEn,
-      locale,
     ),
     portfolioExamples: s.portfolioExamples
       .filter((example) => example.project.publishedAt)
       .map((example) => ({
         id: example.project.id,
-        title: localizeField(example.project.title, example.project.titleEn, locale),
+        title: localizedTranslationField(
+          example.project.translations,
+          locale,
+          "title",
+          example.project.title,
+          example.project.titleEn,
+        ),
         slug: example.project.slug,
         imageUrl: example.project.imageUrl,
         coverMediaType: example.project.imageAsset?.mediaType ?? null,

@@ -27,6 +27,9 @@ export const getSiteRoutes = cache(async (): Promise<SiteRoute[]> => {
   try {
     const routes = await prisma.siteRoute.findMany({
       orderBy: [{ order: "asc" }, { id: "asc" }],
+      include: {
+        translations: true,
+      },
     });
 
     return normalizeSiteRoutes(
@@ -38,6 +41,15 @@ export const getSiteRoutes = cache(async (): Promise<SiteRoute[]> => {
           labelEn: route.labelEn,
           slug: route.slug,
           slugEn: route.slugEn,
+          translations: Object.fromEntries(
+            route.translations.map((translation) => [
+              translation.locale,
+              {
+                label: translation.label,
+                slug: translation.slug,
+              },
+            ]),
+          ),
           order: route.order,
           internalSegment:
             defaultSiteRoutes.find((item) => item.id === route.id)?.internalSegment ?? "",

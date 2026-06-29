@@ -2,7 +2,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import { colors } from "@/app/theme/tokens";
-import { getTranslations, localizeField, t } from "@/lib/i18n";
+import { getTranslations, t } from "@/lib/i18n";
 import { getPageHeaderContent } from "@/lib/page-header-content";
 import { resolveLocale } from "@/lib/i18n-config";
 import prisma from "@/lib/prisma";
@@ -13,6 +13,7 @@ import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
 import FoundersBlock from "@/components/sections/FoundersBlock/FoundersBlock";
 import type { Founder } from "@/components/sections/FoundersBlock/FoundersBlock";
 import RichText from "@/components/ui/RichText/RichText";
+import { localizedTranslationField } from "@/lib/content-translations";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,7 @@ const fallbackValues = [
       "Chaque projet est traité avec la même rigueur, qu'il s'agisse d'une carte de visite ou d'une campagne nationale.",
     descriptionEn:
       "Every project receives the same attention to detail, from a business card to a national campaign.",
+    translations: [],
   },
   {
     id: "studio-value-clarte",
@@ -41,6 +43,7 @@ const fallbackValues = [
       "Nous simplifions le complexe. Une bonne communication est d'abord une communication compréhensible.",
     descriptionEn:
       "We make complexity simple. Good communication begins with being understood.",
+    translations: [],
   },
   {
     id: "studio-value-durabilite",
@@ -50,6 +53,7 @@ const fallbackValues = [
       "Nous concevons des identités qui vieillissent bien et des messages qui restent pertinents dans le temps.",
     descriptionEn:
       "We design identities that age well and messages that remain relevant over time.",
+    translations: [],
   },
 ];
 
@@ -58,6 +62,7 @@ const getStudioValues = async () => {
     return await prisma.studioValue.findMany({
       where: { active: true },
       orderBy: [{ order: "asc" }, { id: "asc" }],
+      include: { translations: true },
     });
   } catch {
     return fallbackValues;
@@ -71,6 +76,7 @@ const getStudioPageContent = async () => {
       include: {
         founderOneImageAsset: true,
         founderTwoImageAsset: true,
+        translations: true,
       },
     });
   } catch {
@@ -100,69 +106,93 @@ const StudioPage = async ({
   const pageHeader = await getPageHeaderContent("studio", locale, translations);
   const values = rawValues.map((value) => ({
     key: value.id,
-    title: localizeField(value.title, value.titleEn, locale),
-    description: localizeField(
+    title: localizedTranslationField(
+      value.translations,
+      locale,
+      "title",
+      value.title,
+      value.titleEn,
+    ),
+    description: localizedTranslationField(
+      value.translations,
+      locale,
+      "description",
       value.description,
       value.descriptionEn,
-      locale,
     ),
   }));
   const founders: Founder[] = studioContent
     ? [
         {
-          name: localizeField(
+          name: localizedTranslationField(
+            studioContent.translations,
+            locale,
+            "founderOneName",
             studioContent.founderOneName,
             studioContent.founderOneNameEn,
-            locale,
           ),
-          role: localizeField(
+          role: localizedTranslationField(
+            studioContent.translations,
+            locale,
+            "founderOneRole",
             studioContent.founderOneRole,
             studioContent.founderOneRoleEn,
-            locale,
           ),
           description: sanitizeRichTextHtml(
-            localizeField(
+            localizedTranslationField(
+              studioContent.translations,
+              locale,
+              "founderOneDescription",
               studioContent.founderOneDescription,
               studioContent.founderOneDescriptionEn,
-              locale,
             ),
           ),
           imageUrl: studioContent.founderOneImageUrl,
-          imageAlt: localizeField(
+          imageAlt: localizedTranslationField(
+            studioContent.translations,
+            locale,
+            "founderOneImageAlt",
             studioContent.founderOneImageAsset?.alt ||
               studioContent.founderOneImageAlt ||
               studioContent.founderOneName,
             studioContent.founderOneImageAsset?.altEn ||
               studioContent.founderOneImageAltEn,
-            locale,
           ),
         },
         {
-          name: localizeField(
+          name: localizedTranslationField(
+            studioContent.translations,
+            locale,
+            "founderTwoName",
             studioContent.founderTwoName,
             studioContent.founderTwoNameEn,
-            locale,
           ),
-          role: localizeField(
+          role: localizedTranslationField(
+            studioContent.translations,
+            locale,
+            "founderTwoRole",
             studioContent.founderTwoRole,
             studioContent.founderTwoRoleEn,
-            locale,
           ),
           description: sanitizeRichTextHtml(
-            localizeField(
+            localizedTranslationField(
+              studioContent.translations,
+              locale,
+              "founderTwoDescription",
               studioContent.founderTwoDescription,
               studioContent.founderTwoDescriptionEn,
-              locale,
             ),
           ),
           imageUrl: studioContent.founderTwoImageUrl,
-          imageAlt: localizeField(
+          imageAlt: localizedTranslationField(
+            studioContent.translations,
+            locale,
+            "founderTwoImageAlt",
             studioContent.founderTwoImageAsset?.alt ||
               studioContent.founderTwoImageAlt ||
               studioContent.founderTwoName,
             studioContent.founderTwoImageAsset?.altEn ||
               studioContent.founderTwoImageAltEn,
-            locale,
           ),
         },
       ]
@@ -178,36 +208,46 @@ const StudioPage = async ({
         founder.imageUrl.trim(),
     )
       ? {
-          eyebrow: localizeField(
+          eyebrow: localizedTranslationField(
+            studioContent.translations,
+            locale,
+            "eyebrow",
             studioContent.eyebrow,
             studioContent.eyebrowEn,
-            locale,
           ),
-          title: localizeField(
+          title: localizedTranslationField(
+            studioContent.translations,
+            locale,
+            "title",
             studioContent.title,
             studioContent.titleEn,
-            locale,
           ),
-          intro: localizeField(
+          intro: localizedTranslationField(
+            studioContent.translations,
+            locale,
+            "intro",
             studioContent.intro,
             studioContent.introEn,
-            locale,
           ),
           founders,
         }
       : null;
   const historyTitle = studioContent
-    ? localizeField(
+    ? localizedTranslationField(
+        studioContent.translations,
+        locale,
+        "historyTitle",
         studioContent.historyTitle,
         studioContent.historyTitleEn,
-        locale,
       )
     : t(translations, "studio.history.heading", "Notre histoire");
   const historyContentHtml = studioContent
-    ? localizeField(
+    ? localizedTranslationField(
+        studioContent.translations,
+        locale,
+        "historyContentHtml",
         studioContent.historyContentHtml,
         studioContent.historyContentHtmlEn,
-        locale,
       )
     : `<p>${escapeHtml(
         t(

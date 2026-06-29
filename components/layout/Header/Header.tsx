@@ -11,8 +11,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import Button from "@/components/ui/Button/Button";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
-import type { Locale } from "@/lib/i18n";
 import {
+  getSiteRouteLabel,
   getLocalizedRouteHref,
   type SiteRoute,
 } from "@/lib/site-route-config";
@@ -36,31 +36,25 @@ type HeaderProps = {
   items: SiteRoute[];
 };
 
-const getLocalizedLabel = (item: SiteRoute, locale: Locale) =>
-  locale === "en" ? item.labelEn : item.label;
-
 const Header = ({ items }: HeaderProps) => {
-  const { locale, pathname, localizedHref, alternateHref } = useI18n();
+  const { locale, localeCodes, pathname, localizedHref, alternateHref } = useI18n();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const [langOpenPath, setLangOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
   const langOpen = langOpenPath === pathname;
   const langDesktopRef = useRef<HTMLDivElement>(null);
   const langMobileRef = useRef<HTMLDivElement>(null);
-  const targetLocale: Locale = locale === "en" ? "fr" : "en";
+  const alternateLocales = localeCodes.filter((item) => item !== locale);
   const homeHref = localizedHref("home");
   const navItems = useMemo(
     () =>
       items.map((item) => ({
         key: item.id,
-        label: getLocalizedLabel(item, locale),
+        label: getSiteRouteLabel(item, locale),
         href: getLocalizedRouteHref(items, locale, item.id),
-        alternateHref: getLocalizedRouteHref(items, targetLocale, item.id),
       })),
-    [items, locale, targetLocale],
+    [items, locale],
   );
-  const activeTopLevelItem = navItems.find((item) => item.href === pathname);
-  const alternatePath = activeTopLevelItem?.alternateHref ?? alternateHref(targetLocale);
   const {
     setContainerNode: setDesktopPillContainer,
     registerItem: registerDesktopPillItem,
@@ -190,7 +184,7 @@ const Header = ({ items }: HeaderProps) => {
         flexDirection: "row-reverse",
         alignItems: "center",
         overflow: "hidden",
-        maxWidth: langOpen ? "110px" : "52px",
+        maxWidth: langOpen ? `${52 + alternateLocales.length * 44}px` : "52px",
         transition: langOpen
           ? "max-width 380ms cubic-bezier(0.34, 1.56, 0.64, 1)"
           : "max-width 200ms ease-in",
@@ -214,36 +208,39 @@ const Header = ({ items }: HeaderProps) => {
       >
         {locale.toUpperCase()}
       </Button>
-      <Box
-        component={Link}
-        href={alternatePath}
-        prefetch={false}
-        onClick={closeMenusForLanguageNavigation}
-        data-link-variant="plain"
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: colors.mutedBlack,
-          fontSize: "0.75rem",
-          fontWeight: 600,
-          letterSpacing: "0.06em",
-          textDecoration: "none",
-          minWidth: "auto",
-          px: 1,
-          flexShrink: 0,
-          borderRadius: "999px",
-          opacity: langOpen ? 1 : 0,
-          transform: langOpen ? "scale(1)" : "scale(0.6)",
-          transformOrigin: "right center",
-          transition: langOpen
-            ? "opacity 260ms 60ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 260ms 60ms cubic-bezier(0.34, 1.56, 0.64, 1)"
-            : "opacity 100ms linear, transform 100ms linear",
-          pointerEvents: langOpen ? "auto" : "none",
-        }}
-      >
-        {targetLocale.toUpperCase()}
-      </Box>
+      {alternateLocales.map((targetLocale) => (
+        <Box
+          key={targetLocale}
+          component={Link}
+          href={alternateHref(targetLocale)}
+          prefetch={false}
+          onClick={closeMenusForLanguageNavigation}
+          data-link-variant="plain"
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: colors.mutedBlack,
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            textDecoration: "none",
+            minWidth: "auto",
+            px: 1,
+            flexShrink: 0,
+            borderRadius: "999px",
+            opacity: langOpen ? 1 : 0,
+            transform: langOpen ? "scale(1)" : "scale(0.6)",
+            transformOrigin: "right center",
+            transition: langOpen
+              ? "opacity 260ms 60ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 260ms 60ms cubic-bezier(0.34, 1.56, 0.64, 1)"
+              : "opacity 100ms linear, transform 100ms linear",
+            pointerEvents: langOpen ? "auto" : "none",
+          }}
+        >
+          {targetLocale.toUpperCase()}
+        </Box>
+      ))}
     </Box>
   );
 

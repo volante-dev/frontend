@@ -12,6 +12,8 @@ import { Analytics } from "@vercel/analytics/next";
 import JsonLd from "@/components/seo/JsonLd";
 import { getOrganizationJsonLd, getWebsiteJsonLd } from "@/lib/seo";
 import { getSiteRoutes } from "@/lib/site-routes";
+import { defaultLocale } from "@/lib/i18n-config";
+import { getPublishedLocaleCodes } from "@/lib/site-locales";
 
 const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
   const headersList = await headers();
@@ -20,17 +22,24 @@ const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
     initialPathname.length > 1 && initialPathname.endsWith("/")
       ? initialPathname.slice(0, -1)
       : initialPathname;
-  const initialHome =
-    normalizedPathname === "/" || normalizedPathname === "/en";
-  const [translationsFr, translationsEn, siteRoutes] = await Promise.all([
-    getTranslations("fr"),
-    getTranslations("en"),
+  const [localeCodes, siteRoutes] = await Promise.all([
+    getPublishedLocaleCodes(),
     getSiteRoutes(),
   ]);
+  const initialHome =
+    normalizedPathname === "/" ||
+    localeCodes
+      .filter((locale) => locale !== defaultLocale)
+      .some((locale) => normalizedPathname === `/${locale}`);
+  const translationsEntries = await Promise.all(
+    localeCodes.map(async (locale) => [locale, await getTranslations(locale)] as const),
+  );
+  const translationsByLocale = Object.fromEntries(translationsEntries);
 
   return (
     <I18nProvider
-      translationsByLocale={{ fr: translationsFr, en: translationsEn }}
+      translationsByLocale={translationsByLocale}
+      localeCodes={localeCodes}
       siteRoutes={siteRoutes}
     >
       <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />

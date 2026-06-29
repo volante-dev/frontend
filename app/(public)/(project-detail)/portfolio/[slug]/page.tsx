@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ProjectRealizationViewer from "@/components/sections/ProjectRealizationViewer/ProjectRealizationViewer";
 import type { ProjectRealizationSlide } from "@/components/sections/ProjectRealizationViewer/ProjectRealizationViewer";
-import { localizeField } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
 import prisma from "@/lib/prisma";
 import { sanitizeRichTextHtml } from "@/lib/sanitize-html";
@@ -17,6 +16,7 @@ import {
 } from "@/lib/seo";
 import { getLocalizedRouteHref } from "@/lib/site-route-config";
 import { getSiteRoutes } from "@/lib/site-routes";
+import { localizedTranslationField } from "@/lib/content-translations";
 
 export const dynamic = "force-dynamic";
 
@@ -28,18 +28,23 @@ interface ProjectPageProps {
 const getProject = async (slug: string, allowDraftPreview = false) =>
   prisma.project.findFirst({
     where: {
-      slug,
+      OR: [{ slug }, { translations: { some: { slug } } }],
       ...(allowDraftPreview ? {} : { publishedAt: { not: null } }),
     },
     include: {
-      imageAsset: true,
-      sectorEntry: true,
-      locationEntry: true,
-      deliveredServiceEntries: { orderBy: { label: "asc" } },
+      translations: true,
+      imageAsset: { include: { translations: true } },
+      sectorEntry: { include: { translations: true } },
+      locationEntry: { include: { translations: true } },
+      deliveredServiceEntries: {
+        orderBy: { label: "asc" },
+        include: { translations: true },
+      },
       slides: {
         orderBy: { order: "asc" },
         include: {
-          mediaAsset: true,
+          translations: true,
+          mediaAsset: { include: { translations: true } },
         },
       },
     },
@@ -64,11 +69,26 @@ export const generateMetadata = async ({
     };
   }
 
-  const title = localizeField(project.title, project.titleEn, locale);
-  const description = localizeField(
+  const localizedSlug = localizedTranslationField(
+    project.translations,
+    locale,
+    "slug",
+    project.slug,
+    project.slug,
+  );
+  const title = localizedTranslationField(
+    project.translations,
+    locale,
+    "title",
+    project.title,
+    project.titleEn,
+  );
+  const description = localizedTranslationField(
+    project.translations,
+    locale,
+    "description",
     project.description,
     project.descriptionEn,
-    locale,
   );
   const coverMediaType =
     project.imageAsset?.mediaType ?? inferMediaTypeFromUrl(project.imageUrl);
@@ -79,10 +99,10 @@ export const generateMetadata = async ({
 
   return createPageMetadata({
     locale,
-    pathname: projectPath(locale, slug, siteRoutes),
+    pathname: projectPath(locale, localizedSlug, siteRoutes),
     alternatePathname: projectPath(
       locale === "fr" ? "en" : "fr",
-      slug,
+      project.slug,
       siteRoutes,
     ),
     title,
@@ -121,8 +141,27 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
 
   if (!project) notFound();
 
-  const projectTitle = localizeField(project.title, project.titleEn, locale);
-  const projectDescription = localizeField(project.description, project.descriptionEn, locale);
+  const localizedSlug = localizedTranslationField(
+    project.translations,
+    locale,
+    "slug",
+    project.slug,
+    project.slug,
+  );
+  const projectTitle = localizedTranslationField(
+    project.translations,
+    locale,
+    "title",
+    project.title,
+    project.titleEn,
+  );
+  const projectDescription = localizedTranslationField(
+    project.translations,
+    locale,
+    "description",
+    project.description,
+    project.descriptionEn,
+  );
   const coverMediaType =
     project.imageAsset?.mediaType ?? inferMediaTypeFromUrl(project.imageUrl);
   const seoImage =
@@ -130,18 +169,60 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
       ? project.imageAsset?.posterUrl ?? project.imageUrl
       : project.imageUrl;
   const sector = project.sectorEntry
-    ? localizeField(project.sectorEntry.label, project.sectorEntry.labelEn, locale)
+    ? localizedTranslationField(
+        project.sectorEntry.translations,
+        locale,
+        "label",
+        project.sectorEntry.label,
+        project.sectorEntry.labelEn,
+      )
     : "";
   const location = project.locationEntry
-    ? localizeField(project.locationEntry.label, project.locationEntry.labelEn, locale)
+    ? localizedTranslationField(
+        project.locationEntry.translations,
+        locale,
+        "label",
+        project.locationEntry.label,
+        project.locationEntry.labelEn,
+      )
     : "";
   const services = project.deliveredServiceEntries.map((entry) =>
-    localizeField(entry.label, entry.labelEn, locale),
+    localizedTranslationField(
+      entry.translations,
+      locale,
+      "label",
+      entry.label,
+      entry.labelEn,
+    ),
   );
-  const challenge = localizeField(project.challenge ?? "", project.challengeEn, locale);
-  const approach = localizeField(project.approach ?? "", project.approachEn, locale);
-  const results = localizeField(project.results ?? "", project.resultsEn, locale);
-  const awards = localizeField(project.awards ?? "", project.awardsEn, locale);
+  const challenge = localizedTranslationField(
+    project.translations,
+    locale,
+    "challenge",
+    project.challenge ?? "",
+    project.challengeEn,
+  );
+  const approach = localizedTranslationField(
+    project.translations,
+    locale,
+    "approach",
+    project.approach ?? "",
+    project.approachEn,
+  );
+  const results = localizedTranslationField(
+    project.translations,
+    locale,
+    "results",
+    project.results ?? "",
+    project.resultsEn,
+  );
+  const awards = localizedTranslationField(
+    project.translations,
+    locale,
+    "awards",
+    project.awards ?? "",
+    project.awardsEn,
+  );
   const caseStudySections = [
     {
       title: locale === "en" ? "The challenge" : "La problématique",
@@ -161,32 +242,48 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
     project.slides.length > 0
       ? project.slides.map((slide, index) => ({
           id: slide.id,
-          title: localizeField(slide.title, slide.titleEn, locale),
+          title: localizedTranslationField(
+            slide.translations,
+            locale,
+            "title",
+            slide.title,
+            slide.titleEn,
+          ),
           contentHtml: sanitizeRichTextHtml(
-            `${localizeField(slide.contentHtml, slide.contentHtmlEn, locale)}${index === 0 ? caseStudyHtml : ""}`,
+            `${localizedTranslationField(
+              slide.translations,
+              locale,
+              "contentHtml",
+              slide.contentHtml,
+              slide.contentHtmlEn,
+            )}${index === 0 ? caseStudyHtml : ""}`,
           ),
           mediaType: slide.mediaType,
           mediaUrl: slide.mediaUrl,
           posterUrl: slide.mediaAsset?.posterUrl ?? slide.posterUrl,
           alt:
-            localizeField(
+            localizedTranslationField(
+              slide.mediaAsset?.translations ?? slide.translations,
+              locale,
+              "alt",
               slide.mediaAsset?.alt ?? slide.alt ?? "",
               slide.mediaAsset?.altEn ?? slide.altEn,
-              locale,
             ) || null,
         }))
       : [
-        {
-          id: `${project.id}-fallback`,
-          title: projectTitle,
-          contentHtml: sanitizeRichTextHtml(`<p>${projectDescription}</p>`),
-          mediaType: coverMediaType,
-          mediaUrl: project.imageUrl,
-          posterUrl: project.imageAsset?.posterUrl,
-          alt: localizeField(
-            project.imageAsset?.alt ?? projectTitle,
-            project.imageAsset?.altEn,
+          {
+            id: `${project.id}-fallback`,
+            title: projectTitle,
+            contentHtml: sanitizeRichTextHtml(`<p>${projectDescription}</p>`),
+            mediaType: coverMediaType,
+            mediaUrl: project.imageUrl,
+            posterUrl: project.imageAsset?.posterUrl,
+            alt: localizedTranslationField(
+              project.imageAsset?.translations,
               locale,
+              "alt",
+              project.imageAsset?.alt ?? projectTitle,
+              project.imageAsset?.altEn,
             ),
           },
         ];
@@ -205,7 +302,7 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
     },
   ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value));
 
-  const pathname = projectPath(locale, slug, siteRoutes);
+  const pathname = projectPath(locale, localizedSlug, siteRoutes);
   const breadcrumb = getBreadcrumbJsonLd(locale, [
     {
       name: locale === "en" ? "Home" : "Accueil",
@@ -245,9 +342,21 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
       )
       .map((slide) => ({
         "@type": "VideoObject",
-        name: localizeField(slide.title, slide.titleEn, locale),
+        name: localizedTranslationField(
+          slide.translations,
+          locale,
+          "title",
+          slide.title,
+          slide.titleEn,
+        ),
         description: stripHtml(
-          localizeField(slide.contentHtml, slide.contentHtmlEn, locale),
+          localizedTranslationField(
+            slide.translations,
+            locale,
+            "contentHtml",
+            slide.contentHtml,
+            slide.contentHtmlEn,
+          ),
         ),
         thumbnailUrl: slide.mediaAsset?.posterUrl ?? slide.posterUrl,
         contentUrl: slide.mediaUrl,

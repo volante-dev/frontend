@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { isLocale } from "@/lib/i18n-config";
+import { getPublishedLocaleCodes } from "@/lib/site-locales";
 
 const LocaleLayout = async ({
   children,
@@ -9,7 +9,8 @@ const LocaleLayout = async ({
   params: Promise<{ locale: string }>;
 }) => {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  const localeCodes = await getPublishedLocaleCodes();
+  if (!localeCodes.includes(locale)) notFound();
 
   return children;
 };

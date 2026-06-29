@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TrailblazeArticle from "@/components/sections/Trailblaze/TrailblazeArticle";
 import prisma from "@/lib/prisma";
-import { localizeField } from "@/lib/i18n";
-import { resolveLocale } from "@/lib/i18n-config";
+import { resolveLocale, type Locale } from "@/lib/i18n-config";
 import { sanitizeRichTextHtml } from "@/lib/sanitize-html";
 import { verifyPreviewToken } from "@/lib/preview-token";
 import JsonLd from "@/components/seo/JsonLd";
@@ -17,6 +16,10 @@ import {
 } from "@/lib/seo";
 import { getLocalizedRouteHref } from "@/lib/site-route-config";
 import { getSiteRoutes } from "@/lib/site-routes";
+import {
+  localizedTranslationArray,
+  localizedTranslationField,
+} from "@/lib/content-translations";
 
 export const dynamic = "force-dynamic";
 
@@ -46,36 +49,53 @@ const getPost = async (
 ) =>
   prisma.blogPost.findFirst({
     where: {
-      OR: [{ slug }, { slugEn: slug }],
+      OR: [{ slug }, { slugEn: slug }, { translations: { some: { slug } } }],
       ...(allowDraftPreview ? {} : { publishedAt: { not: null } }),
     },
     include: {
-      coverMediaAsset: true,
+      translations: true,
+      coverMediaAsset: { include: { translations: true } },
       blocks: {
         orderBy: { order: "asc" },
-        include: { mediaAsset: true },
+        include: {
+          translations: true,
+          mediaAsset: { include: { translations: true } },
+        },
       },
     },
   });
 
 const getDescription = (
+  translations: Array<{ locale: string; seoDescription: string | null }> | null,
   seoDescription: string | null,
   seoDescriptionEn: string | null,
-  blocks: Array<{ contentHtml: string | null; contentHtmlEn: string | null }>,
-  locale: "fr" | "en",
+  blocks: Array<{
+    contentHtml: string | null;
+    contentHtmlEn: string | null;
+    translations: Array<{ locale: string; contentHtml: string | null }>;
+  }>,
+  locale: Locale,
   fallback: string,
 ) => {
-  const explicitDescription = localizeField(
+  const explicitDescription = localizedTranslationField(
+    translations,
+    locale,
+    "seoDescription",
     seoDescription ?? "",
     seoDescriptionEn,
-    locale,
   ).trim();
   if (explicitDescription) return explicitDescription;
 
   const richText = blocks.find((block) => block.contentHtml);
   if (!richText?.contentHtml) return fallback;
   return stripHtml(
-    localizeField(richText.contentHtml, richText.contentHtmlEn, locale),
+    localizedTranslationField(
+      richText.translations,
+      locale,
+      "contentHtml",
+      richText.contentHtml,
+      richText.contentHtmlEn,
+    ),
   ).slice(0, 180);
 };
 
@@ -119,8 +139,22 @@ export const generateMetadata = async ({
     };
   }
 
-  const title = localizeField(post.title, post.titleEn, locale);
+  const localizedSlug = localizedTranslationField(
+    post.translations,
+    locale,
+    "slug",
+    post.slug,
+    post.slugEn,
+  );
+  const title = localizedTranslationField(
+    post.translations,
+    locale,
+    "title",
+    post.title,
+    post.titleEn,
+  );
   const description = getDescription(
+    post.translations,
     post.seoDescription,
     post.seoDescriptionEn,
     post.blocks,
@@ -138,13 +172,13 @@ export const generateMetadata = async ({
   return createPageMetadata({
     locale,
     pathname: blogPostPath(
-      locale,
-      locale === "en" ? post.slugEn : post.slug,
+    locale,
+      localizedSlug,
       siteRoutes,
     ),
     alternatePathname: blogPostPath(
       locale === "fr" ? "en" : "fr",
-      locale === "fr" ? post.slugEn : post.slug,
+      post.slug,
       siteRoutes,
     ),
     title,
@@ -172,10 +206,36 @@ const TrailblazeArticlePage = async ({
 
   if (!post) notFound();
 
-  const articleTitle = localizeField(post.title, post.titleEn, locale);
-  const articleEyebrow = localizeField(post.eyebrow, post.eyebrowEn, locale);
-  const articleTags = locale === "en" ? post.tagsEn : post.tags;
+  const localizedSlug = localizedTranslationField(
+    post.translations,
+    locale,
+    "slug",
+    post.slug,
+    post.slugEn,
+  );
+  const articleTitle = localizedTranslationField(
+    post.translations,
+    locale,
+    "title",
+    post.title,
+    post.titleEn,
+  );
+  const articleEyebrow = localizedTranslationField(
+    post.translations,
+    locale,
+    "eyebrow",
+    post.eyebrow,
+    post.eyebrowEn,
+  );
+  const articleTags = localizedTranslationArray(
+    post.translations,
+    locale,
+    "tags",
+    post.tags,
+    post.tagsEn,
+  );
   const description = getDescription(
+    post.translations,
     post.seoDescription,
     post.seoDescriptionEn,
     post.blocks,
@@ -184,7 +244,7 @@ const TrailblazeArticlePage = async ({
   );
   const articlePath = blogPostPath(
     locale,
-    locale === "en" ? post.slugEn : post.slug,
+    localizedSlug,
     siteRoutes,
   );
   const absoluteArticleUrl = toAbsoluteUrl(articlePath);
@@ -232,17 +292,25 @@ const TrailblazeArticlePage = async ({
     type: block.type,
     contentHtml: block.contentHtml
       ? sanitizeRichTextHtml(
-          localizeField(block.contentHtml, block.contentHtmlEn, locale),
+          localizedTranslationField(
+            block.translations,
+            locale,
+            "contentHtml",
+            block.contentHtml,
+            block.contentHtmlEn,
+          ),
         )
       : null,
     mediaUrl: block.mediaUrl,
     posterUrl: block.mediaAsset?.posterUrl ?? null,
     alt:
       block.mediaAsset && block.type === "IMAGE"
-        ? localizeField(
+        ? localizedTranslationField(
+            block.mediaAsset.translations,
+            locale,
+            "alt",
             block.mediaAsset.alt ?? articleTitle,
             block.mediaAsset.altEn,
-            locale,
           )
         : null,
   }));

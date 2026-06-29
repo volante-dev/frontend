@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import TrailblazeList from "@/components/sections/Trailblaze/TrailblazeList";
 import prisma from "@/lib/prisma";
-import { localizeField } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
 import { createRouteMetadata } from "@/lib/seo-pages";
 import { blogPostPath } from "@/lib/seo";
 import { getSiteRoutes } from "@/lib/site-routes";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
+import { localizedTranslationField } from "@/lib/content-translations";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +32,7 @@ const TrailblazePage = async ({
         where: { publishedAt: { not: null } },
         orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
         include: {
+          translations: true,
           coverMediaAsset: { select: { mediaType: true, posterUrl: true } },
         },
       })
@@ -40,12 +41,30 @@ const TrailblazePage = async ({
   ]);
 
   const posts = rawPosts.map((post) => {
-    const slug = locale === "en" ? post.slugEn : post.slug;
+    const slug = localizedTranslationField(
+      post.translations,
+      locale,
+      "slug",
+      post.slug,
+      post.slugEn,
+    );
 
     return {
       id: post.id,
-      title: localizeField(post.title, post.titleEn, locale),
-      eyebrow: localizeField(post.eyebrow, post.eyebrowEn, locale),
+      title: localizedTranslationField(
+        post.translations,
+        locale,
+        "title",
+        post.title,
+        post.titleEn,
+      ),
+      eyebrow: localizedTranslationField(
+        post.translations,
+        locale,
+        "eyebrow",
+        post.eyebrow,
+        post.eyebrowEn,
+      ),
       href: blogPostPath(locale, slug, siteRoutes),
       coverMediaUrl: post.coverMediaUrl,
       coverMediaType:

@@ -1,4 +1,4 @@
-import type { Locale } from "./i18n-config";
+import type { BuiltInLocale } from "./i18n-config";
 
 export type Translations = Record<string, string>;
 
@@ -118,7 +118,7 @@ export const localTranslations = {
     "coming-soon.subheading":
       "We're putting the finishing touches on our new site.",
   },
-} satisfies Record<Locale, Translations>;
+} satisfies Record<BuiltInLocale, Translations>;
 
 export type TranslationKey = keyof (typeof localTranslations)["fr"];
 

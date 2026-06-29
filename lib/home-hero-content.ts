@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { localizeField, t, type Locale, type Translations } from "@/lib/i18n";
+import { t, type Locale, type Translations } from "@/lib/i18n";
+import { localizedTranslationField } from "./content-translations";
 
 export type HomeHeroContent = {
   eyebrow: string;
@@ -40,27 +41,46 @@ export const getHomeHeroContent = async (
   try {
     const content = await prisma.homePageContent.findUnique({
       where: { id: "home" },
+      include: { translations: true },
     });
 
     if (!content) return fallback;
 
     return {
-      eyebrow: localizeField(content.eyebrow, content.eyebrowEn, locale),
-      title: localizeField(content.title, content.titleEn, locale),
-      subheading: localizeField(
+      eyebrow: localizedTranslationField(
+        content.translations,
+        locale,
+        "eyebrow",
+        content.eyebrow,
+        content.eyebrowEn,
+      ),
+      title: localizedTranslationField(
+        content.translations,
+        locale,
+        "title",
+        content.title,
+        content.titleEn,
+      ),
+      subheading: localizedTranslationField(
+        content.translations,
+        locale,
+        "subheading",
         content.subheading,
         content.subheadingEn,
-        locale,
       ),
-      primaryCtaLabel: localizeField(
+      primaryCtaLabel: localizedTranslationField(
+        content.translations,
+        locale,
+        "primaryCtaLabel",
         content.primaryCtaLabel,
         content.primaryCtaLabelEn,
-        locale,
       ),
-      secondaryCtaLabel: localizeField(
+      secondaryCtaLabel: localizedTranslationField(
+        content.translations,
+        locale,
+        "secondaryCtaLabel",
         content.secondaryCtaLabel,
         content.secondaryCtaLabelEn,
-        locale,
       ),
     };
   } catch {

@@ -1,30 +1,36 @@
 import type { MetadataRoute } from "next";
 import prisma from "@/lib/prisma";
-import { locales } from "@/lib/i18n-config";
+import { defaultLocale } from "@/lib/i18n-config";
 import type { Locale } from "@/lib/i18n-config";
 import { getLocalizedRouteHref } from "@/lib/site-route-config";
 import { getSiteRoutes } from "@/lib/site-routes";
+import { getPublishedLocaleCodes } from "@/lib/site-locales";
 import { blogPostPath, projectPath, siteUrl, toAbsoluteUrl } from "@/lib/seo";
 import { portfolioSectorPath } from "@/lib/portfolio-routes";
+import { localizedTranslationField } from "@/lib/content-translations";
 
 export const dynamic = "force-dynamic";
 
 const languageAlternates = (paths: Record<Locale, string>) => ({
   languages: {
-    fr: toAbsoluteUrl(paths.fr),
-    en: toAbsoluteUrl(paths.en),
-    "x-default": toAbsoluteUrl(paths.fr),
+    ...Object.fromEntries(
+      Object.entries(paths).map(([locale, path]) => [locale, toAbsoluteUrl(path)]),
+    ),
+    "x-default": toAbsoluteUrl(paths[defaultLocale]),
   },
 });
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (process.env.COMING_SOON === "true") return [];
 
-  const siteRoutes = await getSiteRoutes();
+  const [siteRoutes, publishedLocales] = await Promise.all([
+    getSiteRoutes(),
+    getPublishedLocaleCodes(),
+  ]);
   const projects = await prisma.project
     .findMany({
       where: { publishedAt: { not: null } },
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, updatedAt: true, translations: true },
       orderBy: { updatedAt: "desc" },
     })
     .catch(() => []);
@@ -43,7 +49,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const blogPosts = await prisma.blogPost
     .findMany({
       where: { publishedAt: { not: null } },
-      select: { slug: true, slugEn: true, updatedAt: true },
+      select: {
+        slug: true,
+        slugEn: true,
+        updatedAt: true,
+        translations: true,
+      },
       orderBy: { updatedAt: "desc" },
     })
     .catch(() => []);
@@ -52,13 +63,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((route) => route.includeInSitemap)
     .flatMap((route) => {
       const paths = Object.fromEntries(
-        locales.map((locale) => [
+        publishedLocales.map((locale) => [
           locale,
           getLocalizedRouteHref(siteRoutes, locale, route.id),
         ]),
       ) as Record<Locale, string>;
 
-      return locales.map((locale) => ({
+      return publishedLocales.map((locale) => ({
         url: new URL(paths[locale], siteUrl).toString(),
         changeFrequency: route.sitemapFrequency,
         priority: route.sitemapPriority,
@@ -68,10 +79,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const projectEntries = projects.flatMap((project) => {
     const paths = Object.fromEntries(
-      locales.map((locale) => [locale, projectPath(locale, project.slug, siteRoutes)]),
+      publishedLocales.map((locale) => [
+        locale,
+        projectPath(
+          locale,
+          localizedTranslationField(
+            project.translations,
+            locale,
+            "slug",
+            project.slug,
+            project.slug,
+          ),
+          siteRoutes,
+        ),
+      ]),
     ) as Record<Locale, string>;
 
-    return locales.map((locale) => ({
+    return publishedLocales.map((locale) => ({
       url: toAbsoluteUrl(paths[locale]),
       lastModified: project.updatedAt,
       changeFrequency: "monthly" as const,
@@ -83,13 +107,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const sectorEntries = sectors.flatMap((sector) => {
     if (!sector.slug) return [];
     const paths = Object.fromEntries(
-      locales.map((locale) => [
+      publishedLocales.map((locale) => [
         locale,
         portfolioSectorPath(locale, sector.slug!, siteRoutes),
       ]),
     ) as Record<Locale, string>;
 
-    return locales.map((locale) => ({
+    return publishedLocales.map((locale) => ({
       url: toAbsoluteUrl(paths[locale]),
       lastModified: sector.updatedAt,
       changeFrequency: "monthly" as const,
@@ -99,12 +123,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const blogPostEntries = blogPosts.flatMap((post) => {
-    const paths: Record<Locale, string> = {
-      fr: blogPostPath("fr", post.slug, siteRoutes),
-      en: blogPostPath("en", post.slugEn, siteRoutes),
-    };
+    const paths = Object.fromEntries(
+      publishedLocales.map((locale) => [
+        locale,
+        blogPostPath(
+          locale,
+          localizedTranslationField(
+            post.translations,
+            locale,
+            "slug",
+            post.slug,
+            post.slugEn,
+          ),
+          siteRoutes,
+        ),
+      ]),
+    ) as Record<Locale, string>;
 
-    return locales.map((locale) => ({
+    return publishedLocales.map((locale) => ({
       url: toAbsoluteUrl(paths[locale]),
       lastModified: post.updatedAt,
       changeFrequency: "monthly" as const,

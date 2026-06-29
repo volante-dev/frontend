@@ -2,13 +2,14 @@ import HeroVideo from "@/components/sections/HeroVideo/HeroVideo";
 import Hero from "@/components/sections/Hero/Hero";
 import FeaturedProjectsCarousel from "@/components/sections/FeaturedProjectsCarousel/FeaturedProjectsCarousel";
 import prisma from "@/lib/prisma";
-import { getTranslations, localizeField } from "@/lib/i18n";
+import { getTranslations } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
 import OpeningSequenceLoader from "@/components/layout/OpeningSequence/OpeningSequenceLoader";
 import HomeScrollController from "@/components/sections/HomeScrollController/HomeScrollController";
 import type { Metadata } from "next";
 import { createRouteMetadata } from "@/lib/seo-pages";
 import { getHomeHeroContent } from "@/lib/home-hero-content";
+import { localizedTranslationField } from "@/lib/content-translations";
 
 export const dynamic = "force-dynamic";
 
@@ -25,8 +26,9 @@ const getProjects = async () => {
       where: { publishedAt: { not: null }, featured: true },
       orderBy: [{ order: "asc" }, { publishedAt: "desc" }],
       include: {
-        sectorEntry: true,
-        locationEntry: true,
+        translations: true,
+        sectorEntry: { include: { translations: true } },
+        locationEntry: { include: { translations: true } },
         imageAsset: { select: { mediaType: true, posterUrl: true } },
       },
     });
@@ -52,15 +54,39 @@ const HomePage = async ({
   const heroContent = await getHomeHeroContent(locale, translations);
   const localizedProjects = projects.map(({ imageAsset, ...p }) => ({
     ...p,
-    title: localizeField(p.title, p.titleEn, locale),
-    description: localizeField(p.description, p.descriptionEn, locale),
+    title: localizedTranslationField(
+      p.translations,
+      locale,
+      "title",
+      p.title,
+      p.titleEn,
+    ),
+    description: localizedTranslationField(
+      p.translations,
+      locale,
+      "description",
+      p.description,
+      p.descriptionEn,
+    ),
     sector:
       (p.sectorEntry
-        ? localizeField(p.sectorEntry.label, p.sectorEntry.labelEn, locale)
+        ? localizedTranslationField(
+            p.sectorEntry.translations,
+            locale,
+            "label",
+            p.sectorEntry.label,
+            p.sectorEntry.labelEn,
+          )
         : "") || null,
     projectLocation:
       (p.locationEntry
-        ? localizeField(p.locationEntry.label, p.locationEntry.labelEn, locale)
+        ? localizedTranslationField(
+            p.locationEntry.translations,
+            locale,
+            "label",
+            p.locationEntry.label,
+            p.locationEntry.labelEn,
+          )
         : "") || null,
     coverMediaType: imageAsset?.mediaType ?? inferMediaTypeFromUrl(p.imageUrl),
     coverPosterUrl: imageAsset?.posterUrl ?? null,

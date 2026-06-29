@@ -27,6 +27,7 @@ export type SiteRoute = {
   labelEn: string;
   slug: string;
   slugEn: string;
+  translations?: Record<string, { label?: string | null; slug?: string | null }>;
   internalSegment: string;
   order: number;
   showInHeader: boolean;
@@ -126,10 +127,13 @@ export const defaultSiteRoutes: SiteRoute[] = [
 const routeIds = new Set<string>(siteRouteIds);
 const defaultRoutesById = new Map(defaultSiteRoutes.map((route) => [route.id, route]));
 
-export const portfolioSectorSegment = {
+export const portfolioSectorSegment: Record<string, string> = {
   fr: "secteur",
   en: "sector",
-} as const satisfies Record<Locale, string>;
+};
+
+export const getPortfolioSectorSegment = (locale: Locale) =>
+  portfolioSectorSegment[locale] ?? portfolioSectorSegment[defaultLocale];
 
 export const isSiteRouteId = (value: string): value is SiteRouteId =>
   routeIds.has(value);
@@ -152,7 +156,12 @@ export const getSiteRouteById = (
 };
 
 export const getSiteRouteSlug = (route: SiteRoute, locale: Locale): string =>
-  locale === "en" ? route.slugEn : route.slug;
+  route.translations?.[locale]?.slug ??
+  (locale === "en" ? route.slugEn : route.slug);
+
+export const getSiteRouteLabel = (route: SiteRoute, locale: Locale): string =>
+  route.translations?.[locale]?.label ??
+  (locale === "en" ? route.labelEn : route.label);
 
 export const getLocalizedRouteHref = (
   routes: SiteRoute[],
@@ -179,11 +188,14 @@ export const getAlternateRouteHref = (
   routes: SiteRoute[],
   pathname: string,
   targetLocale: Locale,
+  currentLocaleHint?: Locale,
 ): string => {
   const parts = pathname.split("/").filter(Boolean);
-  const currentLocale =
-    parts[0] === "en" ? "en" : defaultLocale;
-  const visibleParts = currentLocale === "en" ? parts.slice(1) : parts;
+  const currentLocale = currentLocaleHint ?? (parts[0] === "en" ? "en" : defaultLocale);
+  const visibleParts =
+    currentLocale !== defaultLocale && parts[0] === currentLocale
+      ? parts.slice(1)
+      : parts;
   const currentRoute = visibleParts[0]
     ? getRouteFromPublicSlug(routes, currentLocale, visibleParts[0])
     : getSiteRouteById(routes, "home");
@@ -197,9 +209,9 @@ export const getAlternateRouteHref = (
   const rest = visibleParts.slice(1);
   if (
     currentRoute.id === "portfolio" &&
-    rest[0] === portfolioSectorSegment[currentLocale]
+    rest[0] === getPortfolioSectorSegment(currentLocale)
   ) {
-    rest[0] = portfolioSectorSegment[targetLocale];
+    rest[0] = getPortfolioSectorSegment(targetLocale);
   }
 
   return rest.length ? `${base}/${rest.join("/")}` : base;

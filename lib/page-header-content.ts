@@ -1,5 +1,9 @@
 import prisma from "@/lib/prisma";
-import { localizeField, t, type Locale, type Translations } from "@/lib/i18n";
+import { t, type Locale, type Translations } from "@/lib/i18n";
+import {
+  localizedNullableTranslationField,
+  localizedTranslationField,
+} from "./content-translations";
 
 export const pageHeaderIds = [
   "studio",
@@ -79,14 +83,33 @@ export const getPageHeaderContent = async (
   try {
     const content = await prisma.pageHeaderContent.findUnique({
       where: { id: pageId },
+      include: { translations: true },
     });
 
     if (!content) return fallback;
 
     return {
-      eyebrow: localizeField(content.eyebrow, content.eyebrowEn, locale),
-      title: localizeField(content.title, content.titleEn, locale),
-      intro: content.intro ? localizeField(content.intro, content.introEn, locale) : null,
+      eyebrow: localizedTranslationField(
+        content.translations,
+        locale,
+        "eyebrow",
+        content.eyebrow,
+        content.eyebrowEn,
+      ),
+      title: localizedTranslationField(
+        content.translations,
+        locale,
+        "title",
+        content.title,
+        content.titleEn,
+      ),
+      intro: localizedNullableTranslationField(
+        content.translations,
+        locale,
+        "intro",
+        content.intro,
+        content.introEn,
+      ),
     };
   } catch {
     return fallback;

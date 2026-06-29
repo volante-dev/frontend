@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { locales, defaultLocale } from "@/lib/i18n";
+import { defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import {
   getAlternateRouteHref,
@@ -8,10 +8,8 @@ import {
   getSiteRouteById,
 } from "@/lib/site-route-config";
 import { getSiteRoutes } from "@/lib/site-routes";
+import { getPublishedLocaleCodes } from "@/lib/site-locales";
 import { PREVIEW_PARAM, PREVIEW_COOKIE, PREVIEW_COOKIE_MAX_AGE } from "@/lib/preview";
-
-// Évite de répéter le cast (locales as string[]) à chaque fois
-const localeValues = locales as string[];
 
 export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
@@ -25,6 +23,8 @@ export const proxy = async (request: NextRequest) => {
   ) {
     return NextResponse.next();
   }
+
+  const localeValues = await getPublishedLocaleCodes();
 
   // --- Preview access via ?goProd=true ---
   const previewParam = request.nextUrl.searchParams.get(PREVIEW_PARAM);
@@ -41,7 +41,7 @@ export const proxy = async (request: NextRequest) => {
 
   // --- Compatibilité avec les anciens liens ?lang= ---
   const langParam = request.nextUrl.searchParams.get("lang");
-  if (langParam && localeValues.includes(langParam)) {
+  if (langParam && localeValues.includes(langParam as Locale)) {
     const routes = await getSiteRoutes();
     const cleanPath = request.nextUrl.pathname;
     const targetPath = getAlternateRouteHref(routes, cleanPath, langParam as Locale);
@@ -51,7 +51,9 @@ export const proxy = async (request: NextRequest) => {
   // --- Détection locale depuis l'URL (priorité sur cookie) ---
   const parts = pathname.split("/").filter(Boolean);
   const firstSegment = parts[0] ?? "";
-  const urlLocale = localeValues.includes(firstSegment) ? (firstSegment as Locale) : null;
+  const urlLocale = localeValues.includes(firstSegment as Locale)
+    ? (firstSegment as Locale)
+    : null;
 
   // /fr ou /fr/... → redirect sans préfixe (le FR n'a pas de préfixe)
   if (urlLocale === defaultLocale) {

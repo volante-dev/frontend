@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname } from "next/navigation";
-import { defaultLocale, locales, type Locale } from "@/lib/i18n-config";
+import { defaultLocale, type Locale } from "@/lib/i18n-config";
 import {
   getAlternateRouteHref,
   getLocalizedRouteHref,
@@ -21,6 +21,7 @@ type I18nContextValue = {
   locale: Locale;
   pathname: string;
   translations: Translations;
+  localeCodes: Locale[];
   siteRoutes: SiteRoute[];
   t: (key: string, fallback?: string) => string;
   localizedHref: (route: SiteRouteId) => string;
@@ -29,9 +30,12 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export const getLocaleFromPathname = (pathname: string): Locale => {
+export const getLocaleFromPathname = (
+  pathname: string,
+  localeCodes: Locale[],
+): Locale => {
   const firstSegment = pathname.split("/").filter(Boolean)[0];
-  return locales.includes(firstSegment as Locale) && firstSegment !== defaultLocale
+  return localeCodes.includes(firstSegment as Locale) && firstSegment !== defaultLocale
     ? (firstSegment as Locale)
     : defaultLocale;
 };
@@ -47,16 +51,21 @@ const getVisiblePathname = (pathname: string): string => {
 const I18nProvider = ({
   children,
   translationsByLocale,
+  localeCodes,
   siteRoutes,
 }: {
   children: ReactNode;
   translationsByLocale: Record<Locale, Translations>;
+  localeCodes: Locale[];
   siteRoutes: SiteRoute[];
 }) => {
   const internalPathname = usePathname();
   const pathname = getVisiblePathname(internalPathname);
-  const locale = getLocaleFromPathname(pathname);
-  const translations = translationsByLocale[locale];
+  const locale = getLocaleFromPathname(pathname, localeCodes);
+  const translations = useMemo(
+    () => translationsByLocale[locale] ?? translationsByLocale[defaultLocale] ?? {},
+    [locale, translationsByLocale],
+  );
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -67,13 +76,14 @@ const I18nProvider = ({
       locale,
       pathname,
       translations,
+      localeCodes,
       siteRoutes,
       t: (key, fallback) => t(translations, key, fallback),
       localizedHref: (route) => getLocalizedRouteHref(siteRoutes, locale, route),
       alternateHref: (targetLocale) =>
-        getAlternateRouteHref(siteRoutes, pathname, targetLocale),
+        getAlternateRouteHref(siteRoutes, pathname, targetLocale, locale),
     }),
-    [locale, pathname, siteRoutes, translations],
+    [locale, localeCodes, pathname, siteRoutes, translations],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
+import type { Locale } from "@/lib/i18n-config";
 
 export type TrailblazeListPost = {
   id: string;
@@ -16,7 +17,7 @@ export type TrailblazeListPost = {
   publishedAt: string | null;
 };
 
-const formatDate = (value: string | null, locale: "fr" | "en") => {
+const formatDate = (value: string | null, locale: Locale) => {
   if (!value) return null;
   return new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", {
     day: "2-digit",
@@ -57,7 +58,7 @@ const TrailblazeList = ({
   locale,
 }: {
   posts: TrailblazeListPost[];
-  locale: "fr" | "en";
+  locale: Locale;
 }) => (
   <Box
     component="section"

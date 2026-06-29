@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { colors } from "@/app/theme/tokens";
 import RichText from "@/components/ui/RichText/RichText";
+import type { Locale } from "@/lib/i18n-config";
 
 export type TrailblazeArticleBlock = {
   id: string;
@@ -20,7 +21,7 @@ export type TrailblazeArticleData = {
   blocks: TrailblazeArticleBlock[];
 };
 
-const formatDate = (value: string | null, locale: "fr" | "en") => {
+const formatDate = (value: string | null, locale: Locale) => {
   if (!value) return null;
   return new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", {
     day: "2-digit",
@@ -34,7 +35,7 @@ const TrailblazeArticle = ({
   locale,
 }: {
   article: TrailblazeArticleData;
-  locale: "fr" | "en";
+  locale: Locale;
 }) => (
   <Box
     component="article"

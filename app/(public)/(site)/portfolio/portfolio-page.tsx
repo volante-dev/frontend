@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import PortfolioMasonry from "@/components/sections/ProjectGrid/PortfolioMasonry";
 import PortfolioDockFilters from "@/components/sections/ProjectGrid/PortfolioDockFilters";
 import prisma from "@/lib/prisma";
-import { getTranslations, localizeField } from "@/lib/i18n";
+import { getTranslations } from "@/lib/i18n";
 import { getPageHeaderContent } from "@/lib/page-header-content";
 import { resolveLocale } from "@/lib/i18n-config";
 import type { Locale } from "@/lib/i18n-config";
@@ -12,6 +12,10 @@ import { createRouteMetadata } from "@/lib/seo-pages";
 import { portfolioSectorPath } from "@/lib/portfolio-routes";
 import { getSiteRoutes } from "@/lib/site-routes";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
+import {
+  localizedNullableTranslationField,
+  localizedTranslationField,
+} from "@/lib/content-translations";
 
 type PortfolioPageParams = {
   params?: Promise<{ locale?: string; sectorSlug?: string }>;
@@ -25,16 +29,6 @@ type PortfolioIntroContent = {
 
 const inferMediaTypeFromUrl = (value: string) =>
   /\.(mp4|mov|webm)(?:[?#].*)?$/i.test(value) ? "VIDEO" : "IMAGE";
-
-const localizeNullableField = (
-  base: string | null | undefined,
-  translated: string | null | undefined,
-  locale: Locale,
-) => {
-  const normalizedBase = base?.trim();
-  if (!normalizedBase) return null;
-  return localizeField(normalizedBase, translated, locale);
-};
 
 const getLocaleAndSectorSlug = async (params?: Promise<{ locale?: string; sectorSlug?: string }>) => {
   const resolvedParams = params ? await params : {};
@@ -50,8 +44,12 @@ const getActiveSector = async (sectorSlug: string, locale: Locale) => {
       where: {
         type: "SECTOR",
         active: true,
-        slug: sectorSlug,
+        OR: [
+          { slug: sectorSlug },
+          { translations: { some: { locale, slug: sectorSlug } } },
+        ],
       },
+      include: { translations: true },
     })
     .catch(() => null);
 
@@ -59,7 +57,20 @@ const getActiveSector = async (sectorSlug: string, locale: Locale) => {
 
   return {
     ...sector,
-    localizedLabel: localizeField(sector.label, sector.labelEn, locale),
+    localizedLabel: localizedTranslationField(
+      sector.translations,
+      locale,
+      "label",
+      sector.label,
+      sector.labelEn,
+    ),
+    localizedSlug: localizedTranslationField(
+      sector.translations,
+      locale,
+      "slug",
+      sector.slug ?? "",
+      sector.slug,
+    ),
   };
 };
 
@@ -70,9 +81,27 @@ const getSectorIntroOverride = (
   if (!sector?.introEyebrow?.trim() || !sector.introTitle?.trim()) return null;
 
   return {
-    eyebrow: localizeField(sector.introEyebrow.trim(), sector.introEyebrowEn, locale),
-    title: localizeField(sector.introTitle.trim(), sector.introTitleEn, locale),
-    intro: localizeNullableField(sector.intro, sector.introEn, locale),
+    eyebrow: localizedTranslationField(
+      sector.translations,
+      locale,
+      "introEyebrow",
+      sector.introEyebrow.trim(),
+      sector.introEyebrowEn,
+    ),
+    title: localizedTranslationField(
+      sector.translations,
+      locale,
+      "introTitle",
+      sector.introTitle.trim(),
+      sector.introTitleEn,
+    ),
+    intro: localizedNullableTranslationField(
+      sector.translations,
+      locale,
+      "intro",
+      sector.intro,
+      sector.introEn,
+    ),
   };
 };
 
@@ -103,7 +132,7 @@ export const generatePortfolioMetadata = async ({
 
   return createPageMetadata({
     locale,
-    pathname: portfolioSectorPath(locale, sector.slug ?? sectorSlug, siteRoutes),
+    pathname: portfolioSectorPath(locale, sector.localizedSlug || sectorSlug, siteRoutes),
     alternatePathname: portfolioSectorPath(
       otherLocale,
       sector.slug ?? sectorSlug,
@@ -137,7 +166,8 @@ export const PortfolioPageContent = async ({ params }: PortfolioPageParams) => {
           { id: "asc" },
         ],
         include: {
-          sectorEntry: true,
+          sectorEntry: { include: { translations: true } },
+          translations: true,
           imageAsset: { select: { mediaType: true, posterUrl: true } },
         },
       })
@@ -151,6 +181,7 @@ export const PortfolioPageContent = async ({ params }: PortfolioPageParams) => {
           sectorProjects: { some: { publishedAt: { not: null } } },
         },
         orderBy: [{ label: "asc" }, { id: "asc" }],
+        include: { translations: true },
       })
       .catch(() => []),
   ]);
@@ -160,18 +191,48 @@ export const PortfolioPageContent = async ({ params }: PortfolioPageParams) => {
 
   const sectors = rawSectors.map((sector) => ({
     id: sector.id,
-    label: localizeField(sector.label, sector.labelEn, locale),
-    slug: sector.slug ?? "",
+    label: localizedTranslationField(
+      sector.translations,
+      locale,
+      "label",
+      sector.label,
+      sector.labelEn,
+    ),
+    slug: localizedTranslationField(
+      sector.translations,
+      locale,
+      "slug",
+      sector.slug ?? "",
+      sector.slug,
+    ),
     icon: sector.icon,
   }));
 
   const projects = rawProjects.map(({ imageAsset, ...p }) => ({
     ...p,
-    title: localizeField(p.title, p.titleEn, locale),
-    description: localizeField(p.description, p.descriptionEn, locale),
+    title: localizedTranslationField(
+      p.translations,
+      locale,
+      "title",
+      p.title,
+      p.titleEn,
+    ),
+    description: localizedTranslationField(
+      p.translations,
+      locale,
+      "description",
+      p.description,
+      p.descriptionEn,
+    ),
     sector:
       (p.sectorEntry
-        ? localizeField(p.sectorEntry.label, p.sectorEntry.labelEn, locale)
+        ? localizedTranslationField(
+            p.sectorEntry.translations,
+            locale,
+            "label",
+            p.sectorEntry.label,
+            p.sectorEntry.labelEn,
+          )
         : "") || null,
     coverMediaType: imageAsset?.mediaType ?? inferMediaTypeFromUrl(p.imageUrl),
     coverPosterUrl: imageAsset?.posterUrl ?? null,

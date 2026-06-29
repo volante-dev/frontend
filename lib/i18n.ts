@@ -1,5 +1,5 @@
 import { get } from "@vercel/edge-config";
-import type { Locale } from "./i18n-config";
+import type { BuiltInLocale, Locale } from "./i18n-config";
 import { locales, defaultLocale } from "./i18n-config";
 import {
   localTranslations,
@@ -8,7 +8,7 @@ import {
 
 export { getLocalizedHref, getAlternateHref, slugs } from "./i18n-routes";
 export type { RouteKey } from "./i18n-routes";
-export type { Locale } from "./i18n-config";
+export type { BuiltInLocale, Locale } from "./i18n-config";
 export type { Translations, TranslationKey } from "./i18n-messages";
 export { locales, defaultLocale } from "./i18n-config";
 export { t } from "./i18n-messages";
@@ -21,7 +21,10 @@ const isTranslationMap = (value: unknown): value is Translations =>
 
 /** Charge les traductions locales et applique les éventuelles surcharges Edge Config. */
 export const getTranslations = async (locale: Locale): Promise<Translations> => {
-  const local = localTranslations[locale];
+  const dictionaryLocale = (
+    locale in localTranslations ? locale : defaultLocale
+  ) as BuiltInLocale;
+  const local = localTranslations[dictionaryLocale];
 
   if (!process.env.EDGE_CONFIG) {
     return local;
