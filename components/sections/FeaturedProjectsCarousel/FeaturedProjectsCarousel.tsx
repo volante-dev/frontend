@@ -2,9 +2,11 @@
 
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import Box from "@mui/material/Box";
@@ -37,6 +39,11 @@ type MeshPoint = {
   opacity: number;
 };
 
+type ProjectVisual = {
+  palette: string[];
+  points: MeshPoint[];
+};
+
 const FALLBACK_PALETTE = [
   colors.green,
   colors.greenLight,
@@ -52,6 +59,10 @@ const BASE_MESH_POINTS: MeshPoint[] = [
   { x: 24, y: 88, opacity: 0.68 },
   { x: 80, y: 84, opacity: 0.68 },
 ];
+const FALLBACK_PROJECT_VISUAL: ProjectVisual = {
+  palette: FALLBACK_PALETTE,
+  points: BASE_MESH_POINTS,
+};
 
 const modulo = (value: number, length: number) =>
   ((value % length) + length) % length;
@@ -206,10 +217,14 @@ const MeshGradient = ({
     {palette.map((color, index) => (
       <Box
         key={index}
+        style={
+          {
+            left: `${points[index].x}%`,
+            top: `${points[index].y}%`,
+          } satisfies CSSProperties
+        }
         sx={{
           position: "absolute",
-          left: `${points[index].x}%`,
-          top: `${points[index].y}%`,
           width: { xs: "90vw", md: "65vw" },
           aspectRatio: "1",
           transform: "translate(-50%, -50%)",
@@ -220,13 +235,17 @@ const MeshGradient = ({
         }}
       >
         <Box
+          style={
+            {
+              backgroundColor: color,
+              opacity: points[index].opacity,
+            } satisfies CSSProperties
+          }
           sx={{
             position: "absolute",
             inset: 0,
             borderRadius: "50%",
-            backgroundColor: color,
             filter: { xs: "blur(55px)", md: "blur(90px)" },
-            opacity: points[index].opacity,
             willChange: "transform",
             transition: dragging
               ? "none"
@@ -273,25 +292,97 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
   const [cursor, setCursor] = useState({ x: 0, y: 0, visible: false });
   const trackRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
+  const dragOffsetRef = useRef(0);
+  const pendingDragOffsetRef = useRef(0);
+  const cursorRef = useRef(cursor);
+  const pendingCursorRef = useRef(cursor);
+  const pointerFrameRef = useRef<number | null>(null);
   const suppressClickRef = useRef(false);
 
-  const goTo = useCallback(
-    (delta: number) => {
-      setActiveStep((current) => current + delta);
-      setDragOffset(0);
+  const flushPointerFrame = useCallback(() => {
+    pointerFrameRef.current = null;
+    const nextDragOffset = pendingDragOffsetRef.current;
+    const nextCursor = pendingCursorRef.current;
+
+    setDragOffset((current) =>
+      current === nextDragOffset ? current : nextDragOffset,
+    );
+    setCursor((current) =>
+      current.x === nextCursor.x &&
+      current.y === nextCursor.y &&
+      current.visible === nextCursor.visible
+        ? current
+        : nextCursor,
+    );
+  }, []);
+
+  const schedulePointerFrame = useCallback(() => {
+    if (pointerFrameRef.current !== null) return;
+    pointerFrameRef.current = window.requestAnimationFrame(flushPointerFrame);
+  }, [flushPointerFrame]);
+
+  const setDragOffsetImmediate = useCallback((nextOffset: number) => {
+    dragOffsetRef.current = nextOffset;
+    pendingDragOffsetRef.current = nextOffset;
+    setDragOffset(nextOffset);
+  }, []);
+
+  const scheduleDragOffset = useCallback(
+    (nextOffset: number) => {
+      dragOffsetRef.current = nextOffset;
+      pendingDragOffsetRef.current = nextOffset;
+      schedulePointerFrame();
+    },
+    [schedulePointerFrame],
+  );
+
+  const setCursorImmediate = useCallback((nextCursor: typeof cursor) => {
+    cursorRef.current = nextCursor;
+    pendingCursorRef.current = nextCursor;
+    setCursor(nextCursor);
+  }, []);
+
+  const scheduleCursor = useCallback(
+    (nextCursor: typeof cursor) => {
+      cursorRef.current = nextCursor;
+      pendingCursorRef.current = nextCursor;
+      schedulePointerFrame();
+    },
+    [schedulePointerFrame],
+  );
+
+  useEffect(
+    () => () => {
+      if (pointerFrameRef.current !== null) {
+        window.cancelAnimationFrame(pointerFrameRef.current);
+      }
     },
     [],
   );
 
-  const projectVisual = useCallback(
-    (index: number) => {
-      const project = projects[modulo(index, projects.length)];
-      return {
+  const goTo = useCallback(
+    (delta: number) => {
+      setActiveStep((current) => current + delta);
+      setDragOffsetImmediate(0);
+    },
+    [setDragOffsetImmediate],
+  );
+
+  const projectVisuals = useMemo<ProjectVisual[]>(
+    () =>
+      projects.map((project) => ({
         palette: normalizePalette(project.heroPaletteComputed),
         points: createMeshLayout(project),
-      };
-    },
+      })),
     [projects],
+  );
+
+  const projectVisual = useCallback(
+    (index: number) => {
+      if (!projectVisuals.length) return FALLBACK_PROJECT_VISUAL;
+      return projectVisuals[modulo(index, projectVisuals.length)];
+    },
+    [projectVisuals],
   );
 
   const backgroundVisual = useMemo(() => {
@@ -312,27 +403,32 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
   const backgroundPalette = backgroundVisual.palette;
   const foreground = readableForeground(backgroundPalette);
   const virtualItems = useMemo(
-    () =>
-      [-2, -1, 0, 1, 2, 3].map((position) => {
+    () => {
+      if (projects.length < 2) return [];
+      return [-2, -1, 0, 1, 2, 3].map((position) => {
         const virtualIndex = activeStep + position;
         return {
           position,
           virtualIndex,
           project: projects[modulo(virtualIndex, projects.length)],
         };
-      }),
+      });
+    },
     [activeStep, projects],
   );
 
-  const updateCursor = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const rect = trackRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setCursor({
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-      visible: event.pointerType === "mouse",
-    });
-  };
+  const updateCursor = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      const rect = trackRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      scheduleCursor({
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        visible: event.pointerType === "mouse",
+      });
+    },
+    [scheduleCursor],
+  );
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -368,13 +464,13 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
           try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
           dragRef.current = null;
           setDragging(false);
-          setDragOffset(0);
+          setDragOffsetImmediate(0);
           return;
         }
         if (drag.directionLocked === "horizontal" && drag.pointerType !== "mouse") {
           try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
           dragRef.current = null;
-          setDragOffset(0);
+          setDragOffsetImmediate(0);
           goTo(deltaX < 0 ? 1 : -1);
           return;
         }
@@ -390,20 +486,22 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
       ? DRAG_CLICK_THRESHOLD_MOUSE
       : DRAG_CLICK_THRESHOLD_TOUCH;
     if (Math.abs(nextOffset) > clickThreshold) drag.moved = true;
-    setDragOffset(nextOffset);
+    scheduleDragOffset(nextOffset);
   };
 
   const finishDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
 
+    const currentDragOffset = dragOffsetRef.current;
     const elapsed = Math.max(1, performance.now() - drag.startedAt);
-    const velocity = dragOffset / elapsed;
+    const velocity = currentDragOffset / elapsed;
     const threshold = Math.min(
       120,
       Math.max(64, (trackRef.current?.clientWidth ?? 900) * 0.1),
     );
-    const shouldMove = Math.abs(dragOffset) >= threshold || Math.abs(velocity) > 0.5;
+    const shouldMove =
+      Math.abs(currentDragOffset) >= threshold || Math.abs(velocity) > 0.5;
 
     suppressClickRef.current = drag.moved;
 
@@ -415,7 +513,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
       if (link) {
         dragRef.current = null;
         setDragging(false);
-        setDragOffset(0);
+        setDragOffsetImmediate(0);
         link.click();
         return;
       }
@@ -423,8 +521,8 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
 
     dragRef.current = null;
     setDragging(false);
-    if (shouldMove) goTo(dragOffset < 0 ? 1 : -1);
-    else setDragOffset(0);
+    if (shouldMove) goTo(currentDragOffset < 0 ? 1 : -1);
+    else setDragOffsetImmediate(0);
 
     window.setTimeout(() => {
       suppressClickRef.current = false;
@@ -436,7 +534,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     if (!drag || drag.pointerId !== event.pointerId) return;
     dragRef.current = null;
     setDragging(false);
-    setDragOffset(0);
+    setDragOffsetImmediate(0);
   };
 
   if (projects.length < 2) return null;
@@ -447,12 +545,11 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
       data-testid="featured-projects-carousel"
       aria-roledescription="carousel"
       aria-label={t("portfolio.heading", "Portfolio")}
+      style={{ color: foreground, backgroundColor: backgroundPalette[0] }}
       sx={{
         width: "100%",
         position: "relative",
         isolation: "isolate",
-        color: foreground,
-        backgroundColor: backgroundPalette[0],
         borderBottom: `1px solid ${colors.blueGray}`,
         py: { xs: 7, md: 10 },
         overflow: "hidden",
@@ -533,13 +630,20 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         onPointerUp={finishDrag}
         onPointerCancel={handlePointerCancel}
         onPointerLeave={() => {
-          if (!dragRef.current) setCursor((current) => ({ ...current, visible: false }));
+          if (!dragRef.current) {
+            setCursorImmediate({ ...cursorRef.current, visible: false });
+          }
         }}
         onClickCapture={(event) => {
           if (!suppressClickRef.current) return;
           event.preventDefault();
           event.stopPropagation();
         }}
+        style={
+          {
+            "--carousel-drag-offset": `${dragOffset}px`,
+          } as CSSProperties
+        }
         sx={{
           "--carousel-start": { xs: "12vw", md: "clamp(150px, 12vw, 220px)" },
           "--carousel-active-width": { xs: "76vw", md: "clamp(620px, 58vw, 900px)" },
@@ -591,7 +695,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
                 bgcolor: colors.mutedBlack,
                 opacity: visible ? 1 : 0,
                 pointerEvents: visible ? "auto" : "none",
-                transform: `translate3d(${dragOffset}px, 0, 0)`,
+                transform: "translate3d(var(--carousel-drag-offset), 0, 0)",
                 zIndex: active ? 3 : Math.max(0, 2 - Math.abs(position)),
                 boxShadow: active
                   ? "0 28px 70px rgba(20, 28, 27, 0.24)"
@@ -609,7 +713,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
                 "&:hover img, &:hover video": { transform: "scale(1.025)" },
               }}
             >
-              <ProjectCoverMedia project={project} />
+              {visible && <ProjectCoverMedia project={project} />}
               <Box
                 sx={{
                   position: "absolute",
@@ -699,11 +803,17 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
 
         <Box
           aria-hidden
+          style={
+            {
+              left: cursor.x,
+              top: cursor.y,
+              "--carousel-cursor-scale": cursor.visible ? 1 : 0.65,
+              "--carousel-cursor-opacity": cursor.visible ? 1 : 0,
+            } as CSSProperties
+          }
           sx={{
             display: { xs: "none", md: "grid" },
             position: "absolute",
-            left: cursor.x,
-            top: cursor.y,
             width: 62,
             height: 62,
             placeItems: "center",
@@ -712,8 +822,8 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
             color: colors.white,
             bgcolor: "rgba(20, 28, 27, 0.12)",
             backdropFilter: "blur(5px)",
-            transform: `translate(-50%, -50%) scale(${cursor.visible ? 1 : 0.65})`,
-            opacity: cursor.visible ? 1 : 0,
+            transform: "translate(-50%, -50%) scale(var(--carousel-cursor-scale))",
+            opacity: "var(--carousel-cursor-opacity)",
             transition: dragging ? "opacity 120ms ease" : "opacity 180ms ease, transform 180ms ease",
             pointerEvents: "none",
             zIndex: 10,
