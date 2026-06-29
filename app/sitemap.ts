@@ -5,6 +5,7 @@ import { locales } from "@/lib/i18n-config";
 import type { Locale } from "@/lib/i18n-config";
 import type { RouteKey } from "@/lib/i18n-routes";
 import { projectPath, siteUrl, toAbsoluteUrl } from "@/lib/seo";
+import { portfolioSectorPath } from "@/lib/portfolio-routes";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const projects = await prisma.project
     .findMany({
       where: { publishedAt: { not: null } },
+      select: { slug: true, updatedAt: true },
+      orderBy: { updatedAt: "desc" },
+    })
+    .catch(() => []);
+  const sectors = await prisma.projectTaxonomyEntry
+    .findMany({
+      where: {
+        type: "SECTOR",
+        active: true,
+        slug: { not: null },
+        sectorProjects: { some: { publishedAt: { not: null } } },
+      },
       select: { slug: true, updatedAt: true },
       orderBy: { updatedAt: "desc" },
     })
@@ -62,5 +75,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   });
 
-  return [...staticEntries, ...projectEntries];
+  const sectorEntries = sectors.flatMap((sector) => {
+    if (!sector.slug) return [];
+    const paths = Object.fromEntries(
+      locales.map((locale) => [locale, portfolioSectorPath(locale, sector.slug!)]),
+    ) as Record<Locale, string>;
+
+    return locales.map((locale) => ({
+      url: toAbsoluteUrl(paths[locale]),
+      lastModified: sector.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+      alternates: languageAlternates(paths),
+    }));
+  });
+
+  return [...staticEntries, ...sectorEntries, ...projectEntries];
 }

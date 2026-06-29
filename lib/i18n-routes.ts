@@ -25,6 +25,11 @@ export const slugs: Record<Locale, Record<RouteKey, string>> = {
   },
 };
 
+const portfolioSectorSegment: Record<Locale, string> = {
+  fr: "secteur",
+  en: "sector",
+};
+
 /** Construit l'URL localisée à partir d'une RouteKey.
  *  getLocalizedHref("en", "portfolio") → "/en/portfolio"
  *  getLocalizedHref("fr", "portfolio") → "/portfolio"
@@ -53,6 +58,16 @@ export const getAlternateHref = (pathname: string, targetLocale: Locale): string
   const isLocalePrefix = parts.length > 0 && nonDefaultLocales.includes(parts[0]);
   const currentLocale: Locale = isLocalePrefix ? (parts[0] as Locale) : defaultLocale;
   const slugPart = isLocalePrefix ? parts.slice(1).join("/") : parts.join("/");
+  const slugSegments = slugPart.split("/").filter(Boolean);
+
+  if (
+    slugSegments[0] === slugs[currentLocale].portfolio &&
+    slugSegments[1] === portfolioSectorSegment[currentLocale] &&
+    slugSegments[2]
+  ) {
+    const prefix = targetLocale === defaultLocale ? "" : `/${targetLocale}`;
+    return `${prefix}/${slugs[targetLocale].portfolio}/${portfolioSectorSegment[targetLocale]}/${slugSegments[2]}`;
+  }
 
   // Trouver la RouteKey dans la locale courante
   const routeKey = slugPart ? getRouteKeyFromSlug(currentLocale, slugPart) : "home";

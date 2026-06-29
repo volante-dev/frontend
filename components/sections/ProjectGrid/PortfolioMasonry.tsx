@@ -17,6 +17,7 @@ type PortfolioMasonryProps = {
   header: {
     eyebrow: string;
     title: string;
+    intro: string | null;
   };
 };
 
@@ -236,6 +237,19 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
         >
           {header.title}
         </Typography>
+        {header.intro && (
+          <Typography
+            variant="body1"
+            sx={{
+              mt: { xs: 2, md: 3 },
+              maxWidth: 560,
+              color: colors.mutedBlackLight,
+              lineHeight: 1.55,
+            }}
+          >
+            {header.intro}
+          </Typography>
+        )}
       </Box>
 
       {firstProject && renderProject(firstProject, true)}

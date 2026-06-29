@@ -1,5 +1,7 @@
 import { headers } from "next/headers";
 import Header from "@/components/layout/Header/Header";
+import DockMenu from "@/components/layout/DockMenu/DockMenu";
+import DockMenuProvider from "@/components/layout/DockMenu/DockMenuProvider";
 import PreviewSync from "@/components/layout/PreviewSync/PreviewSync";
 import PageTransitionBoundary from "@/components/layout/PageTransition/PageTransitionBoundary";
 import PublicExperienceProvider from "@/components/layout/PublicExperience/PublicExperienceProvider";
@@ -30,11 +32,14 @@ const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
     >
       <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
       <PublicExperienceProvider initialHome={initialHome}>
-        <PreviewSync />
-        <Header />
-        <PageTransitionBoundary>{children}</PageTransitionBoundary>
-        <SpeedInsights />
-        <Analytics />
+        <DockMenuProvider>
+          <PreviewSync />
+          <Header />
+          <DockMenu />
+          <PageTransitionBoundary>{children}</PageTransitionBoundary>
+          <SpeedInsights />
+          <Analytics />
+        </DockMenuProvider>
       </PublicExperienceProvider>
     </I18nProvider>
   );
