@@ -10,6 +10,8 @@ import { useDockMenuState } from "./DockMenuProvider";
 import { useDockActivePill } from "./useDockActivePill";
 
 const dockTint = "205, 205, 205";
+const dockSurfaceBlur = "blur(10px)";
+const dockActivePillBlur = "blur(6px)";
 const SCROLL_DELTA = 8;
 const COMPACT_AFTER_Y = 80;
 const DOCK_ITEM_EXPANDED_HEIGHT = 54;
@@ -133,16 +135,25 @@ const DockMenu = () => {
 
   const glassSx = glassActive
     ? {
-        backdropFilter: `url(#${filterId})`,
-        WebkitBackdropFilter: `url(#${filterId})`,
-        backgroundColor: `rgba(${dockTint}, 0.35)`,
-        border: "none",
-        boxShadow: "0 4px 18px rgba(0, 0, 0, 0.16)",
+        backdropFilter: { xs: dockSurfaceBlur, md: `url(#${filterId})` },
+        WebkitBackdropFilter: { xs: dockSurfaceBlur, md: `url(#${filterId})` },
+        backgroundColor: {
+          xs: `rgba(${dockTint}, 0.65)`,
+          md: `rgba(${dockTint}, 0.35)`,
+        },
+        border: {
+          xs: `1px solid rgba(${dockTint}, 0.8)`,
+          md: "none",
+        },
+        boxShadow: {
+          xs: "0 4px 22px rgba(0, 0, 0, 0.12)",
+          md: "0 4px 18px rgba(0, 0, 0, 0.16)",
+        },
         transform: "translateZ(0)",
       }
     : {
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
+        backdropFilter: dockSurfaceBlur,
+        WebkitBackdropFilter: dockSurfaceBlur,
       };
 
   const activePill = pill.mounted ? (
@@ -158,8 +169,8 @@ const DockMenu = () => {
           : Math.min(pill.height, DOCK_ITEM_COMPACT_HEIGHT),
         borderRadius: "999px",
         backgroundColor: `rgba(${dockTint}, 0.15)`,
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
+        backdropFilter: dockActivePillBlur,
+        WebkitBackdropFilter: dockActivePillBlur,
         border: `1px solid rgba(${dockTint}, 0.28)`,
         opacity: pill.visible ? 1 : 0,
         pointerEvents: "none",

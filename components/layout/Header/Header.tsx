@@ -22,6 +22,8 @@ import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 import { useHeaderActivePill } from "./useHeaderActivePill";
 
 const headerTint = "205, 205, 205";
+const headerSurfaceBlur = "blur(10px)";
+const headerActivePillBlur = "blur(6px)";
 
 const pillBase = {
   backgroundColor: `rgba(${headerTint}, 0.65)`,
@@ -128,8 +130,8 @@ const Header = ({ items }: HeaderProps) => {
         transform: "translateZ(0)",
       }
     : {
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
+        backdropFilter: headerSurfaceBlur,
+        WebkitBackdropFilter: headerSurfaceBlur,
       };
 
   const logo = (text: string) => (
@@ -163,8 +165,8 @@ const Header = ({ items }: HeaderProps) => {
           height: pill.height,
           borderRadius: "999px",
           backgroundColor: `rgba(${headerTint}, 0.15)`,
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
+          backdropFilter: headerActivePillBlur,
+          WebkitBackdropFilter: headerActivePillBlur,
           border: `1px solid rgba(${headerTint}, 0.28)`,
           opacity: pill.visible ? 1 : 0,
           pointerEvents: "none",
@@ -326,8 +328,8 @@ const Header = ({ items }: HeaderProps) => {
       <Box
         sx={{
           ...pillBase,
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          backdropFilter: headerSurfaceBlur,
+          WebkitBackdropFilter: headerSurfaceBlur,
           display: { xs: "block", md: "none" },
           borderRadius: open ? "24px" : "29px",
           transition: "border-radius 0.35s ease",
