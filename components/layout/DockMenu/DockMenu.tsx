@@ -12,6 +12,8 @@ import { useDockActivePill } from "./useDockActivePill";
 const dockTint = "205, 205, 205";
 const SCROLL_DELTA = 8;
 const COMPACT_AFTER_Y = 80;
+const DOCK_ITEM_EXPANDED_HEIGHT = 54;
+const DOCK_ITEM_COMPACT_HEIGHT = 36;
 const DOCK_ENTER_TRANSITION =
   "opacity 260ms ease-out, transform 640ms cubic-bezier(0.16, 1.32, 0.28, 1), width 320ms cubic-bezier(0.22, 1, 0.36, 1), height 320ms cubic-bezier(0.22, 1, 0.36, 1)";
 const DOCK_EXIT_TRANSITION =
@@ -151,7 +153,9 @@ const DockMenu = () => {
         left: 0,
         top: 0,
         width: pill.width,
-        height: pill.height,
+        height: expanded
+          ? pill.height
+          : Math.min(pill.height, DOCK_ITEM_COMPACT_HEIGHT),
         borderRadius: "999px",
         backgroundColor: `rgba(${dockTint}, 0.15)`,
         backdropFilter: "blur(10px)",
@@ -268,7 +272,7 @@ const DockMenu = () => {
                   m: 0,
                   p: 0,
                   width: 64,
-                  height: expanded ? 54 : 36,
+                  height: expanded ? DOCK_ITEM_EXPANDED_HEIGHT : DOCK_ITEM_COMPACT_HEIGHT,
                   display: "inline-flex",
                   flexDirection: "column",
                   alignItems: "center",
