@@ -52,35 +52,30 @@ export const getHomeHeroContent = async (
         locale,
         "eyebrow",
         content.eyebrow,
-        content.eyebrowEn,
       ),
       title: localizedTranslationField(
         content.translations,
         locale,
         "title",
         content.title,
-        content.titleEn,
       ),
       subheading: localizedTranslationField(
         content.translations,
         locale,
         "subheading",
         content.subheading,
-        content.subheadingEn,
       ),
       primaryCtaLabel: localizedTranslationField(
         content.translations,
         locale,
         "primaryCtaLabel",
         content.primaryCtaLabel,
-        content.primaryCtaLabelEn,
       ),
       secondaryCtaLabel: localizedTranslationField(
         content.translations,
         locale,
         "secondaryCtaLabel",
         content.secondaryCtaLabel,
-        content.secondaryCtaLabelEn,
       ),
     };
   } catch {

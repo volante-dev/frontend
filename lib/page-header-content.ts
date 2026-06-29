@@ -94,21 +94,18 @@ export const getPageHeaderContent = async (
         locale,
         "eyebrow",
         content.eyebrow,
-        content.eyebrowEn,
       ),
       title: localizedTranslationField(
         content.translations,
         locale,
         "title",
         content.title,
-        content.titleEn,
       ),
       intro: localizedNullableTranslationField(
         content.translations,
         locale,
         "intro",
         content.intro,
-        content.introEn,
       ),
     };
   } catch {

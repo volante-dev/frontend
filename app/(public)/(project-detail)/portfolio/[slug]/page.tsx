@@ -74,21 +74,18 @@ export const generateMetadata = async ({
     locale,
     "slug",
     project.slug,
-    project.slug,
   );
   const title = localizedTranslationField(
     project.translations,
     locale,
     "title",
     project.title,
-    project.titleEn,
   );
   const description = localizedTranslationField(
     project.translations,
     locale,
     "description",
     project.description,
-    project.descriptionEn,
   );
   const coverMediaType =
     project.imageAsset?.mediaType ?? inferMediaTypeFromUrl(project.imageUrl);
@@ -146,21 +143,18 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
     locale,
     "slug",
     project.slug,
-    project.slug,
   );
   const projectTitle = localizedTranslationField(
     project.translations,
     locale,
     "title",
     project.title,
-    project.titleEn,
   );
   const projectDescription = localizedTranslationField(
     project.translations,
     locale,
     "description",
     project.description,
-    project.descriptionEn,
   );
   const coverMediaType =
     project.imageAsset?.mediaType ?? inferMediaTypeFromUrl(project.imageUrl);
@@ -174,7 +168,6 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
         locale,
         "label",
         project.sectorEntry.label,
-        project.sectorEntry.labelEn,
       )
     : "";
   const location = project.locationEntry
@@ -183,7 +176,6 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
         locale,
         "label",
         project.locationEntry.label,
-        project.locationEntry.labelEn,
       )
     : "";
   const services = project.deliveredServiceEntries.map((entry) =>
@@ -192,7 +184,6 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
       locale,
       "label",
       entry.label,
-      entry.labelEn,
     ),
   );
   const challenge = localizedTranslationField(
@@ -200,28 +191,24 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
     locale,
     "challenge",
     project.challenge ?? "",
-    project.challengeEn,
   );
   const approach = localizedTranslationField(
     project.translations,
     locale,
     "approach",
     project.approach ?? "",
-    project.approachEn,
   );
   const results = localizedTranslationField(
     project.translations,
     locale,
     "results",
     project.results ?? "",
-    project.resultsEn,
   );
   const awards = localizedTranslationField(
     project.translations,
     locale,
     "awards",
     project.awards ?? "",
-    project.awardsEn,
   );
   const caseStudySections = [
     {
@@ -247,7 +234,6 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
             locale,
             "title",
             slide.title,
-            slide.titleEn,
           ),
           contentHtml: sanitizeRichTextHtml(
             `${localizedTranslationField(
@@ -255,7 +241,6 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
               locale,
               "contentHtml",
               slide.contentHtml,
-              slide.contentHtmlEn,
             )}${index === 0 ? caseStudyHtml : ""}`,
           ),
           mediaType: slide.mediaType,
@@ -267,7 +252,6 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
               locale,
               "alt",
               slide.mediaAsset?.alt ?? slide.alt ?? "",
-              slide.mediaAsset?.altEn ?? slide.altEn,
             ) || null,
         }))
       : [
@@ -283,7 +267,6 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
               locale,
               "alt",
               project.imageAsset?.alt ?? projectTitle,
-              project.imageAsset?.altEn,
             ),
           },
         ];
@@ -347,7 +330,6 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
           locale,
           "title",
           slide.title,
-          slide.titleEn,
         ),
         description: stripHtml(
           localizedTranslationField(
@@ -355,7 +337,6 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
             locale,
             "contentHtml",
             slide.contentHtml,
-            slide.contentHtmlEn,
           ),
         ),
         thumbnailUrl: slide.mediaAsset?.posterUrl ?? slide.posterUrl,

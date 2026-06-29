@@ -30,13 +30,10 @@ export const GET = async () => {
       }) => ({
         ...project,
         sector: sectorEntry?.label ?? null,
-        sectorEn: sectorEntry?.labelEn ?? null,
         projectLocation: locationEntry?.label ?? null,
-        projectLocationEn: locationEntry?.labelEn ?? null,
         coverMediaType: imageAsset?.mediaType ?? inferMediaTypeFromUrl(project.imageUrl),
         coverPosterUrl: imageAsset?.posterUrl ?? null,
         deliveredServices: deliveredServiceEntries.map((entry) => entry.label),
-        deliveredServicesEn: deliveredServiceEntries.map((entry) => entry.labelEn),
       }),
     ),
   );

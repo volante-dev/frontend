@@ -62,14 +62,12 @@ const getActiveSector = async (sectorSlug: string, locale: Locale) => {
       locale,
       "label",
       sector.label,
-      sector.labelEn,
     ),
     localizedSlug: localizedTranslationField(
       sector.translations,
       locale,
       "slug",
       sector.slug ?? "",
-      sector.slug,
     ),
   };
 };
@@ -86,21 +84,18 @@ const getSectorIntroOverride = (
       locale,
       "introEyebrow",
       sector.introEyebrow.trim(),
-      sector.introEyebrowEn,
     ),
     title: localizedTranslationField(
       sector.translations,
       locale,
       "introTitle",
       sector.introTitle.trim(),
-      sector.introTitleEn,
     ),
     intro: localizedNullableTranslationField(
       sector.translations,
       locale,
       "intro",
       sector.intro,
-      sector.introEn,
     ),
   };
 };
@@ -196,14 +191,12 @@ export const PortfolioPageContent = async ({ params }: PortfolioPageParams) => {
       locale,
       "label",
       sector.label,
-      sector.labelEn,
     ),
     slug: localizedTranslationField(
       sector.translations,
       locale,
       "slug",
       sector.slug ?? "",
-      sector.slug,
     ),
     icon: sector.icon,
   }));
@@ -215,14 +208,12 @@ export const PortfolioPageContent = async ({ params }: PortfolioPageParams) => {
       locale,
       "title",
       p.title,
-      p.titleEn,
     ),
     description: localizedTranslationField(
       p.translations,
       locale,
       "description",
       p.description,
-      p.descriptionEn,
     ),
     sector:
       (p.sectorEntry
@@ -231,7 +222,6 @@ export const PortfolioPageContent = async ({ params }: PortfolioPageParams) => {
             locale,
             "label",
             p.sectorEntry.label,
-            p.sectorEntry.labelEn,
           )
         : "") || null,
     coverMediaType: imageAsset?.mediaType ?? inferMediaTypeFromUrl(p.imageUrl),

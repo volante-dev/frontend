@@ -46,7 +46,6 @@ const TrailblazePage = async ({
       locale,
       "slug",
       post.slug,
-      post.slugEn,
     );
 
     return {
@@ -56,14 +55,12 @@ const TrailblazePage = async ({
         locale,
         "title",
         post.title,
-        post.titleEn,
       ),
       eyebrow: localizedTranslationField(
         post.translations,
         locale,
         "eyebrow",
         post.eyebrow,
-        post.eyebrowEn,
       ),
       href: blogPostPath(locale, slug, siteRoutes),
       coverMediaUrl: post.coverMediaUrl,

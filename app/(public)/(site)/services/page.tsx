@@ -44,7 +44,6 @@ const ServicesPage = async ({
                 select: {
                   id: true,
                   title: true,
-                  titleEn: true,
                   translations: true,
                   slug: true,
                   imageUrl: true,
@@ -69,14 +68,12 @@ const ServicesPage = async ({
       locale,
       "title",
       s.title,
-      s.titleEn,
     ),
     description: localizedTranslationField(
       s.translations,
       locale,
       "descriptionHtml",
       s.descriptionHtml ?? `<p>${s.description}</p>`,
-      s.descriptionHtmlEn ?? s.descriptionEn,
     ),
     portfolioExamples: s.portfolioExamples
       .filter((example) => example.project.publishedAt)
@@ -87,7 +84,6 @@ const ServicesPage = async ({
           locale,
           "title",
           example.project.title,
-          example.project.titleEn,
         ),
         slug: example.project.slug,
         imageUrl: example.project.imageUrl,

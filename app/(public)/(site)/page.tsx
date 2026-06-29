@@ -59,14 +59,12 @@ const HomePage = async ({
       locale,
       "title",
       p.title,
-      p.titleEn,
     ),
     description: localizedTranslationField(
       p.translations,
       locale,
       "description",
       p.description,
-      p.descriptionEn,
     ),
     sector:
       (p.sectorEntry
@@ -75,7 +73,6 @@ const HomePage = async ({
             locale,
             "label",
             p.sectorEntry.label,
-            p.sectorEntry.labelEn,
           )
         : "") || null,
     projectLocation:
@@ -85,7 +82,6 @@ const HomePage = async ({
             locale,
             "label",
             p.locationEntry.label,
-            p.locationEntry.labelEn,
           )
         : "") || null,
     coverMediaType: imageAsset?.mediaType ?? inferMediaTypeFromUrl(p.imageUrl),

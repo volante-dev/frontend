@@ -18,14 +18,9 @@ export const localizedTranslationField = (
   locale: Locale,
   field: string,
   fallback: string,
-  legacyTranslated?: string | null,
 ): string => {
   const current = findTranslation(translations, locale)?.[field];
   if (isStringValue(current)) return current;
-
-  if (locale === "en" && legacyTranslated !== undefined && legacyTranslated !== null) {
-    return legacyTranslated;
-  }
 
   const defaultValue = findTranslation(translations, defaultLocale)?.[field];
   if (isStringValue(defaultValue)) return defaultValue;
@@ -38,14 +33,12 @@ export const localizedNullableTranslationField = (
   locale: Locale,
   field: string,
   fallback: string | null | undefined,
-  legacyTranslated?: string | null,
 ): string | null => {
   const value = localizedTranslationField(
     translations,
     locale,
     field,
     fallback ?? "",
-    legacyTranslated,
   );
 
   return value || null;
@@ -56,12 +49,9 @@ export const localizedTranslationArray = (
   locale: Locale,
   field: string,
   fallback: string[],
-  legacyTranslated?: string[] | null,
 ): string[] => {
   const current = findTranslation(translations, locale)?.[field];
   if (Array.isArray(current)) return current.filter(isStringValue);
-
-  if (locale === "en" && legacyTranslated) return legacyTranslated;
 
   const defaultValue = findTranslation(translations, defaultLocale)?.[field];
   if (Array.isArray(defaultValue)) return defaultValue.filter(isStringValue);

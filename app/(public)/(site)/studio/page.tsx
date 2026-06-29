@@ -28,31 +28,22 @@ const fallbackValues = [
   {
     id: "studio-value-exigence",
     title: "Exigence",
-    titleEn: "Excellence",
     description:
       "Chaque projet est traité avec la même rigueur, qu'il s'agisse d'une carte de visite ou d'une campagne nationale.",
-    descriptionEn:
-      "Every project receives the same attention to detail, from a business card to a national campaign.",
     translations: [],
   },
   {
     id: "studio-value-clarte",
     title: "Clarté",
-    titleEn: "Clarity",
     description:
       "Nous simplifions le complexe. Une bonne communication est d'abord une communication compréhensible.",
-    descriptionEn:
-      "We make complexity simple. Good communication begins with being understood.",
     translations: [],
   },
   {
     id: "studio-value-durabilite",
     title: "Durabilité",
-    titleEn: "Durability",
     description:
       "Nous concevons des identités qui vieillissent bien et des messages qui restent pertinents dans le temps.",
-    descriptionEn:
-      "We design identities that age well and messages that remain relevant over time.",
     translations: [],
   },
 ];
@@ -111,14 +102,12 @@ const StudioPage = async ({
       locale,
       "title",
       value.title,
-      value.titleEn,
     ),
     description: localizedTranslationField(
       value.translations,
       locale,
       "description",
       value.description,
-      value.descriptionEn,
     ),
   }));
   const founders: Founder[] = studioContent
@@ -129,14 +118,12 @@ const StudioPage = async ({
             locale,
             "founderOneName",
             studioContent.founderOneName,
-            studioContent.founderOneNameEn,
           ),
           role: localizedTranslationField(
             studioContent.translations,
             locale,
             "founderOneRole",
             studioContent.founderOneRole,
-            studioContent.founderOneRoleEn,
           ),
           description: sanitizeRichTextHtml(
             localizedTranslationField(
@@ -144,7 +131,6 @@ const StudioPage = async ({
               locale,
               "founderOneDescription",
               studioContent.founderOneDescription,
-              studioContent.founderOneDescriptionEn,
             ),
           ),
           imageUrl: studioContent.founderOneImageUrl,
@@ -155,8 +141,6 @@ const StudioPage = async ({
             studioContent.founderOneImageAsset?.alt ||
               studioContent.founderOneImageAlt ||
               studioContent.founderOneName,
-            studioContent.founderOneImageAsset?.altEn ||
-              studioContent.founderOneImageAltEn,
           ),
         },
         {
@@ -165,14 +149,12 @@ const StudioPage = async ({
             locale,
             "founderTwoName",
             studioContent.founderTwoName,
-            studioContent.founderTwoNameEn,
           ),
           role: localizedTranslationField(
             studioContent.translations,
             locale,
             "founderTwoRole",
             studioContent.founderTwoRole,
-            studioContent.founderTwoRoleEn,
           ),
           description: sanitizeRichTextHtml(
             localizedTranslationField(
@@ -180,7 +162,6 @@ const StudioPage = async ({
               locale,
               "founderTwoDescription",
               studioContent.founderTwoDescription,
-              studioContent.founderTwoDescriptionEn,
             ),
           ),
           imageUrl: studioContent.founderTwoImageUrl,
@@ -191,8 +172,6 @@ const StudioPage = async ({
             studioContent.founderTwoImageAsset?.alt ||
               studioContent.founderTwoImageAlt ||
               studioContent.founderTwoName,
-            studioContent.founderTwoImageAsset?.altEn ||
-              studioContent.founderTwoImageAltEn,
           ),
         },
       ]
@@ -213,21 +192,18 @@ const StudioPage = async ({
             locale,
             "eyebrow",
             studioContent.eyebrow,
-            studioContent.eyebrowEn,
           ),
           title: localizedTranslationField(
             studioContent.translations,
             locale,
             "title",
             studioContent.title,
-            studioContent.titleEn,
           ),
           intro: localizedTranslationField(
             studioContent.translations,
             locale,
             "intro",
             studioContent.intro,
-            studioContent.introEn,
           ),
           founders,
         }
@@ -238,7 +214,6 @@ const StudioPage = async ({
         locale,
         "historyTitle",
         studioContent.historyTitle,
-        studioContent.historyTitleEn,
       )
     : t(translations, "studio.history.heading", "Notre histoire");
   const historyContentHtml = studioContent
@@ -247,7 +222,6 @@ const StudioPage = async ({
         locale,
         "historyContentHtml",
         studioContent.historyContentHtml,
-        studioContent.historyContentHtmlEn,
       )
     : `<p>${escapeHtml(
         t(

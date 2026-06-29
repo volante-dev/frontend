@@ -51,7 +51,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: { publishedAt: { not: null } },
       select: {
         slug: true,
-        slugEn: true,
         updatedAt: true,
         translations: true,
       },
@@ -87,7 +86,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             project.translations,
             locale,
             "slug",
-            project.slug,
             project.slug,
           ),
           siteRoutes,
@@ -133,7 +131,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             locale,
             "slug",
             post.slug,
-            post.slugEn,
           ),
           siteRoutes,
         ),

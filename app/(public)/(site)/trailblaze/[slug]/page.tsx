@@ -49,7 +49,7 @@ const getPost = async (
 ) =>
   prisma.blogPost.findFirst({
     where: {
-      OR: [{ slug }, { slugEn: slug }, { translations: { some: { slug } } }],
+      OR: [{ slug }, { translations: { some: { slug } } }],
       ...(allowDraftPreview ? {} : { publishedAt: { not: null } }),
     },
     include: {
@@ -68,10 +68,8 @@ const getPost = async (
 const getDescription = (
   translations: Array<{ locale: string; seoDescription: string | null }> | null,
   seoDescription: string | null,
-  seoDescriptionEn: string | null,
   blocks: Array<{
     contentHtml: string | null;
-    contentHtmlEn: string | null;
     translations: Array<{ locale: string; contentHtml: string | null }>;
   }>,
   locale: Locale,
@@ -82,7 +80,6 @@ const getDescription = (
     locale,
     "seoDescription",
     seoDescription ?? "",
-    seoDescriptionEn,
   ).trim();
   if (explicitDescription) return explicitDescription;
 
@@ -94,7 +91,6 @@ const getDescription = (
       locale,
       "contentHtml",
       richText.contentHtml,
-      richText.contentHtmlEn,
     ),
   ).slice(0, 180);
 };
@@ -144,19 +140,16 @@ export const generateMetadata = async ({
     locale,
     "slug",
     post.slug,
-    post.slugEn,
   );
   const title = localizedTranslationField(
     post.translations,
     locale,
     "title",
     post.title,
-    post.titleEn,
   );
   const description = getDescription(
     post.translations,
     post.seoDescription,
-    post.seoDescriptionEn,
     post.blocks,
     locale,
     title,
@@ -211,33 +204,28 @@ const TrailblazeArticlePage = async ({
     locale,
     "slug",
     post.slug,
-    post.slugEn,
   );
   const articleTitle = localizedTranslationField(
     post.translations,
     locale,
     "title",
     post.title,
-    post.titleEn,
   );
   const articleEyebrow = localizedTranslationField(
     post.translations,
     locale,
     "eyebrow",
     post.eyebrow,
-    post.eyebrowEn,
   );
   const articleTags = localizedTranslationArray(
     post.translations,
     locale,
     "tags",
     post.tags,
-    post.tagsEn,
   );
   const description = getDescription(
     post.translations,
     post.seoDescription,
-    post.seoDescriptionEn,
     post.blocks,
     locale,
     articleTitle,
@@ -297,7 +285,6 @@ const TrailblazeArticlePage = async ({
             locale,
             "contentHtml",
             block.contentHtml,
-            block.contentHtmlEn,
           ),
         )
       : null,
@@ -310,7 +297,6 @@ const TrailblazeArticlePage = async ({
             locale,
             "alt",
             block.mediaAsset.alt ?? articleTitle,
-            block.mediaAsset.altEn,
           )
         : null,
   }));

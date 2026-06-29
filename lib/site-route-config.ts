@@ -24,9 +24,7 @@ export type SitemapFrequency =
 export type SiteRoute = {
   id: SiteRouteId;
   label: string;
-  labelEn: string;
   slug: string;
-  slugEn: string;
   translations?: Record<string, { label?: string | null; slug?: string | null }>;
   internalSegment: string;
   order: number;
@@ -41,9 +39,8 @@ export const defaultSiteRoutes: SiteRoute[] = [
   {
     id: "home",
     label: "Accueil",
-    labelEn: "Home",
     slug: "",
-    slugEn: "",
+    translations: { en: { label: "Home", slug: "" } },
     internalSegment: "",
     order: 0,
     showInHeader: false,
@@ -55,9 +52,8 @@ export const defaultSiteRoutes: SiteRoute[] = [
   {
     id: "services",
     label: "Services",
-    labelEn: "Services",
     slug: "services",
-    slugEn: "services",
+    translations: { en: { label: "Services", slug: "services" } },
     internalSegment: "services",
     order: 1,
     showInHeader: true,
@@ -69,9 +65,8 @@ export const defaultSiteRoutes: SiteRoute[] = [
   {
     id: "portfolio",
     label: "Portfolio",
-    labelEn: "Portfolio",
     slug: "portfolio",
-    slugEn: "portfolio",
+    translations: { en: { label: "Portfolio", slug: "portfolio" } },
     internalSegment: "portfolio",
     order: 2,
     showInHeader: true,
@@ -83,9 +78,8 @@ export const defaultSiteRoutes: SiteRoute[] = [
   {
     id: "trailblaze",
     label: "Trailblaze",
-    labelEn: "Trailblaze",
     slug: "trailblaze",
-    slugEn: "trailblaze",
+    translations: { en: { label: "Trailblaze", slug: "trailblaze" } },
     internalSegment: "trailblaze",
     order: 3,
     showInHeader: true,
@@ -97,9 +91,8 @@ export const defaultSiteRoutes: SiteRoute[] = [
   {
     id: "studio",
     label: "Studio",
-    labelEn: "Studio",
     slug: "studio",
-    slugEn: "studio",
+    translations: { en: { label: "Studio", slug: "studio" } },
     internalSegment: "studio",
     order: 4,
     showInHeader: true,
@@ -111,9 +104,8 @@ export const defaultSiteRoutes: SiteRoute[] = [
   {
     id: "contact",
     label: "Contact",
-    labelEn: "Contact",
     slug: "contact",
-    slugEn: "contact",
+    translations: { en: { label: "Contact", slug: "contact" } },
     internalSegment: "contact",
     order: 5,
     showInHeader: true,
@@ -156,12 +148,10 @@ export const getSiteRouteById = (
 };
 
 export const getSiteRouteSlug = (route: SiteRoute, locale: Locale): string =>
-  route.translations?.[locale]?.slug ??
-  (locale === "en" ? route.slugEn : route.slug);
+  route.translations?.[locale]?.slug ?? route.slug;
 
 export const getSiteRouteLabel = (route: SiteRoute, locale: Locale): string =>
-  route.translations?.[locale]?.label ??
-  (locale === "en" ? route.labelEn : route.label);
+  route.translations?.[locale]?.label ?? route.label;
 
 export const getLocalizedRouteHref = (
   routes: SiteRoute[],

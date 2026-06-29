@@ -38,9 +38,7 @@ export const getSiteRoutes = cache(async (): Promise<SiteRoute[]> => {
         .map((route) => ({
           id: route.id as SiteRoute["id"],
           label: route.label,
-          labelEn: route.labelEn,
           slug: route.slug,
-          slugEn: route.slugEn,
           translations: Object.fromEntries(
             route.translations.map((translation) => [
               translation.locale,

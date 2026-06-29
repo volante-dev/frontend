@@ -21,11 +21,8 @@ type ServicePortfolioExample = {
 export interface Service {
   id: string;
   title: string;
-  titleEn?: string | null;
   description: string;
-  descriptionEn?: string | null;
   descriptionHtml?: string | null;
-  descriptionHtmlEn?: string | null;
   icon?: string | null;
   order: number;
   active: boolean;
