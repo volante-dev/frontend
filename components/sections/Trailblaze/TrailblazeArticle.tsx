@@ -121,10 +121,17 @@ const TrailblazeArticle = ({
             borderTop: `1px solid ${colors.blueGray}`,
           }}
         >
-          <Typography variant="subtitle2" sx={{ mb: 2, color: colors.green }}>
-            Tags
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+          <Box
+            sx={{
+              maxWidth: { xs: "100%", md: 680 },
+              mx: "auto",
+              px: { xs: 0, md: 4 },
+              display: "flex",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: 1,
+            }}
+          >
             {article.tags.map((tag) => (
               <Box
                 key={tag}

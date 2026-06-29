@@ -11,6 +11,7 @@ import {
   blogPostPath,
   createPageMetadata,
   getBreadcrumbJsonLd,
+  siteName,
   siteUrl,
   toAbsoluteUrl,
 } from "@/lib/seo";
@@ -28,6 +29,15 @@ const stripHtml = (value: string) =>
 
 const inferMediaTypeFromUrl = (value: string) =>
   /\.(mp4|mov|webm)(?:[?#].*)?$/i.test(value) ? "VIDEO" : "IMAGE";
+
+const compact = <T extends Record<string, unknown>>(value: T): T =>
+  Object.fromEntries(
+    Object.entries(value).filter(([, entry]) => {
+      if (entry === undefined || entry === null || entry === "") return false;
+      if (Array.isArray(entry)) return entry.length > 0;
+      return true;
+    }),
+  ) as T;
 
 const getPost = async (
   slug: string,
@@ -48,16 +58,46 @@ const getPost = async (
   });
 
 const getDescription = (
+  seoDescription: string | null,
+  seoDescriptionEn: string | null,
   blocks: Array<{ contentHtml: string | null; contentHtmlEn: string | null }>,
   locale: "fr" | "en",
   fallback: string,
 ) => {
+  const explicitDescription = localizeField(
+    seoDescription ?? "",
+    seoDescriptionEn,
+    locale,
+  ).trim();
+  if (explicitDescription) return explicitDescription;
+
   const richText = blocks.find((block) => block.contentHtml);
   if (!richText?.contentHtml) return fallback;
   return stripHtml(
     localizeField(richText.contentHtml, richText.contentHtmlEn, locale),
   ).slice(0, 180);
 };
+
+const getSeoImage = ({
+  coverMediaUrl,
+  coverMediaType,
+  posterUrl,
+}: {
+  coverMediaUrl: string;
+  coverMediaType: "IMAGE" | "VIDEO";
+  posterUrl?: string | null;
+}) => {
+  if (coverMediaType === "IMAGE") return coverMediaUrl;
+  return posterUrl ?? "/opengraph-image";
+};
+
+const getOrganizationNode = () => ({
+  "@type": "Organization",
+  "@id": `${siteUrl.origin}/#organization`,
+  name: siteName,
+  url: siteUrl.origin,
+  logo: toAbsoluteUrl("/favicon.ico"),
+});
 
 export const generateMetadata = async ({
   params,
@@ -76,18 +116,28 @@ export const generateMetadata = async ({
   }
 
   const title = localizeField(post.title, post.titleEn, locale);
-  const description = getDescription(post.blocks, locale, title);
+  const description = getDescription(
+    post.seoDescription,
+    post.seoDescriptionEn,
+    post.blocks,
+    locale,
+    title,
+  );
   const coverMediaType =
     post.coverMediaAsset?.mediaType ?? inferMediaTypeFromUrl(post.coverMediaUrl);
-  const image =
-    coverMediaType === "VIDEO"
-      ? post.coverMediaAsset?.posterUrl ?? post.coverMediaUrl
-      : post.coverMediaUrl;
+  const image = getSeoImage({
+    coverMediaUrl: post.coverMediaUrl,
+    coverMediaType,
+    posterUrl: post.coverMediaAsset?.posterUrl,
+  });
 
   return createPageMetadata({
     locale,
     pathname: blogPostPath(locale, locale === "en" ? post.slugEn : post.slug),
-    alternatePathname: blogPostPath(locale === "fr" ? "en" : "fr", locale === "fr" ? post.slugEn : post.slug),
+    alternatePathname: blogPostPath(
+      locale === "fr" ? "en" : "fr",
+      locale === "fr" ? post.slugEn : post.slug,
+    ),
     title,
     description,
     image,
@@ -113,35 +163,53 @@ const TrailblazeArticlePage = async ({
   const articleTitle = localizeField(post.title, post.titleEn, locale);
   const articleEyebrow = localizeField(post.eyebrow, post.eyebrowEn, locale);
   const articleTags = locale === "en" ? post.tagsEn : post.tags;
-  const description = getDescription(post.blocks, locale, articleTitle);
-  const articlePath = blogPostPath(locale, locale === "en" ? post.slugEn : post.slug);
+  const description = getDescription(
+    post.seoDescription,
+    post.seoDescriptionEn,
+    post.blocks,
+    locale,
+    articleTitle,
+  );
+  const articlePath = blogPostPath(
+    locale,
+    locale === "en" ? post.slugEn : post.slug,
+  );
+  const absoluteArticleUrl = toAbsoluteUrl(articlePath);
   const breadcrumb = getBreadcrumbJsonLd(locale, [
-    { name: locale === "en" ? "Home" : "Accueil", path: getLocalizedHref(locale, "home") },
+    {
+      name: locale === "en" ? "Home" : "Accueil",
+      path: getLocalizedHref(locale, "home"),
+    },
     { name: "Trailblaze", path: getLocalizedHref(locale, "trailblaze") },
     { name: articleTitle, path: articlePath },
   ]);
   const coverMediaType =
     post.coverMediaAsset?.mediaType ?? inferMediaTypeFromUrl(post.coverMediaUrl);
-  const seoImage =
-    coverMediaType === "VIDEO"
-      ? post.coverMediaAsset?.posterUrl ?? post.coverMediaUrl
-      : post.coverMediaUrl;
-  const blogPosting = {
+  const seoImage = getSeoImage({
+    coverMediaUrl: post.coverMediaUrl,
+    coverMediaType,
+    posterUrl: post.coverMediaAsset?.posterUrl,
+  });
+  const organizationNode = getOrganizationNode();
+  const blogPosting = compact({
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "@id": `${toAbsoluteUrl(articlePath)}#article`,
+    "@id": `${absoluteArticleUrl}#article`,
     headline: articleTitle,
     description,
-    url: toAbsoluteUrl(articlePath),
-    mainEntityOfPage: toAbsoluteUrl(articlePath),
-    image: seoImage,
+    url: absoluteArticleUrl,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": absoluteArticleUrl,
+    },
+    image: [toAbsoluteUrl(seoImage)],
     inLanguage: locale === "fr" ? "fr-FR" : "en-GB",
     datePublished: post.publishedAt?.toISOString(),
     dateModified: post.updatedAt.toISOString(),
     keywords: articleTags,
-    author: { "@id": `${siteUrl.origin}/#organization` },
-    publisher: { "@id": `${siteUrl.origin}/#organization` },
-  };
+    author: organizationNode,
+    publisher: organizationNode,
+  });
 
   const blocks = post.blocks.map((block) => ({
     id: block.id,
@@ -155,7 +223,11 @@ const TrailblazeArticlePage = async ({
     posterUrl: block.mediaAsset?.posterUrl ?? null,
     alt:
       block.mediaAsset && block.type === "IMAGE"
-        ? localizeField(block.mediaAsset.alt ?? articleTitle, block.mediaAsset.altEn, locale)
+        ? localizeField(
+            block.mediaAsset.alt ?? articleTitle,
+            block.mediaAsset.altEn,
+            locale,
+          )
         : null,
   }));
 
