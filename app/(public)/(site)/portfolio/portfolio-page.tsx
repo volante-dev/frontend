@@ -10,6 +10,7 @@ import type { Locale } from "@/lib/i18n-config";
 import { createPageMetadata } from "@/lib/seo";
 import { createRouteMetadata } from "@/lib/seo-pages";
 import { portfolioSectorPath } from "@/lib/portfolio-routes";
+import { getSiteRoutes } from "@/lib/site-routes";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
 
 type PortfolioPageParams = {
@@ -82,9 +83,10 @@ export const generatePortfolioMetadata = async ({
 
   if (!sectorSlug) return createRouteMetadata(locale, "portfolio");
 
-  const [translations, sector] = await Promise.all([
+  const [translations, sector, siteRoutes] = await Promise.all([
     getTranslations(locale),
     getActiveSector(sectorSlug, locale),
+    getSiteRoutes(),
   ]);
   if (!sector) notFound();
 
@@ -101,8 +103,12 @@ export const generatePortfolioMetadata = async ({
 
   return createPageMetadata({
     locale,
-    pathname: portfolioSectorPath(locale, sector.slug ?? sectorSlug),
-    alternatePathname: portfolioSectorPath(otherLocale, sector.slug ?? sectorSlug),
+    pathname: portfolioSectorPath(locale, sector.slug ?? sectorSlug, siteRoutes),
+    alternatePathname: portfolioSectorPath(
+      otherLocale,
+      sector.slug ?? sectorSlug,
+      siteRoutes,
+    ),
     title,
     description,
   });

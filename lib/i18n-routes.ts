@@ -1,13 +1,13 @@
 import type { Locale } from "./i18n-config";
-import { defaultLocale, locales } from "./i18n-config";
+import {
+  defaultSiteRoutes,
+  getAlternateRouteHref,
+  getLocalizedRouteHref,
+  getRouteFromPublicSlug,
+  type SiteRouteId,
+} from "./site-route-config";
 
-export type RouteKey =
-  | "home"
-  | "services"
-  | "portfolio"
-  | "trailblaze"
-  | "studio"
-  | "contact";
+export type RouteKey = SiteRouteId;
 
 /**
  * Mapping des slugs par locale.
@@ -33,25 +33,17 @@ export const slugs: Record<Locale, Record<RouteKey, string>> = {
   },
 };
 
-const portfolioSectorSegment: Record<Locale, string> = {
-  fr: "secteur",
-  en: "sector",
-};
-
 /** Construit l'URL localisée à partir d'une RouteKey.
  *  getLocalizedHref("en", "portfolio") → "/en/portfolio"
  *  getLocalizedHref("fr", "portfolio") → "/portfolio"
  */
 export const getLocalizedHref = (locale: Locale, key: RouteKey): string => {
-  const slug = slugs[locale][key];
-  const prefix = locale === defaultLocale ? "" : `/${locale}`;
-  return slug ? `${prefix}/${slug}` : prefix || "/";
+  return getLocalizedRouteHref(defaultSiteRoutes, locale, key);
 };
 
 /** Trouve la RouteKey correspondant à un slug dans une locale donnée. */
 export const getRouteKeyFromSlug = (locale: Locale, slug: string): RouteKey | null => {
-  const entry = Object.entries(slugs[locale]).find(([, s]) => s === slug);
-  return entry ? (entry[0] as RouteKey) : null;
+  return getRouteFromPublicSlug(defaultSiteRoutes, locale, slug)?.id ?? null;
 };
 
 /**
@@ -60,30 +52,5 @@ export const getRouteKeyFromSlug = (locale: Locale, slug: string): RouteKey | nu
  *  getAlternateHref("/portfolio", "en")    → "/en/portfolio"
  */
 export const getAlternateHref = (pathname: string, targetLocale: Locale): string => {
-  // Détecter la locale courante depuis le pathname en utilisant le tableau locales
-  const parts = pathname.split("/").filter(Boolean);
-  const nonDefaultLocales = locales.filter((l) => l !== defaultLocale) as string[];
-  const isLocalePrefix = parts.length > 0 && nonDefaultLocales.includes(parts[0]);
-  const currentLocale: Locale = isLocalePrefix ? (parts[0] as Locale) : defaultLocale;
-  const slugPart = isLocalePrefix ? parts.slice(1).join("/") : parts.join("/");
-  const slugSegments = slugPart.split("/").filter(Boolean);
-
-  if (
-    slugSegments[0] === slugs[currentLocale].portfolio &&
-    slugSegments[1] === portfolioSectorSegment[currentLocale] &&
-    slugSegments[2]
-  ) {
-    const prefix = targetLocale === defaultLocale ? "" : `/${targetLocale}`;
-    return `${prefix}/${slugs[targetLocale].portfolio}/${portfolioSectorSegment[targetLocale]}/${slugSegments[2]}`;
-  }
-
-  // Trouver la RouteKey dans la locale courante
-  const routeKey = slugPart ? getRouteKeyFromSlug(currentLocale, slugPart) : "home";
-
-  if (!routeKey) {
-    // Slug inconnu : on préfixe/dépréfixe naïvement
-    return targetLocale === defaultLocale ? `/${slugPart}` : `/${targetLocale}/${slugPart}`;
-  }
-
-  return getLocalizedHref(targetLocale, routeKey);
+  return getAlternateRouteHref(defaultSiteRoutes, pathname, targetLocale);
 };

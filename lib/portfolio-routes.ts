@@ -1,15 +1,23 @@
 import type { Locale } from "./i18n-config";
-import { getLocalizedHref } from "./i18n-routes";
+import {
+  defaultSiteRoutes,
+  getLocalizedRouteHref,
+  portfolioSectorSegment,
+  type SiteRoute,
+} from "./site-route-config";
 
-export const portfolioSectorSegment = {
-  fr: "secteur",
-  en: "sector",
-} as const satisfies Record<Locale, string>;
+export { portfolioSectorSegment };
 
-export const portfolioPath = (locale: Locale) => getLocalizedHref(locale, "portfolio");
+export const portfolioPath = (
+  locale: Locale,
+  siteRoutes: SiteRoute[] = defaultSiteRoutes,
+) => getLocalizedRouteHref(siteRoutes, locale, "portfolio");
 
-export const portfolioSectorPath = (locale: Locale, sectorSlug: string) =>
-  `${portfolioPath(locale)}/${portfolioSectorSegment[locale]}/${sectorSlug}`;
+export const portfolioSectorPath = (
+  locale: Locale,
+  sectorSlug: string,
+  siteRoutes: SiteRoute[] = defaultSiteRoutes,
+) => `${portfolioPath(locale, siteRoutes)}/${portfolioSectorSegment[locale]}/${sectorSlug}`;
 
 export const isPortfolioSectorPath = (locale: Locale, segments: string[]) => {
   const portfolioSegment = "portfolio";

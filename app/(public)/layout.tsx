@@ -11,6 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next";
 import JsonLd from "@/components/seo/JsonLd";
 import { getOrganizationJsonLd, getWebsiteJsonLd } from "@/lib/seo";
+import { getSiteRoutes } from "@/lib/site-routes";
 
 const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
   const headersList = await headers();
@@ -21,20 +22,22 @@ const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
       : initialPathname;
   const initialHome =
     normalizedPathname === "/" || normalizedPathname === "/en";
-  const [translationsFr, translationsEn] = await Promise.all([
+  const [translationsFr, translationsEn, siteRoutes] = await Promise.all([
     getTranslations("fr"),
     getTranslations("en"),
+    getSiteRoutes(),
   ]);
 
   return (
     <I18nProvider
       translationsByLocale={{ fr: translationsFr, en: translationsEn }}
+      siteRoutes={siteRoutes}
     >
       <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
       <PublicExperienceProvider initialHome={initialHome}>
         <DockMenuProvider>
           <PreviewSync />
-          <Header />
+          <Header items={siteRoutes.filter((route) => route.showInHeader)} />
           <DockMenu />
           <PageTransitionBoundary>{children}</PageTransitionBoundary>
           <SpeedInsights />

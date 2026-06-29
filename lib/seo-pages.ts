@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import type { Locale } from "./i18n-config";
-import type { RouteKey } from "./i18n-routes";
+import type { SiteRouteId } from "./site-route-config";
 import { createPageMetadata, siteDescription, siteDescriptionEn } from "./seo";
+import { getSiteRoutes } from "./site-routes";
 
 const pageSeo: Record<
-  RouteKey,
+  SiteRouteId,
   Record<Locale, { title: string; description: string }>
 > = {
   home: {
@@ -81,5 +82,8 @@ const pageSeo: Record<
 
 export const createRouteMetadata = (
   locale: Locale,
-  route: RouteKey,
-): Metadata => createPageMetadata({ locale, route, ...pageSeo[route][locale] });
+  route: SiteRouteId,
+): Promise<Metadata> =>
+  getSiteRoutes().then((siteRoutes) =>
+    createPageMetadata({ locale, route, siteRoutes, ...pageSeo[route][locale] }),
+  );

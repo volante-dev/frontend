@@ -8,10 +8,8 @@ import {
   useRef,
   useState,
 } from "react";
-import type { RouteKey } from "@/lib/i18n";
-
 type ActivePillItem = {
-  key: RouteKey;
+  key: string;
   href: string;
 };
 
@@ -49,8 +47,8 @@ export const useHeaderActivePill = ({
   enabled?: boolean;
 }) => {
   const containerRef = useRef<HTMLElement | null>(null);
-  const itemRefs = useRef(new Map<RouteKey, HTMLElement>());
-  const previousActiveKeyRef = useRef<RouteKey | null>(null);
+  const itemRefs = useRef(new Map<string, HTMLElement>());
+  const previousActiveKeyRef = useRef<string | null>(null);
   const frameRef = useRef<number | null>(null);
   const hideTimeoutRef = useRef<number | null>(null);
   const [pill, setPill] = useState<ActivePillState>(hiddenPill);
@@ -182,7 +180,7 @@ export const useHeaderActivePill = ({
   useEffect(() => () => clearTimers(), [clearTimers]);
 
   const registerItem = useCallback(
-    (key: RouteKey) => (node: HTMLElement | null) => {
+    (key: string) => (node: HTMLElement | null) => {
       if (node) {
         itemRefs.current.set(key, node);
       } else {

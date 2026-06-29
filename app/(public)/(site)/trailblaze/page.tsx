@@ -5,6 +5,7 @@ import { localizeField } from "@/lib/i18n";
 import { resolveLocale } from "@/lib/i18n-config";
 import { createRouteMetadata } from "@/lib/seo-pages";
 import { blogPostPath } from "@/lib/seo";
+import { getSiteRoutes } from "@/lib/site-routes";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
 
 export const dynamic = "force-dynamic";
@@ -25,15 +26,18 @@ const TrailblazePage = async ({
   params?: Promise<{ locale?: string }>;
 }) => {
   const locale = resolveLocale((await params)?.locale);
-  const rawPosts = await prisma.blogPost
-    .findMany({
-      where: { publishedAt: { not: null } },
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-      include: {
-        coverMediaAsset: { select: { mediaType: true, posterUrl: true } },
-      },
-    })
-    .catch(() => []);
+  const [rawPosts, siteRoutes] = await Promise.all([
+    prisma.blogPost
+      .findMany({
+        where: { publishedAt: { not: null } },
+        orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+        include: {
+          coverMediaAsset: { select: { mediaType: true, posterUrl: true } },
+        },
+      })
+      .catch(() => []),
+    getSiteRoutes(),
+  ]);
 
   const posts = rawPosts.map((post) => {
     const slug = locale === "en" ? post.slugEn : post.slug;
@@ -42,7 +46,7 @@ const TrailblazePage = async ({
       id: post.id,
       title: localizeField(post.title, post.titleEn, locale),
       eyebrow: localizeField(post.eyebrow, post.eyebrowEn, locale),
-      href: blogPostPath(locale, slug),
+      href: blogPostPath(locale, slug, siteRoutes),
       coverMediaUrl: post.coverMediaUrl,
       coverMediaType:
         post.coverMediaAsset?.mediaType ?? inferMediaTypeFromUrl(post.coverMediaUrl),

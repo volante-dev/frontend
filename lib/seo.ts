@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import type { Locale } from "./i18n-config";
-import type { RouteKey } from "./i18n-routes";
-import { getLocalizedHref } from "./i18n-routes";
+import {
+  defaultSiteRoutes,
+  getLocalizedRouteHref,
+  type SiteRoute,
+  type SiteRouteId,
+} from "./site-route-config";
 
 export const siteName = "Studio Volante";
 export const siteDescription =
@@ -14,19 +18,28 @@ export const siteUrl = new URL(
 
 const absoluteUrl = (pathname: string) => new URL(pathname, siteUrl).toString();
 
-export const projectPath = (locale: Locale, slug: string) => {
-  const portfolio = getLocalizedHref(locale, "portfolio");
+export const projectPath = (
+  locale: Locale,
+  slug: string,
+  siteRoutes: SiteRoute[] = defaultSiteRoutes,
+) => {
+  const portfolio = getLocalizedRouteHref(siteRoutes, locale, "portfolio");
   return `${portfolio}/${slug}`;
 };
 
-export const blogPostPath = (locale: Locale, slug: string) => {
-  const trailblaze = getLocalizedHref(locale, "trailblaze");
+export const blogPostPath = (
+  locale: Locale,
+  slug: string,
+  siteRoutes: SiteRoute[] = defaultSiteRoutes,
+) => {
+  const trailblaze = getLocalizedRouteHref(siteRoutes, locale, "trailblaze");
   return `${trailblaze}/${slug}`;
 };
 
 type PageMetadataInput = {
   locale: Locale;
-  route?: RouteKey;
+  route?: SiteRouteId;
+  siteRoutes?: SiteRoute[];
   pathname?: string;
   alternatePathname?: string;
   title: string;
@@ -39,6 +52,7 @@ type PageMetadataInput = {
 export const createPageMetadata = ({
   locale,
   route,
+  siteRoutes = defaultSiteRoutes,
   pathname,
   alternatePathname,
   title,
@@ -47,10 +61,12 @@ export const createPageMetadata = ({
   noIndex = false,
   type = "website",
 }: PageMetadataInput): Metadata => {
-  const currentPath = route ? getLocalizedHref(locale, route) : pathname ?? "/";
+  const currentPath = route
+    ? getLocalizedRouteHref(siteRoutes, locale, route)
+    : pathname ?? "/";
   const otherLocale: Locale = locale === "fr" ? "en" : "fr";
   const otherPath = route
-    ? getLocalizedHref(otherLocale, route)
+    ? getLocalizedRouteHref(siteRoutes, otherLocale, route)
     : alternatePathname ?? currentPath;
   const frPath = locale === "fr" ? currentPath : otherPath;
   const enPath = locale === "en" ? currentPath : otherPath;

@@ -15,7 +15,8 @@ import {
   siteUrl,
   toAbsoluteUrl,
 } from "@/lib/seo";
-import { getLocalizedHref } from "@/lib/i18n-routes";
+import { getLocalizedRouteHref } from "@/lib/site-route-config";
+import { getSiteRoutes } from "@/lib/site-routes";
 
 export const dynamic = "force-dynamic";
 
@@ -106,7 +107,10 @@ export const generateMetadata = async ({
   const { slug, locale: localeParam } = await params;
   const locale = resolveLocale(localeParam);
   const query = searchParams ? await searchParams : {};
-  const post = await getPost(slug).catch(() => null);
+  const [post, siteRoutes] = await Promise.all([
+    getPost(slug).catch(() => null),
+    getSiteRoutes(),
+  ]);
 
   if (!post) {
     return {
@@ -133,10 +137,15 @@ export const generateMetadata = async ({
 
   return createPageMetadata({
     locale,
-    pathname: blogPostPath(locale, locale === "en" ? post.slugEn : post.slug),
+    pathname: blogPostPath(
+      locale,
+      locale === "en" ? post.slugEn : post.slug,
+      siteRoutes,
+    ),
     alternatePathname: blogPostPath(
       locale === "fr" ? "en" : "fr",
       locale === "fr" ? post.slugEn : post.slug,
+      siteRoutes,
     ),
     title,
     description,
@@ -156,7 +165,10 @@ const TrailblazeArticlePage = async ({
   const allowDraftPreview =
     previewParams.preview === "true" &&
     verifyPreviewToken(previewParams.token, slug);
-  const post = await getPost(slug, allowDraftPreview).catch(() => null);
+  const [post, siteRoutes] = await Promise.all([
+    getPost(slug, allowDraftPreview).catch(() => null),
+    getSiteRoutes(),
+  ]);
 
   if (!post) notFound();
 
@@ -173,14 +185,18 @@ const TrailblazeArticlePage = async ({
   const articlePath = blogPostPath(
     locale,
     locale === "en" ? post.slugEn : post.slug,
+    siteRoutes,
   );
   const absoluteArticleUrl = toAbsoluteUrl(articlePath);
   const breadcrumb = getBreadcrumbJsonLd(locale, [
     {
       name: locale === "en" ? "Home" : "Accueil",
-      path: getLocalizedHref(locale, "home"),
+      path: getLocalizedRouteHref(siteRoutes, locale, "home"),
     },
-    { name: "Trailblaze", path: getLocalizedHref(locale, "trailblaze") },
+    {
+      name: "Trailblaze",
+      path: getLocalizedRouteHref(siteRoutes, locale, "trailblaze"),
+    },
     { name: articleTitle, path: articlePath },
   ]);
   const coverMediaType =

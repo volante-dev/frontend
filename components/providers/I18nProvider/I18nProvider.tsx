@@ -10,18 +10,20 @@ import {
 import { usePathname } from "next/navigation";
 import { defaultLocale, locales, type Locale } from "@/lib/i18n-config";
 import {
-  getAlternateHref,
-  getLocalizedHref,
-  type RouteKey,
-} from "@/lib/i18n-routes";
+  getAlternateRouteHref,
+  getLocalizedRouteHref,
+  type SiteRoute,
+  type SiteRouteId,
+} from "@/lib/site-route-config";
 import { t, type Translations } from "@/lib/i18n-messages";
 
 type I18nContextValue = {
   locale: Locale;
   pathname: string;
   translations: Translations;
+  siteRoutes: SiteRoute[];
   t: (key: string, fallback?: string) => string;
-  localizedHref: (route: RouteKey) => string;
+  localizedHref: (route: SiteRouteId) => string;
   alternateHref: (targetLocale: Locale) => string;
 };
 
@@ -45,9 +47,11 @@ const getVisiblePathname = (pathname: string): string => {
 const I18nProvider = ({
   children,
   translationsByLocale,
+  siteRoutes,
 }: {
   children: ReactNode;
   translationsByLocale: Record<Locale, Translations>;
+  siteRoutes: SiteRoute[];
 }) => {
   const internalPathname = usePathname();
   const pathname = getVisiblePathname(internalPathname);
@@ -63,11 +67,13 @@ const I18nProvider = ({
       locale,
       pathname,
       translations,
+      siteRoutes,
       t: (key, fallback) => t(translations, key, fallback),
-      localizedHref: (route) => getLocalizedHref(locale, route),
-      alternateHref: (targetLocale) => getAlternateHref(pathname, targetLocale),
+      localizedHref: (route) => getLocalizedRouteHref(siteRoutes, locale, route),
+      alternateHref: (targetLocale) =>
+        getAlternateRouteHref(siteRoutes, pathname, targetLocale),
     }),
-    [locale, pathname, translations],
+    [locale, pathname, siteRoutes, translations],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

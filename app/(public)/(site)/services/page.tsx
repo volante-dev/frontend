@@ -4,11 +4,13 @@ import ServicesList from "@/components/sections/ServicesList/ServicesList";
 import ServicesContactCta from "@/components/sections/ServicesContactCta/ServicesContactCta";
 import { colors } from "@/app/theme/tokens";
 import prisma from "@/lib/prisma";
-import { getLocalizedHref, getTranslations, localizeField, t } from "@/lib/i18n";
+import { getTranslations, localizeField, t } from "@/lib/i18n";
 import { getPageHeaderContent } from "@/lib/page-header-content";
 import { resolveLocale } from "@/lib/i18n-config";
 import type { Metadata } from "next";
 import { createRouteMetadata } from "@/lib/seo-pages";
+import { getLocalizedRouteHref } from "@/lib/site-route-config";
+import { getSiteRoutes } from "@/lib/site-routes";
 import RouteBreadcrumbJsonLd from "@/components/seo/RouteBreadcrumbJsonLd";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +29,7 @@ const ServicesPage = async ({
 }) => {
   const locale = resolveLocale((await params)?.locale);
 
-  const [rawServices, translations] = await Promise.all([
+  const [rawServices, translations, siteRoutes] = await Promise.all([
     prisma.service
       .findMany({
         where: { active: true },
@@ -53,6 +55,7 @@ const ServicesPage = async ({
       })
       .catch(() => []),
     getTranslations(locale),
+    getSiteRoutes(),
   ]);
   const pageHeader = await getPageHeaderContent("services", locale, translations);
 
@@ -102,7 +105,7 @@ const ServicesPage = async ({
 
       <ServicesList services={services} />
       <ServicesContactCta
-        href={getLocalizedHref(locale, "contact")}
+        href={getLocalizedRouteHref(siteRoutes, locale, "contact")}
         label={t(translations, "hero.cta.contact", "Travailler ensemble")}
       />
     </>

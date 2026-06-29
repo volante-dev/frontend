@@ -15,7 +15,8 @@ import {
   siteUrl,
   toAbsoluteUrl,
 } from "@/lib/seo";
-import { getLocalizedHref } from "@/lib/i18n-routes";
+import { getLocalizedRouteHref } from "@/lib/site-route-config";
+import { getSiteRoutes } from "@/lib/site-routes";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,10 @@ export const generateMetadata = async ({
   const { slug, locale: localeParam } = await params;
   const locale = resolveLocale(localeParam);
   const query = searchParams ? await searchParams : {};
-  const project = await getProject(slug).catch(() => null);
+  const [project, siteRoutes] = await Promise.all([
+    getProject(slug).catch(() => null),
+    getSiteRoutes(),
+  ]);
 
   if (!project) {
     return {
@@ -75,8 +79,12 @@ export const generateMetadata = async ({
 
   return createPageMetadata({
     locale,
-    pathname: projectPath(locale, slug),
-    alternatePathname: projectPath(locale === "fr" ? "en" : "fr", slug),
+    pathname: projectPath(locale, slug, siteRoutes),
+    alternatePathname: projectPath(
+      locale === "fr" ? "en" : "fr",
+      slug,
+      siteRoutes,
+    ),
     title,
     description,
     image: metadataImage,
@@ -106,7 +114,10 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
   const allowDraftPreview =
     previewParams.preview === "true" &&
     verifyProjectPreviewToken(previewParams.token, slug);
-  const project = await getProject(slug, allowDraftPreview).catch(() => null);
+  const [project, siteRoutes] = await Promise.all([
+    getProject(slug, allowDraftPreview).catch(() => null),
+    getSiteRoutes(),
+  ]);
 
   if (!project) notFound();
 
@@ -194,10 +205,16 @@ const ProjectDetailPage = async ({ params, searchParams }: ProjectPageProps) => 
     },
   ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value));
 
-  const pathname = projectPath(locale, slug);
+  const pathname = projectPath(locale, slug, siteRoutes);
   const breadcrumb = getBreadcrumbJsonLd(locale, [
-    { name: locale === "en" ? "Home" : "Accueil", path: getLocalizedHref(locale, "home") },
-    { name: "Portfolio", path: getLocalizedHref(locale, "portfolio") },
+    {
+      name: locale === "en" ? "Home" : "Accueil",
+      path: getLocalizedRouteHref(siteRoutes, locale, "home"),
+    },
+    {
+      name: "Portfolio",
+      path: getLocalizedRouteHref(siteRoutes, locale, "portfolio"),
+    },
     { name: projectTitle, path: pathname },
   ]);
   const creativeWork = {

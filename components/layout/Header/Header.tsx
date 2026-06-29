@@ -11,19 +11,15 @@ import CloseIcon from "@mui/icons-material/Close";
 import Button from "@/components/ui/Button/Button";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
-import type { Locale, RouteKey } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
+import {
+  getLocalizedRouteHref,
+  type SiteRoute,
+} from "@/lib/site-route-config";
 import { useLiquidGlass } from "@/components/ui/LiquidGlass/useLiquidGlass";
 import LiquidGlassFilter from "@/components/ui/LiquidGlass/LiquidGlassFilter";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 import { useHeaderActivePill } from "./useHeaderActivePill";
-
-const navRoutes: { key: RouteKey; label: Record<Locale, string> }[] = [
-  { key: "services", label: { fr: "Services", en: "Services" } },
-  { key: "portfolio", label: { fr: "Portfolio", en: "Portfolio" } },
-  { key: "trailblaze", label: { fr: "Trailblaze", en: "Trailblaze" } },
-  { key: "studio", label: { fr: "Studio", en: "Studio" } },
-  { key: "contact", label: { fr: "Contact", en: "Contact" } },
-];
 
 const headerTint = "205, 205, 205";
 
@@ -36,7 +32,14 @@ const pillBase = {
   pointerEvents: "auto",
 } as const;
 
-const Header = () => {
+type HeaderProps = {
+  items: SiteRoute[];
+};
+
+const getLocalizedLabel = (item: SiteRoute, locale: Locale) =>
+  locale === "en" ? item.labelEn : item.label;
+
+const Header = ({ items }: HeaderProps) => {
   const { locale, pathname, localizedHref, alternateHref } = useI18n();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const [langOpenPath, setLangOpenPath] = useState<string | null>(null);
@@ -45,12 +48,19 @@ const Header = () => {
   const langDesktopRef = useRef<HTMLDivElement>(null);
   const langMobileRef = useRef<HTMLDivElement>(null);
   const targetLocale: Locale = locale === "en" ? "fr" : "en";
-  const alternatePath = alternateHref(targetLocale);
   const homeHref = localizedHref("home");
   const navItems = useMemo(
-    () => navRoutes.map((route) => ({ ...route, href: localizedHref(route.key) })),
-    [localizedHref],
+    () =>
+      items.map((item) => ({
+        key: item.id,
+        label: getLocalizedLabel(item, locale),
+        href: getLocalizedRouteHref(items, locale, item.id),
+        alternateHref: getLocalizedRouteHref(items, targetLocale, item.id),
+      })),
+    [items, locale, targetLocale],
   );
+  const activeTopLevelItem = navItems.find((item) => item.href === pathname);
+  const alternatePath = activeTopLevelItem?.alternateHref ?? alternateHref(targetLocale);
   const {
     setContainerNode: setDesktopPillContainer,
     registerItem: registerDesktopPillItem,
@@ -306,7 +316,7 @@ const Header = () => {
                   borderRadius: "999px",
                 }}
               >
-                {label[locale]}
+                {label}
               </Button>
             </Box>
           ))}
@@ -374,7 +384,7 @@ const Header = () => {
                       borderRadius: "999px",
                     }}
                   >
-                    {label[locale]}
+                    {label}
                   </Button>
                 </Box>
               ))}

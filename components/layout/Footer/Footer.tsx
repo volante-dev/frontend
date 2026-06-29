@@ -5,19 +5,11 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import Link from "next/link";
 import { colors } from "@/app/theme/tokens";
-import type { RouteKey } from "@/lib/i18n";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 
-const navRoutes: { key: RouteKey; label: string }[] = [
-  { key: "services", label: "Services" },
-  { key: "portfolio", label: "Portfolio" },
-  { key: "trailblaze", label: "Trailblaze" },
-  { key: "studio", label: "Studio" },
-  { key: "contact", label: "Contact" },
-];
-
 const Footer = () => {
-  const { t, localizedHref } = useI18n();
+  const { locale, siteRoutes, t, localizedHref } = useI18n();
+  const navRoutes = siteRoutes.filter((route) => route.showInFooter);
 
   return (
     <Box
@@ -65,18 +57,18 @@ const Footer = () => {
           <Typography variant="subtitle2" gutterBottom>
             {t("footer.nav.heading", "Navigation")}
           </Typography>
-          {navRoutes.map(({ key, label }) => (
-            <Typography key={key} variant="body2" sx={{ mb: 0.5 }}>
+          {navRoutes.map((route) => (
+            <Typography key={route.id} variant="body2" sx={{ mb: 0.5 }}>
               <Box
                 component={Link}
-                href={localizedHref(key)}
+                href={localizedHref(route.id)}
                 sx={{
                   color: "inherit",
                   textDecoration: "none",
                   "&:hover": { color: colors.green },
                 }}
               >
-                {label}
+                {locale === "en" ? route.labelEn : route.label}
               </Box>
             </Typography>
           ))}

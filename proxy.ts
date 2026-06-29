@@ -3,16 +3,17 @@ import type { NextRequest } from "next/server";
 import { locales, defaultLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import {
-  slugs,
-  getAlternateHref,
-  getRouteKeyFromSlug,
-} from "@/lib/i18n-routes";
+  getAlternateRouteHref,
+  getRouteFromPublicSlug,
+  getSiteRouteById,
+} from "@/lib/site-route-config";
+import { getSiteRoutes } from "@/lib/site-routes";
 import { PREVIEW_PARAM, PREVIEW_COOKIE, PREVIEW_COOKIE_MAX_AGE } from "@/lib/preview";
 
 // Évite de répéter le cast (locales as string[]) à chaque fois
 const localeValues = locales as string[];
 
-export const proxy = (request: NextRequest) => {
+export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
   // --- Passthrough : assets, API, coming-soon, fichiers statiques ---
@@ -41,8 +42,9 @@ export const proxy = (request: NextRequest) => {
   // --- Compatibilité avec les anciens liens ?lang= ---
   const langParam = request.nextUrl.searchParams.get("lang");
   if (langParam && localeValues.includes(langParam)) {
+    const routes = await getSiteRoutes();
     const cleanPath = request.nextUrl.pathname;
-    const targetPath = getAlternateHref(cleanPath, langParam as Locale);
+    const targetPath = getAlternateRouteHref(routes, cleanPath, langParam as Locale);
     return NextResponse.redirect(new URL(targetPath, request.url), 307);
   }
 
@@ -75,17 +77,28 @@ export const proxy = (request: NextRequest) => {
     return response;
   }
 
+  const siteRoutes = await getSiteRoutes();
+
   // Chaque locale possède désormais son propre segment interne afin que le
   // cache App Router ne puisse plus confondre les payloads français et anglais.
-  const visibleSlug = urlLocale ? parts.slice(1).join("/") : parts.join("/");
-  const routeKey = visibleSlug
-    ? getRouteKeyFromSlug(locale, visibleSlug)
-    : "home";
-  const internalSlug = routeKey
-    ? slugs[defaultLocale][routeKey]
-    : visibleSlug;
-  const rewritePath = internalSlug
-    ? `/${locale}/${internalSlug}`
+  const visibleParts = urlLocale ? parts.slice(1) : parts;
+  const visibleSlug = visibleParts[0] ?? "";
+  const route = visibleSlug
+    ? getRouteFromPublicSlug(siteRoutes, locale, visibleSlug)
+    : getSiteRouteById(siteRoutes, "home");
+
+  if (visibleSlug && !route) {
+    return NextResponse.rewrite(new URL(`/${locale}/__not-found`, request.url), {
+      request: { headers: requestHeaders },
+    });
+  }
+
+  const activeRoute = route ?? getSiteRouteById(siteRoutes, "home");
+  const internalParts = activeRoute.internalSegment
+    ? [activeRoute.internalSegment, ...visibleParts.slice(1)]
+    : [];
+  const rewritePath = internalParts.length
+    ? `/${locale}/${internalParts.join("/")}`
     : `/${locale}`;
 
   const response =
