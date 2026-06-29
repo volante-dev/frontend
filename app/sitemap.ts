@@ -4,7 +4,7 @@ import { getLocalizedHref } from "@/lib/i18n-routes";
 import { locales } from "@/lib/i18n-config";
 import type { Locale } from "@/lib/i18n-config";
 import type { RouteKey } from "@/lib/i18n-routes";
-import { projectPath, siteUrl, toAbsoluteUrl } from "@/lib/seo";
+import { blogPostPath, projectPath, siteUrl, toAbsoluteUrl } from "@/lib/seo";
 import { portfolioSectorPath } from "@/lib/portfolio-routes";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +13,7 @@ const staticRoutes: Array<{ key: RouteKey; priority: number }> = [
   { key: "home", priority: 1 },
   { key: "services", priority: 0.8 },
   { key: "portfolio", priority: 0.9 },
+  { key: "trailblaze", priority: 0.7 },
   { key: "studio", priority: 0.7 },
   { key: "contact", priority: 0.6 },
 ];
@@ -44,6 +45,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         sectorProjects: { some: { publishedAt: { not: null } } },
       },
       select: { slug: true, updatedAt: true },
+      orderBy: { updatedAt: "desc" },
+    })
+    .catch(() => []);
+  const blogPosts = await prisma.blogPost
+    .findMany({
+      where: { publishedAt: { not: null } },
+      select: { slug: true, slugEn: true, updatedAt: true },
       orderBy: { updatedAt: "desc" },
     })
     .catch(() => []);
@@ -90,5 +98,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   });
 
-  return [...staticEntries, ...sectorEntries, ...projectEntries];
+  const blogPostEntries = blogPosts.flatMap((post) => {
+    const paths: Record<Locale, string> = {
+      fr: blogPostPath("fr", post.slug),
+      en: blogPostPath("en", post.slugEn),
+    };
+
+    return locales.map((locale) => ({
+      url: toAbsoluteUrl(paths[locale]),
+      lastModified: post.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+      alternates: languageAlternates(paths),
+    }));
+  });
+
+  return [...staticEntries, ...sectorEntries, ...projectEntries, ...blogPostEntries];
 }

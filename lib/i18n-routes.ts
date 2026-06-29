@@ -1,7 +1,13 @@
 import type { Locale } from "./i18n-config";
 import { defaultLocale, locales } from "./i18n-config";
 
-export type RouteKey = "home" | "services" | "portfolio" | "studio" | "contact";
+export type RouteKey =
+  | "home"
+  | "services"
+  | "portfolio"
+  | "trailblaze"
+  | "studio"
+  | "contact";
 
 /**
  * Mapping des slugs par locale.
@@ -13,6 +19,7 @@ export const slugs: Record<Locale, Record<RouteKey, string>> = {
     home: "",
     services: "services",
     portfolio: "portfolio",
+    trailblaze: "trailblaze",
     studio: "studio",
     contact: "contact",
   },
@@ -20,6 +27,7 @@ export const slugs: Record<Locale, Record<RouteKey, string>> = {
     home: "",
     services: "services",
     portfolio: "portfolio",
+    trailblaze: "trailblaze",
     studio: "studio",
     contact: "contact",
   },

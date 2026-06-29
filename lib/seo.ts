@@ -19,6 +19,11 @@ export const projectPath = (locale: Locale, slug: string) => {
   return `${portfolio}/${slug}`;
 };
 
+export const blogPostPath = (locale: Locale, slug: string) => {
+  const trailblaze = getLocalizedHref(locale, "trailblaze");
+  return `${trailblaze}/${slug}`;
+};
+
 type PageMetadataInput = {
   locale: Locale;
   route?: RouteKey;

@@ -11,6 +11,7 @@ import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 const navRoutes: { key: RouteKey; label: string }[] = [
   { key: "services", label: "Services" },
   { key: "portfolio", label: "Portfolio" },
+  { key: "trailblaze", label: "Trailblaze" },
   { key: "studio", label: "Studio" },
   { key: "contact", label: "Contact" },
 ];

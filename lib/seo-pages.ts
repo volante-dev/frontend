@@ -41,6 +41,18 @@ const pageSeo: Record<
         "Explore Studio Volante's work across visual identity, art direction, campaigns and content creation.",
     },
   },
+  trailblaze: {
+    fr: {
+      title: "Trailblaze",
+      description:
+        "Pensées, récits et points de vue de Studio Volante sur les marques, les lieux culturels, l'image et la communication créative.",
+    },
+    en: {
+      title: "Trailblaze",
+      description:
+        "Thoughts, stories and perspectives from Studio Volante on brands, cultural places, image-making and creative communication.",
+    },
+  },
   studio: {
     fr: {
       title: "Le studio",

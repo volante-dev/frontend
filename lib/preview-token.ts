@@ -10,7 +10,7 @@ const getPreviewSecret = () => process.env.PREVIEW_SECRET;
 const sign = (payload: string, secret: string) =>
   createHmac("sha256", secret).update(payload).digest("base64url");
 
-export const verifyProjectPreviewToken = (
+export const verifyPreviewToken = (
   token: string | undefined,
   slug: string,
 ) => {
@@ -35,3 +35,5 @@ export const verifyProjectPreviewToken = (
     return false;
   }
 };
+
+export const verifyProjectPreviewToken = verifyPreviewToken;

@@ -20,6 +20,7 @@ import { useHeaderActivePill } from "./useHeaderActivePill";
 const navRoutes: { key: RouteKey; label: Record<Locale, string> }[] = [
   { key: "services", label: { fr: "Services", en: "Services" } },
   { key: "portfolio", label: { fr: "Portfolio", en: "Portfolio" } },
+  { key: "trailblaze", label: { fr: "Trailblaze", en: "Trailblaze" } },
   { key: "studio", label: { fr: "Studio", en: "Studio" } },
   { key: "contact", label: { fr: "Contact", en: "Contact" } },
 ];
