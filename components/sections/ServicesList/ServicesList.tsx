@@ -4,9 +4,19 @@ import { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
+import Link from "next/link";
 import { colors, typography } from "@/app/theme/tokens";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 import RichText from "@/components/ui/RichText/RichText";
+
+type ServicePortfolioExample = {
+  id: string;
+  title: string;
+  slug: string;
+  imageUrl: string;
+  coverMediaType: "IMAGE" | "VIDEO" | null;
+  coverPosterUrl: string | null;
+};
 
 export interface Service {
   id: string;
@@ -19,6 +29,7 @@ export interface Service {
   icon?: string | null;
   order: number;
   active: boolean;
+  portfolioExamples?: ServicePortfolioExample[];
 }
 
 interface ServicesListProps {
@@ -26,9 +37,16 @@ interface ServicesListProps {
 }
 
 const ServicesList = ({ services }: ServicesListProps) => {
-  const { t } = useI18n();
+  const { localizedHref, t } = useI18n();
   const [openId, setOpenId] = useState<string | null>(null);
   const toggle = (id: string) => setOpenId((prev) => (prev === id ? null : id));
+  const portfolioHref = localizedHref("portfolio");
+  const exampleLabel = t("services.examples.heading", "Exemples de réalisations");
+
+  const exampleImage = (example: ServicePortfolioExample) =>
+    example.coverMediaType === "VIDEO"
+      ? example.coverPosterUrl ?? example.imageUrl
+      : example.imageUrl;
 
   return (
     <Box
@@ -174,6 +192,68 @@ const ServicesList = ({ services }: ServicesListProps) => {
                         },
                       }}
                     />
+                    {service.portfolioExamples && service.portfolioExamples.length > 0 && (
+                      <Box sx={{ pb: { xs: 4, md: 5 } }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ mb: 2, color: colors.blueGrayDark }}
+                        >
+                          {exampleLabel}
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                              xs: "repeat(3, minmax(0, 1fr))",
+                              md: "repeat(3, minmax(0, 145px))",
+                            },
+                            gap: { xs: 1.25, md: 2 },
+                          }}
+                        >
+                          {service.portfolioExamples.map((example) => (
+                            <Box
+                              key={example.id}
+                              component={Link}
+                              href={`${portfolioHref}/${example.slug}`}
+                              data-link-variant="plain"
+                              sx={{
+                                position: "relative",
+                                display: "block",
+                                overflow: "hidden",
+                                aspectRatio: "0.78",
+                                borderRadius: 1,
+                                bgcolor: "rgba(255, 255, 255, 0.08)",
+                                textDecoration: "none",
+                                boxShadow: "0 12px 24px rgba(0, 0, 0, 0.16)",
+                                "& img": {
+                                  transition: "transform 360ms cubic-bezier(0.22, 1, 0.36, 1)",
+                                },
+                                "&:hover img": {
+                                  transform: "scale(1.035)",
+                                },
+                                "&:focus-visible": {
+                                  outline: `2px solid ${colors.blueGrayDark}`,
+                                  outlineOffset: 3,
+                                },
+                              }}
+                            >
+                              <Box
+                                component="img"
+                                src={exampleImage(example)}
+                                alt={example.title}
+                                loading="lazy"
+                                sx={{
+                                  width: "100%",
+                                  height: "100%",
+                                  display: "block",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
                   </Box>
                 </Box>
               </Box>

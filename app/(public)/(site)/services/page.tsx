@@ -32,6 +32,24 @@ const ServicesPage = async ({
       .findMany({
         where: { active: true },
         orderBy: { order: "asc" },
+        include: {
+          portfolioExamples: {
+            orderBy: { order: "asc" },
+            include: {
+              project: {
+                select: {
+                  id: true,
+                  title: true,
+                  titleEn: true,
+                  slug: true,
+                  imageUrl: true,
+                  imageAsset: { select: { mediaType: true, posterUrl: true } },
+                  publishedAt: true,
+                },
+              },
+            },
+          },
+        },
       })
       .catch(() => []),
     getTranslations(locale),
@@ -46,6 +64,16 @@ const ServicesPage = async ({
       s.descriptionHtmlEn ?? s.descriptionEn,
       locale,
     ),
+    portfolioExamples: s.portfolioExamples
+      .filter((example) => example.project.publishedAt)
+      .map((example) => ({
+        id: example.project.id,
+        title: localizeField(example.project.title, example.project.titleEn, locale),
+        slug: example.project.slug,
+        imageUrl: example.project.imageUrl,
+        coverMediaType: example.project.imageAsset?.mediaType ?? null,
+        coverPosterUrl: example.project.imageAsset?.posterUrl ?? null,
+      })),
   }));
 
   return (
