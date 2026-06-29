@@ -112,6 +112,7 @@ const TrailblazeArticlePage = async ({
 
   const articleTitle = localizeField(post.title, post.titleEn, locale);
   const articleEyebrow = localizeField(post.eyebrow, post.eyebrowEn, locale);
+  const articleTags = locale === "en" ? post.tagsEn : post.tags;
   const description = getDescription(post.blocks, locale, articleTitle);
   const articlePath = blogPostPath(locale, locale === "en" ? post.slugEn : post.slug);
   const breadcrumb = getBreadcrumbJsonLd(locale, [
@@ -137,6 +138,7 @@ const TrailblazeArticlePage = async ({
     inLanguage: locale === "fr" ? "fr-FR" : "en-GB",
     datePublished: post.publishedAt?.toISOString(),
     dateModified: post.updatedAt.toISOString(),
+    keywords: articleTags,
     author: { "@id": `${siteUrl.origin}/#organization` },
     publisher: { "@id": `${siteUrl.origin}/#organization` },
   };
@@ -166,6 +168,7 @@ const TrailblazeArticlePage = async ({
           title: articleTitle,
           eyebrow: articleEyebrow,
           publishedAt: post.publishedAt?.toISOString() ?? null,
+          tags: articleTags,
           blocks,
         }}
       />

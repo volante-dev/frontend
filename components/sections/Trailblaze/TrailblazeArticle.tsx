@@ -16,6 +16,7 @@ export type TrailblazeArticleData = {
   title: string;
   eyebrow: string;
   publishedAt: string | null;
+  tags: string[];
   blocks: TrailblazeArticleBlock[];
 };
 
@@ -111,6 +112,40 @@ const TrailblazeArticle = ({
           return null;
         })}
       </Box>
+
+      {article.tags.length > 0 && (
+        <Box
+          sx={{
+            mt: { xs: 7, md: 10 },
+            pt: { xs: 3, md: 4 },
+            borderTop: `1px solid ${colors.blueGray}`,
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ mb: 2, color: colors.green }}>
+            Tags
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+            {article.tags.map((tag) => (
+              <Box
+                key={tag}
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: "999px",
+                  px: 1.5,
+                  py: 0.75,
+                  border: `1px solid ${colors.blueGray}`,
+                  color: colors.mutedBlackLight,
+                  typography: "body2",
+                }}
+              >
+                {tag}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
     </Box>
   </Box>
 );
