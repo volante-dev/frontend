@@ -5,6 +5,7 @@ import {
   localTranslations,
   type Translations,
 } from "./i18n-messages";
+import { getFooterTranslations } from "./footer-content";
 
 export { getLocalizedHref, getAlternateHref, slugs } from "./i18n-routes";
 export type { RouteKey } from "./i18n-routes";
@@ -25,27 +26,28 @@ export const getTranslations = async (locale: Locale): Promise<Translations> => 
     locale in localTranslations ? locale : defaultLocale
   ) as BuiltInLocale;
   const local = localTranslations[dictionaryLocale];
+  const footer = await getFooterTranslations(locale);
 
   if (!process.env.EDGE_CONFIG) {
-    return local;
+    return { ...local, ...footer };
   }
 
   try {
     const remote = await get<unknown>(locale);
-    if (remote === undefined) return local;
+    if (remote === undefined) return { ...local, ...footer };
 
     if (!isTranslationMap(remote)) {
       console.error(`[i18n] Invalid Edge Config dictionary for locale "${locale}".`);
-      return local;
+      return { ...local, ...footer };
     }
 
-    return { ...local, ...remote };
+    return { ...local, ...remote, ...footer };
   } catch (error) {
     console.error(
       `[i18n] Unable to load Edge Config dictionary for locale "${locale}".`,
       error instanceof Error ? error.message : error,
     );
-    return local;
+    return { ...local, ...footer };
   }
 };
 
