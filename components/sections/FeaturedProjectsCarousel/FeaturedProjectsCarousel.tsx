@@ -45,6 +45,8 @@ const DRAG_SUPPRESS_CLICK_THRESHOLD = 2;
 const DIRECTION_LOCK_THRESHOLD = 10;
 const CAROUSEL_CARD_TRANSITION =
   "left 820ms cubic-bezier(0.22, 1, 0.36, 1), width 820ms cubic-bezier(0.22, 1, 0.36, 1), transform 820ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease";
+const MOBILE_CAROUSEL_CARD_TRANSITION =
+  "left 520ms cubic-bezier(0.22, 1, 0.36, 1), transform 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease";
 const SLIDE_HALO_TRANSITION =
   "left 820ms cubic-bezier(0.22, 1, 0.36, 1), width 820ms cubic-bezier(0.22, 1, 0.36, 1), transform 820ms cubic-bezier(0.22, 1, 0.36, 1), opacity 620ms ease";
 
@@ -133,6 +135,7 @@ const SlideHalo = ({
         } as CSSProperties
       }
       sx={{
+        display: { xs: "none", md: "block" },
         position: "absolute",
         left: cardLeft(position),
         top: 0,
@@ -225,6 +228,64 @@ const SlideHalo = ({
             : { xs: "blur(22px) saturate(1.26)", md: "blur(40px) saturate(1.26)" },
           opacity: active ? 0.52 : 0.22,
           transform: "translate3d(-50%, -50%, 0)",
+        }}
+      />
+    </Box>
+  );
+};
+
+const MobileSlideHalo = ({ project }: { project: Project }) => {
+  const palette = normalizePalette(project.heroPaletteComputed);
+
+  return (
+    <Box
+      aria-hidden
+      style={
+        {
+          "--slide-halo-primary": palette[0],
+          "--slide-halo-secondary": palette[1],
+          "--slide-halo-accent": palette[2],
+          "--slide-halo-muted": palette[3],
+        } as CSSProperties
+      }
+      sx={{
+        display: { xs: "block", md: "none" },
+        position: "absolute",
+        left: "var(--carousel-start)",
+        top: "-6%",
+        width: "var(--carousel-active-width)",
+        height: "112%",
+        pointerEvents: "none",
+        zIndex: 0,
+        contain: "paint",
+        opacity: 0.92,
+        transition: "opacity 360ms ease",
+        "@media (prefers-reduced-motion: reduce)": {
+          transition: "none",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          inset: "-10% -16%",
+          borderRadius: "42%",
+          background:
+            "radial-gradient(ellipse at center, var(--slide-halo-primary) 0%, var(--slide-halo-secondary) 42%, rgba(255, 255, 255, 0) 74%)",
+          filter: "blur(24px) saturate(1.38)",
+          transform: "translateZ(0)",
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          inset: "4% 0 0 10%",
+          borderRadius: "42%",
+          background:
+            "radial-gradient(ellipse at center, var(--slide-halo-accent) 0%, var(--slide-halo-muted) 44%, rgba(255, 255, 255, 0) 72%)",
+          filter: "blur(20px) saturate(1.32)",
+          opacity: 0.72,
+          transform: "translateZ(0)",
         }}
       />
     </Box>
@@ -355,6 +416,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     },
     [activeStep, projects],
   );
+  const activeProject = projects[modulo(activeStep, projects.length)];
 
   const updateCursor = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -579,7 +641,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         sx={{
           "--carousel-start": { xs: "12vw", md: "clamp(150px, 12vw, 220px)" },
           "--carousel-active-width": { xs: "76vw", md: "clamp(620px, 58vw, 900px)" },
-          "--carousel-side-width": { xs: "68vw", md: "clamp(230px, 23vw, 340px)" },
+          "--carousel-side-width": { xs: "76vw", md: "clamp(230px, 23vw, 340px)" },
           "--carousel-gap": { xs: "12px", md: "36px" },
           height: { xs: "min(68svh, 600px)", md: "clamp(520px, 48vw, 650px)" },
           minHeight: { xs: 440, md: 520 },
@@ -592,6 +654,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
           "&:active": { cursor: { xs: "grabbing", md: "none" } },
         }}
       >
+        <MobileSlideHalo project={activeProject} />
         {virtualItems.map(({ project, position, virtualIndex }) => {
           const active = position === 0;
           const visible = position >= -1 && position <= 2;
@@ -646,7 +709,10 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
                 zIndex: active ? 3 : Math.max(0, 2 - Math.abs(position)),
                 transition: dragging
                   ? "none"
-                  : CAROUSEL_CARD_TRANSITION,
+                  : {
+                      xs: MOBILE_CAROUSEL_CARD_TRANSITION,
+                      md: CAROUSEL_CARD_TRANSITION,
+                    },
                 "@media (prefers-reduced-motion: reduce)": {
                   transition: "none",
                 },
