@@ -34,8 +34,10 @@ type ActiveDockMenu = Required<Pick<DockMenuConfig, "items">> &
 type DockMenuContextValue = {
   renderedConfig: ActiveDockMenu | null;
   visible: boolean;
+  boundaryNode: HTMLElement | null;
   setDockMenu: (sourceId: string, config: DockMenuConfig | null) => void;
   clearDockMenu: (sourceId: string) => void;
+  setBoundaryNode: (node: HTMLElement | null) => void;
 };
 
 const EXIT_DURATION = 300;
@@ -70,6 +72,7 @@ const DockMenuProvider = ({ children }: { children: ReactNode }) => {
   const visibleRef = useRef(false);
   const [renderedConfig, setRenderedConfig] = useState<ActiveDockMenu | null>(null);
   const [visible, setVisible] = useState(false);
+  const [boundaryNode, setBoundaryNode] = useState<HTMLElement | null>(null);
 
   const clearExitTimeout = useCallback(() => {
     if (exitTimeoutRef.current === null) return;
@@ -145,10 +148,12 @@ const DockMenuProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       renderedConfig,
       visible,
+      boundaryNode,
       setDockMenu,
       clearDockMenu,
+      setBoundaryNode,
     }),
-    [clearDockMenu, renderedConfig, setDockMenu, visible],
+    [boundaryNode, clearDockMenu, renderedConfig, setDockMenu, visible],
   );
 
   return (
@@ -162,6 +167,14 @@ export const useDockMenuState = () => {
     throw new Error("useDockMenuState must be used inside DockMenuProvider.");
   }
   return context;
+};
+
+export const useDockMenuBoundary = () => {
+  const context = useContext(DockMenuContext);
+  if (!context) {
+    throw new Error("useDockMenuBoundary must be used inside DockMenuProvider.");
+  }
+  return context.setBoundaryNode;
 };
 
 export default DockMenuProvider;
