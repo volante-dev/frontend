@@ -123,7 +123,7 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
                 left: { xs: "20px", md: hero ? "32px" : "24px" },
                 right: { xs: "20px", md: hero ? "32px" : "24px" },
                 bottom: { xs: "12px", md: hero ? "28px" : "20px" },
-                opacity: { xs: 0.68, md: 0 },
+                opacity: { xs: 1, md: 0 },
                 transition: "opacity 260ms ease-in",
               }}
             >
@@ -132,6 +132,7 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
                 component="h3"
                 sx={{
                   fontFamily: typography.fontFamilyDisplay,
+                  fontWeight: { xs: 300, md: 200 },
                   color: colors.white,
                 }}
               >
@@ -215,8 +216,8 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
         display: "grid",
         gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" },
         gridAutoRows: { xs: "minmax(150px, 48vw)", md: "minmax(180px, 22vw)" },
-        gap: "2px",
-        p: { xs: "10px", md: "20px" },
+        gap: { xs: "6px", md: "2px" },
+        p: { xs: "6px", md: "20px" },
       }}
     >
       <Box
