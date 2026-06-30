@@ -22,6 +22,7 @@ const DOCK_ENTER_TRANSITION =
   "opacity 260ms ease-out, transform 640ms cubic-bezier(0.16, 1.32, 0.28, 1), width 320ms cubic-bezier(0.22, 1, 0.36, 1), height 320ms cubic-bezier(0.22, 1, 0.36, 1)";
 const DOCK_EXIT_TRANSITION =
   "opacity 180ms ease-in, transform 260ms cubic-bezier(0.4, 0, 1, 1), width 240ms ease, height 240ms ease";
+const DOCK_POSITION_TRANSITION = "transform 90ms ease-out";
 
 const getButtonLabel = (label: string) => label.toUpperCase();
 
@@ -236,7 +237,7 @@ const DockMenu = () => {
         right: 0,
         bottom: { xs: 16, md: 24 },
         transform: { xs: "none", md: `translate3d(0, ${boundaryLift}px, 0)` },
-        transition: reducedMotion ? undefined : "transform 180ms ease-out",
+        transition: reducedMotion ? undefined : DOCK_POSITION_TRANSITION,
         zIndex: 1190,
         display: "flex",
         justifyContent: "center",
