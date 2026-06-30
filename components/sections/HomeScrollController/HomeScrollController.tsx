@@ -8,6 +8,7 @@ const POSITION_TOLERANCE = 4;
 const WHEEL_DELTA_THRESHOLD = 8;
 const TOUCH_DELTA_THRESHOLD = 12;
 const LOCK_TIMEOUT_MS = 900;
+const AUTOSCROLL_DEBOUNCE_MS = 180;
 
 type ScrollDirection = "up" | "down";
 
@@ -58,6 +59,7 @@ const HomeScrollController = () => {
   const lockedRef = useRef(false);
   const unlockAnimationFrameRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
+  const lastAutoScrollAtRef = useRef(0);
 
   useEffect(() => {
     const hero = document.querySelector(HERO_SELECTOR);
@@ -67,6 +69,10 @@ const HomeScrollController = () => {
 
     const unlockWhenSettled = (targetTop: number) => {
       const startedAt = performance.now();
+
+      if (unlockAnimationFrameRef.current !== null) {
+        window.cancelAnimationFrame(unlockAnimationFrameRef.current);
+      }
 
       const tick = () => {
         const reachedTarget = Math.abs(window.scrollY - targetTop) <= POSITION_TOLERANCE;
@@ -86,6 +92,7 @@ const HomeScrollController = () => {
 
     const scrollTo = (top: number, behavior: ScrollBehavior = getScrollBehavior()) => {
       lockedRef.current = true;
+      lastAutoScrollAtRef.current = performance.now();
       window.scrollTo({ top, behavior });
       unlockWhenSettled(top);
     };
@@ -96,6 +103,12 @@ const HomeScrollController = () => {
       event: Event,
     ): boolean => {
       if (lockedRef.current) {
+        event.preventDefault();
+        return true;
+      }
+
+      const now = performance.now();
+      if (now - lastAutoScrollAtRef.current < AUTOSCROLL_DEBOUNCE_MS) {
         event.preventDefault();
         return true;
       }
@@ -129,6 +142,10 @@ const HomeScrollController = () => {
     };
 
     const handleWheel = (event: WheelEvent) => {
+      if (lockedRef.current) {
+        event.preventDefault();
+        return;
+      }
       if (isEditableTarget(event.target)) return;
 
       const deltaY = normalizeWheelDelta(event);
@@ -138,10 +155,18 @@ const HomeScrollController = () => {
     };
 
     const handleTouchStart = (event: TouchEvent) => {
+      if (lockedRef.current) {
+        touchStartYRef.current = null;
+        return;
+      }
       touchStartYRef.current = event.touches[0]?.clientY ?? null;
     };
 
     const handleTouchMove = (event: TouchEvent) => {
+      if (lockedRef.current) {
+        event.preventDefault();
+        return;
+      }
       if (isEditableTarget(event.target)) return;
       if (touchStartYRef.current === null) return;
 
@@ -158,6 +183,10 @@ const HomeScrollController = () => {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (lockedRef.current && (isDownKey(event) || isUpKey(event))) {
+        event.preventDefault();
+        return;
+      }
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (isEditableTarget(event.target)) return;
       if (!isDownKey(event) && !isUpKey(event)) return;
