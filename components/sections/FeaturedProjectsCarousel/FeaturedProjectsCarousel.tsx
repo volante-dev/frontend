@@ -234,8 +234,21 @@ const SlideHalo = ({
   );
 };
 
-const MobileSlideHalo = ({ project }: { project: Project }) => {
+const MobileSlideHalo = ({
+  project,
+  position,
+  active,
+  visible,
+  dragging,
+}: {
+  project: Project;
+  position: number;
+  active: boolean;
+  visible: boolean;
+  dragging: boolean;
+}) => {
   const palette = normalizePalette(project.heroPaletteComputed);
+  const opacity = visible && active ? 0.42 : 0;
 
   return (
     <Box
@@ -251,15 +264,22 @@ const MobileSlideHalo = ({ project }: { project: Project }) => {
       sx={{
         display: { xs: "block", md: "none" },
         position: "absolute",
-        left: "var(--carousel-start)",
+        left: cardLeft(position),
         top: "-6%",
-        width: "var(--carousel-active-width)",
+        width: active
+          ? "var(--carousel-active-width)"
+          : "var(--carousel-side-width)",
         height: "112%",
         pointerEvents: "none",
         zIndex: 0,
-        contain: "paint",
-        opacity: 0.92,
-        transition: "opacity 360ms ease",
+        opacity,
+        transform: "translate3d(var(--carousel-drag-offset), 0, 0)",
+        transition: dragging
+          ? "none"
+          : {
+              xs: "left 520ms cubic-bezier(0.22, 1, 0.36, 1), transform 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease",
+              md: "none",
+            },
         "@media (prefers-reduced-motion: reduce)": {
           transition: "none",
         },
@@ -272,7 +292,7 @@ const MobileSlideHalo = ({ project }: { project: Project }) => {
           borderRadius: "42%",
           background:
             "radial-gradient(ellipse at center, var(--slide-halo-primary) 0%, var(--slide-halo-secondary) 42%, rgba(255, 255, 255, 0) 74%)",
-          filter: "blur(24px) saturate(1.38)",
+          filter: "blur(22px) saturate(1.18)",
           transform: "translateZ(0)",
         }}
       />
@@ -283,8 +303,8 @@ const MobileSlideHalo = ({ project }: { project: Project }) => {
           borderRadius: "42%",
           background:
             "radial-gradient(ellipse at center, var(--slide-halo-accent) 0%, var(--slide-halo-muted) 44%, rgba(255, 255, 255, 0) 72%)",
-          filter: "blur(20px) saturate(1.32)",
-          opacity: 0.72,
+          filter: "blur(18px) saturate(1.16)",
+          opacity: 0.5,
           transform: "translateZ(0)",
         }}
       />
@@ -416,8 +436,6 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     },
     [activeStep, projects],
   );
-  const activeProject = projects[modulo(activeStep, projects.length)];
-
   const updateCursor = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
       const rect = trackRef.current?.getBoundingClientRect();
@@ -641,7 +659,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         sx={{
           "--carousel-start": { xs: "12vw", md: "clamp(150px, 12vw, 220px)" },
           "--carousel-active-width": { xs: "76vw", md: "clamp(620px, 58vw, 900px)" },
-          "--carousel-side-width": { xs: "76vw", md: "clamp(230px, 23vw, 340px)" },
+          "--carousel-side-width": { xs: "68vw", md: "clamp(230px, 23vw, 340px)" },
           "--carousel-gap": { xs: "12px", md: "36px" },
           height: { xs: "min(68svh, 600px)", md: "clamp(520px, 48vw, 650px)" },
           minHeight: { xs: 440, md: 520 },
@@ -654,7 +672,21 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
           "&:active": { cursor: { xs: "grabbing", md: "none" } },
         }}
       >
-        <MobileSlideHalo project={activeProject} />
+        {virtualItems.map(({ project, position, virtualIndex }) => {
+          const active = position === 0;
+          const visible = position >= -1 && position <= 2;
+
+          return (
+            <MobileSlideHalo
+              key={`mobile-halo-${virtualIndex}`}
+              project={project}
+              position={position}
+              active={active}
+              visible={visible}
+              dragging={dragging}
+            />
+          );
+        })}
         {virtualItems.map(({ project, position, virtualIndex }) => {
           const active = position === 0;
           const visible = position >= -1 && position <= 2;
