@@ -26,8 +26,6 @@ type AppleTvCardStyle = CSSProperties & {
   "--apple-tv-card-shine-y": string;
   "--apple-tv-card-shine-rotate": string;
   "--apple-tv-card-shine-opacity": number;
-  "--apple-tv-card-edge-shine-width": string;
-  "--apple-tv-card-edge-shine-height": string;
   "--apple-tv-card-parallax-x": string;
   "--apple-tv-card-parallax-y": string;
 };
@@ -68,8 +66,6 @@ const DEFAULT_STYLE: AppleTvCardStyle = {
   "--apple-tv-card-shine-y": "-26%",
   "--apple-tv-card-shine-rotate": "0deg",
   "--apple-tv-card-shine-opacity": 0,
-  "--apple-tv-card-edge-shine-width": "62%",
-  "--apple-tv-card-edge-shine-height": "2px",
   "--apple-tv-card-parallax-x": "0px",
   "--apple-tv-card-parallax-y": "0px",
 };
@@ -214,8 +210,6 @@ const AppleTvCard = forwardRef<HTMLElement, AppleTvCardProps>(
           "--apple-tv-card-shine-y": shinePosition.y,
           "--apple-tv-card-shine-rotate": shinePosition.rotate,
           "--apple-tv-card-shine-opacity": shine,
-          "--apple-tv-card-edge-shine-width": "78%",
-          "--apple-tv-card-edge-shine-height": "3px",
           "--apple-tv-card-parallax-x": `${centeredX * parallax}px`,
           "--apple-tv-card-parallax-y": `${centeredY * parallax}px`,
         });
@@ -333,34 +327,15 @@ const AppleTvCard = forwardRef<HTMLElement, AppleTvCardProps>(
                 position: "absolute",
                 left: "var(--apple-tv-card-shine-x)",
                 top: "var(--apple-tv-card-shine-y)",
-                width: "110%",
-                height: "110%",
+                width: "145%",
+                height: "145%",
                 zIndex: 3,
                 pointerEvents: "none",
                 background:
-                  "radial-gradient(ellipse at center, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.32) 34%, rgba(255, 255, 255, 0) 74%)",
+                  "radial-gradient(ellipse at center, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.32) 38%, rgba(255, 255, 255, 0) 78%)",
                 mixBlendMode: "screen",
                 opacity: "var(--apple-tv-card-shine-opacity)",
                 transform: "translate3d(-50%, -50%, 0) rotate(var(--apple-tv-card-shine-rotate))",
-                transition: `opacity 260ms ${HOVER_TRANSITION_EASING}`,
-                willChange: "transform, opacity",
-              },
-              "&::after": {
-                content: '""',
-                position: "absolute",
-                left: "var(--apple-tv-card-shine-x)",
-                top: "var(--apple-tv-card-shine-y)",
-                width: "var(--apple-tv-card-edge-shine-width)",
-                height: "var(--apple-tv-card-edge-shine-height)",
-                zIndex: 4,
-                pointerEvents: "none",
-                background:
-                  "linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.92) 50%, rgba(255, 255, 255, 0))",
-                boxShadow: "0 0 14px rgba(255, 255, 255, 0.36)",
-                mixBlendMode: "screen",
-                opacity: "var(--apple-tv-card-shine-opacity)",
-                transform:
-                  "translate3d(-50%, -50%, 0) rotate(var(--apple-tv-card-shine-rotate))",
                 transition: `opacity 260ms ${HOVER_TRANSITION_EASING}`,
                 willChange: "transform, opacity",
               },
