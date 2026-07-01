@@ -16,19 +16,24 @@ const SCROLL_DELTA = 8;
 const COMPACT_AFTER_Y = 80;
 const DOCK_ITEM_EXPANDED_HEIGHT = 54;
 const DOCK_ITEM_COMPACT_HEIGHT = 36;
+const DESKTOP_DOCK_BOTTOM = 24;
+const DOCK_BOUNDARY_GAP = 16;
 const DOCK_ENTER_TRANSITION =
   "opacity 260ms ease-out, transform 640ms cubic-bezier(0.16, 1.32, 0.28, 1), width 320ms cubic-bezier(0.22, 1, 0.36, 1), height 320ms cubic-bezier(0.22, 1, 0.36, 1)";
 const DOCK_EXIT_TRANSITION =
   "opacity 180ms ease-in, transform 260ms cubic-bezier(0.4, 0, 1, 1), width 240ms ease, height 240ms ease";
+const DOCK_POSITION_TRANSITION = "transform 90ms ease-out";
 
 const getButtonLabel = (label: string) => label.toUpperCase();
 
 const DockMenu = () => {
-  const { renderedConfig, visible } = useDockMenuState();
+  const { renderedConfig, visible, boundaryNode } = useDockMenuState();
   const measureRef = useRef<HTMLDivElement | null>(null);
   const lastScrollYRef = useRef(0);
   const frameRef = useRef<number | null>(null);
+  const boundaryFrameRef = useRef<number | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const [boundaryLift, setBoundaryLift] = useState(0);
   const [compactByScroll, setCompactByScroll] = useState(false);
   const [interactionExpanded, setInteractionExpanded] = useState(false);
   const [labelsVisible, setLabelsVisible] = useState(false);
@@ -125,6 +130,47 @@ const DockMenu = () => {
     return () => observer.disconnect();
   }, [expanded, items.length, renderedConfig]);
 
+  useEffect(() => {
+    if (!visible) {
+      const frame = requestAnimationFrame(() => setBoundaryLift(0));
+      return () => cancelAnimationFrame(frame);
+    }
+
+    const media = window.matchMedia("(min-width: 900px)");
+
+    const updateBoundaryLift = () => {
+      boundaryFrameRef.current = null;
+      if (!media.matches || !boundaryNode) {
+        setBoundaryLift(0);
+        return;
+      }
+
+      const boundaryBottom = boundaryNode.getBoundingClientRect().bottom;
+      const dockBottom = window.innerHeight - DESKTOP_DOCK_BOTTOM;
+      const nextLift = Math.min(0, boundaryBottom - DOCK_BOUNDARY_GAP - dockBottom);
+      setBoundaryLift((current) => (current === nextLift ? current : nextLift));
+    };
+
+    const scheduleBoundaryLift = () => {
+      if (boundaryFrameRef.current !== null) return;
+      boundaryFrameRef.current = requestAnimationFrame(updateBoundaryLift);
+    };
+
+    scheduleBoundaryLift();
+    window.addEventListener("scroll", scheduleBoundaryLift, { passive: true });
+    window.addEventListener("resize", scheduleBoundaryLift);
+    media.addEventListener("change", scheduleBoundaryLift);
+    return () => {
+      window.removeEventListener("scroll", scheduleBoundaryLift);
+      window.removeEventListener("resize", scheduleBoundaryLift);
+      media.removeEventListener("change", scheduleBoundaryLift);
+      if (boundaryFrameRef.current !== null) {
+        cancelAnimationFrame(boundaryFrameRef.current);
+        boundaryFrameRef.current = null;
+      }
+    };
+  }, [boundaryNode, visible]);
+
   if (!renderedConfig) return null;
 
   const transition = reducedMotion
@@ -190,6 +236,8 @@ const DockMenu = () => {
         left: 0,
         right: 0,
         bottom: { xs: 16, md: 24 },
+        transform: { xs: "none", md: `translate3d(0, ${boundaryLift}px, 0)` },
+        transition: reducedMotion ? undefined : DOCK_POSITION_TRANSITION,
         zIndex: 1190,
         display: "flex",
         justifyContent: "center",

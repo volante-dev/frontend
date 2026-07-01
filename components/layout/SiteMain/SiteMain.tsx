@@ -1,6 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useCallback } from "react";
+import { useDockMenuBoundary } from "@/components/layout/DockMenu/DockMenuProvider";
 
 const isPortfolioPath = (pathname: string) =>
   pathname === "/portfolio" ||
@@ -10,9 +12,19 @@ const isPortfolioPath = (pathname: string) =>
 
 const SiteMain = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
+  const setDockMenuBoundary = useDockMenuBoundary();
+  const mainRef = useCallback(
+    (node: HTMLElement | null) => {
+      setDockMenuBoundary(node);
+    },
+    [setDockMenuBoundary],
+  );
 
   return (
-    <main style={{ paddingTop: isPortfolioPath(pathname) ? 0 : "var(--header-height)" }}>
+    <main
+      ref={mainRef}
+      style={{ paddingTop: isPortfolioPath(pathname) ? 0 : "var(--header-height)" }}
+    >
       {children}
     </main>
   );

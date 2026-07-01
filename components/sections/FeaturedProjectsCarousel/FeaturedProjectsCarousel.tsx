@@ -33,17 +33,6 @@ type DragState = {
   directionLocked: "horizontal" | "vertical" | null;
 };
 
-type MeshPoint = {
-  x: number;
-  y: number;
-  opacity: number;
-};
-
-type ProjectVisual = {
-  palette: string[];
-  points: MeshPoint[];
-};
-
 const FALLBACK_PALETTE = [
   colors.green,
   colors.greenLight,
@@ -52,17 +41,14 @@ const FALLBACK_PALETTE = [
 ];
 const DRAG_CLICK_THRESHOLD_TOUCH = 6;
 const DRAG_CLICK_THRESHOLD_MOUSE = 14;
+const DRAG_SUPPRESS_CLICK_THRESHOLD = 2;
 const DIRECTION_LOCK_THRESHOLD = 10;
-const BASE_MESH_POINTS: MeshPoint[] = [
-  { x: 12, y: 10, opacity: 0.78 },
-  { x: 88, y: 12, opacity: 0.68 },
-  { x: 24, y: 88, opacity: 0.68 },
-  { x: 80, y: 84, opacity: 0.68 },
-];
-const FALLBACK_PROJECT_VISUAL: ProjectVisual = {
-  palette: FALLBACK_PALETTE,
-  points: BASE_MESH_POINTS,
-};
+const CAROUSEL_CARD_TRANSITION =
+  "left 820ms cubic-bezier(0.22, 1, 0.36, 1), width 820ms cubic-bezier(0.22, 1, 0.36, 1), transform 820ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease";
+const MOBILE_CAROUSEL_CARD_TRANSITION =
+  "left 520ms cubic-bezier(0.22, 1, 0.36, 1), transform 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease";
+const SLIDE_HALO_TRANSITION =
+  "left 820ms cubic-bezier(0.22, 1, 0.36, 1), width 820ms cubic-bezier(0.22, 1, 0.36, 1), transform 820ms cubic-bezier(0.22, 1, 0.36, 1), opacity 620ms ease";
 
 const modulo = (value: number, length: number) =>
   ((value % length) + length) % length;
@@ -121,148 +107,210 @@ const ProjectCoverMedia = ({ project }: { project: Project }) => {
   );
 };
 
-const hexToRgb = (color: string) => ({
-  r: Number.parseInt(color.slice(1, 3), 16),
-  g: Number.parseInt(color.slice(3, 5), 16),
-  b: Number.parseInt(color.slice(5, 7), 16),
-});
-
-const mixHex = (from: string, to: string, progress: number) => {
-  const start = hexToRgb(normalizeHex(from));
-  const end = hexToRgb(normalizeHex(to));
-  const amount = Math.max(0, Math.min(1, progress));
-  const channel = (a: number, b: number) =>
-    Math.round(a + (b - a) * amount)
-      .toString(16)
-      .padStart(2, "0");
-  return `#${channel(start.r, end.r)}${channel(start.g, end.g)}${channel(start.b, end.b)}`;
-};
-
-const mixPalettes = (from: string[], to: string[], progress: number) =>
-  from.map((color, index) => mixHex(color, to[index], progress));
-
-const seededRandom = (value: string) => {
-  let state = Array.from(value).reduce(
-    (hash, character) => Math.imul(hash ^ character.charCodeAt(0), 16777619),
-    2166136261,
-  );
-  return () => {
-    state += 0x6d2b79f5;
-    let result = state;
-    result = Math.imul(result ^ (result >>> 15), result | 1);
-    result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
-    return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
-  };
-};
-
-const createMeshLayout = (project: Project): MeshPoint[] => {
-  const random = seededRandom(project.id || project.slug);
-  return BASE_MESH_POINTS.map((point) => ({
-    x: point.x + (random() * 2 - 1) * 8,
-    y: point.y + (random() * 2 - 1) * 6,
-    opacity: point.opacity + (random() * 2 - 1) * 0.035,
-  }));
-};
-
-const mixMeshLayouts = (
-  from: MeshPoint[],
-  to: MeshPoint[],
-  progress: number,
-) => {
-  const amount = Math.max(0, Math.min(1, progress));
-  return from.map((point, index) => ({
-    x: point.x + (to[index].x - point.x) * amount,
-    y: point.y + (to[index].y - point.y) * amount,
-    opacity:
-      point.opacity + (to[index].opacity - point.opacity) * amount,
-  }));
-};
-
-const readableForeground = (palette: string[]) => {
-  const luminance =
-    palette.reduce((total, color) => {
-      const { r, g, b } = hexToRgb(normalizeHex(color));
-      return total + (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-    }, 0) / palette.length;
-  return luminance > 0.62 ? colors.mutedBlack : colors.white;
-};
-
-const MeshGradient = ({
-  palette,
-  points,
+const SlideHalo = ({
+  project,
+  position,
+  active,
+  visible,
   dragging,
 }: {
-  palette: string[];
-  points: MeshPoint[];
+  project: Project;
+  position: number;
+  active: boolean;
+  visible: boolean;
   dragging: boolean;
-}) => (
-  <Box
-    aria-hidden
-    sx={{
-      position: "absolute",
-      inset: "-22% -12%",
-      overflow: "hidden",
-      pointerEvents: "none",
-      zIndex: 0,
-      "@keyframes meshFloatOne": {
-        from: { transform: "translate3d(-2%, -1%, 0) scale(1)" },
-        to: { transform: "translate3d(4%, 3%, 0) scale(1.06)" },
-      },
-      "@keyframes meshFloatTwo": {
-        from: { transform: "translate3d(3%, -2%, 0) scale(1.04)" },
-        to: { transform: "translate3d(-3%, 4%, 0) scale(0.99)" },
-      },
-    }}
-  >
-    {palette.map((color, index) => (
+}) => {
+  const palette = normalizePalette(project.heroPaletteComputed);
+  const opacity = visible ? (active ? 1 : 0.54) : 0;
+
+  return (
+    <Box
+      aria-hidden
+      style={
+        {
+          "--slide-halo-primary": palette[0],
+          "--slide-halo-secondary": palette[1],
+          "--slide-halo-accent": palette[2],
+          "--slide-halo-muted": palette[3],
+        } as CSSProperties
+      }
+      sx={{
+        display: { xs: "none", md: "block" },
+        position: "absolute",
+        left: cardLeft(position),
+        top: 0,
+        bottom: 0,
+        width: active
+          ? "var(--carousel-active-width)"
+          : "var(--carousel-side-width)",
+        opacity,
+        pointerEvents: "none",
+        zIndex: 0,
+        transform: "translate3d(var(--carousel-drag-offset), 0, 0)",
+        transition: dragging ? "none" : SLIDE_HALO_TRANSITION,
+        "@media (prefers-reduced-motion: reduce)": {
+          transition: "none",
+        },
+        "@keyframes slideHaloCentralPrimary": {
+          "0%, 100%": {
+            opacity: active ? 1 : 0.82,
+            transform: "translate3d(-50%, -50%, 0) scaleX(1.06)",
+          },
+          "50%": {
+            opacity: active ? 0.64 : 0.42,
+            transform: "translate3d(-50%, -50%, 0) scaleX(0.94)",
+          },
+        },
+        "@keyframes slideHaloCentralSecondary": {
+          "0%, 100%": {
+            opacity: active ? 0.54 : 0.28,
+            transform: "translate3d(-50%, -50%, 0) scaleX(0.98)",
+          },
+          "50%": {
+            opacity: active ? 0.92 : 0.54,
+            transform: "translate3d(-50%, -50%, 0) scaleX(1.12)",
+          },
+        },
+      }}
+    >
       <Box
-        key={index}
-        style={
-          {
-            left: `${points[index].x}%`,
-            top: `${points[index].y}%`,
-          } satisfies CSSProperties
-        }
         sx={{
           position: "absolute",
-          width: { xs: "90vw", md: "65vw" },
-          aspectRatio: "1",
-          transform: "translate(-50%, -50%)",
-          transition: dragging
-            ? "none"
-            : "left 920ms cubic-bezier(0.22, 1, 0.36, 1), top 920ms cubic-bezier(0.22, 1, 0.36, 1)",
-          "@media (prefers-reduced-motion: reduce)": { transition: "none" },
+          left: "50%",
+          top: "54%",
+          width: active ? { xs: "130%", md: "120%" } : { xs: "96%", md: "90%" },
+          height: active ? "134%" : "98%",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(ellipse at center, var(--slide-halo-primary) 0%, var(--slide-halo-secondary) 42%, rgba(255, 255, 255, 0) 74%)",
+          filter: active
+            ? { xs: "blur(30px) saturate(1.5)", md: "blur(54px) saturate(1.5)" }
+            : { xs: "blur(22px) saturate(1.32)", md: "blur(38px) saturate(1.32)" },
+          transform: "translate3d(-50%, -50%, 0) scaleX(1.06)",
+          animation: "slideHaloCentralPrimary 4.2s ease-in-out infinite",
+          "@media (prefers-reduced-motion: reduce)": {
+            animation: "none",
+          },
         }}
-      >
-        <Box
-          style={
-            {
-              backgroundColor: color,
-              opacity: points[index].opacity,
-            } satisfies CSSProperties
-          }
-          sx={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: "50%",
-            filter: { xs: "blur(55px)", md: "blur(90px)" },
-            willChange: "transform",
-            transition: dragging
-              ? "none"
-              : "background-color 720ms cubic-bezier(0.22, 1, 0.36, 1), opacity 720ms ease",
-            animation: `${index % 2 === 0 ? "meshFloatOne" : "meshFloatTwo"} ${
-              24 + index * 2
-            }s ease-in-out infinite alternate`,
-            "@media (prefers-reduced-motion: reduce)": {
-              animation: "none",
-              transition: "none",
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          left: "50%",
+          top: "48%",
+          width: active ? { xs: "112%", md: "104%" } : { xs: "80%", md: "74%" },
+          height: active ? "120%" : "88%",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(ellipse at center, var(--slide-halo-accent) 0%, var(--slide-halo-muted) 40%, rgba(255, 255, 255, 0) 72%)",
+          filter: active
+            ? { xs: "blur(26px) saturate(1.56)", md: "blur(48px) saturate(1.56)" }
+            : { xs: "blur(20px) saturate(1.36)", md: "blur(34px) saturate(1.36)" },
+          transform: "translate3d(-50%, -50%, 0) scaleX(0.98)",
+          animation: "slideHaloCentralSecondary 4.2s ease-in-out infinite",
+          "@media (prefers-reduced-motion: reduce)": {
+            animation: "none",
+          },
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          width: active ? { xs: "120%", md: "112%" } : { xs: "88%", md: "82%" },
+          height: active ? "126%" : "92%",
+          borderRadius: { xs: 3, md: 4 },
+          background:
+            "radial-gradient(ellipse at center, color-mix(in srgb, var(--slide-halo-primary) 52%, var(--slide-halo-accent) 48%) 0%, rgba(255, 255, 255, 0) 70%)",
+          filter: active
+            ? { xs: "blur(34px) saturate(1.4)", md: "blur(60px) saturate(1.4)" }
+            : { xs: "blur(22px) saturate(1.26)", md: "blur(40px) saturate(1.26)" },
+          opacity: active ? 0.52 : 0.22,
+          transform: "translate3d(-50%, -50%, 0)",
+        }}
+      />
+    </Box>
+  );
+};
+
+const MobileSlideHalo = ({
+  project,
+  position,
+  active,
+  visible,
+  dragging,
+}: {
+  project: Project;
+  position: number;
+  active: boolean;
+  visible: boolean;
+  dragging: boolean;
+}) => {
+  const palette = normalizePalette(project.heroPaletteComputed);
+  const opacity = visible && active ? 0.42 : 0;
+
+  return (
+    <Box
+      aria-hidden
+      style={
+        {
+          "--slide-halo-primary": palette[0],
+          "--slide-halo-secondary": palette[1],
+          "--slide-halo-accent": palette[2],
+          "--slide-halo-muted": palette[3],
+        } as CSSProperties
+      }
+      sx={{
+        display: { xs: "block", md: "none" },
+        position: "absolute",
+        left: cardLeft(position),
+        top: "-6%",
+        width: active
+          ? "var(--carousel-active-width)"
+          : "var(--carousel-side-width)",
+        height: "112%",
+        pointerEvents: "none",
+        zIndex: 0,
+        opacity,
+        transform: "translate3d(var(--carousel-drag-offset), 0, 0)",
+        transition: dragging
+          ? "none"
+          : {
+              xs: "left 520ms cubic-bezier(0.22, 1, 0.36, 1), transform 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease",
+              md: "none",
             },
-          }}
-        />
-      </Box>
-    ))}
-  </Box>
-);
+        "@media (prefers-reduced-motion: reduce)": {
+          transition: "none",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          inset: "-10% -16%",
+          borderRadius: "42%",
+          background:
+            "radial-gradient(ellipse at center, var(--slide-halo-primary) 0%, var(--slide-halo-secondary) 42%, rgba(255, 255, 255, 0) 74%)",
+          filter: "blur(22px) saturate(1.18)",
+          transform: "translateZ(0)",
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          inset: "4% 0 0 10%",
+          borderRadius: "42%",
+          background:
+            "radial-gradient(ellipse at center, var(--slide-halo-accent) 0%, var(--slide-halo-muted) 44%, rgba(255, 255, 255, 0) 72%)",
+          filter: "blur(18px) saturate(1.16)",
+          opacity: 0.5,
+          transform: "translateZ(0)",
+        }}
+      />
+    </Box>
+  );
+};
 
 const cardLeft = (position: number) => {
   if (position === 0) return "var(--carousel-start)";
@@ -288,7 +336,6 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
   const [activeStep, setActiveStep] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const [trackWidth, setTrackWidth] = useState(900);
   const [cursor, setCursor] = useState({ x: 0, y: 0, visible: false });
   const trackRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -368,40 +415,13 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     [setDragOffsetImmediate],
   );
 
-  const projectVisuals = useMemo<ProjectVisual[]>(
-    () =>
-      projects.map((project) => ({
-        palette: normalizePalette(project.heroPaletteComputed),
-        points: createMeshLayout(project),
-      })),
-    [projects],
-  );
+  const suppressNextClick = useCallback(() => {
+    suppressClickRef.current = true;
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
+  }, []);
 
-  const projectVisual = useCallback(
-    (index: number) => {
-      if (!projectVisuals.length) return FALLBACK_PROJECT_VISUAL;
-      return projectVisuals[modulo(index, projectVisuals.length)];
-    },
-    [projectVisuals],
-  );
-
-  const backgroundVisual = useMemo(() => {
-    const current = projectVisual(activeStep);
-    if (!dragOffset) return current;
-
-    const direction = dragOffset < 0 ? 1 : -1;
-    const distance = Math.min(
-      1,
-      Math.abs(dragOffset) / Math.max(160, trackWidth * 0.28),
-    );
-    const next = projectVisual(activeStep + direction);
-    return {
-      palette: mixPalettes(current.palette, next.palette, distance),
-      points: mixMeshLayouts(current.points, next.points, distance),
-    };
-  }, [activeStep, dragOffset, projectVisual, trackWidth]);
-  const backgroundPalette = backgroundVisual.palette;
-  const foreground = readableForeground(backgroundPalette);
   const virtualItems = useMemo(
     () => {
       if (projects.length < 2) return [];
@@ -416,7 +436,6 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     },
     [activeStep, projects],
   );
-
   const updateCursor = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
       const rect = trackRef.current?.getBoundingClientRect();
@@ -435,7 +454,6 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     if ((event.target as HTMLElement).closest("button")) return;
 
     event.currentTarget.setPointerCapture(event.pointerId);
-    setTrackWidth(event.currentTarget.clientWidth);
     dragRef.current = {
       pointerId: event.pointerId,
       pointerType: event.pointerType,
@@ -470,6 +488,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         if (drag.directionLocked === "horizontal" && drag.pointerType !== "mouse") {
           try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
           dragRef.current = null;
+          suppressNextClick();
           setDragOffsetImmediate(0);
           goTo(deltaX < 0 ? 1 : -1);
           return;
@@ -482,6 +501,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     const rawOffset = event.clientX - drag.startX;
     const maximum = Math.max(180, (trackRef.current?.clientWidth ?? 900) * 0.32);
     const nextOffset = Math.max(-maximum, Math.min(maximum, rawOffset));
+    if (Math.abs(rawOffset) > DRAG_SUPPRESS_CLICK_THRESHOLD) drag.moved = true;
     const clickThreshold = drag.pointerType === "mouse"
       ? DRAG_CLICK_THRESHOLD_MOUSE
       : DRAG_CLICK_THRESHOLD_TOUCH;
@@ -503,7 +523,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     const shouldMove =
       Math.abs(currentDragOffset) >= threshold || Math.abs(velocity) > 0.5;
 
-    suppressClickRef.current = drag.moved;
+    if (drag.moved) suppressNextClick();
 
     // Pointer capture redirects click to the track, bypassing the Link cards.
     // For mouse clicks without drag, find the link under the cursor and navigate.
@@ -524,9 +544,6 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
     if (shouldMove) goTo(currentDragOffset < 0 ? 1 : -1);
     else setDragOffsetImmediate(0);
 
-    window.setTimeout(() => {
-      suppressClickRef.current = false;
-    }, 0);
   };
 
   const handlePointerCancel = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -545,7 +562,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
       data-testid="featured-projects-carousel"
       aria-roledescription="carousel"
       aria-label={t("portfolio.heading", "Portfolio")}
-      style={{ color: foreground, backgroundColor: backgroundPalette[0] }}
+      style={{ color: colors.mutedBlack, backgroundColor: colors.offWhite }}
       sx={{
         width: "100%",
         position: "relative",
@@ -561,11 +578,6 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         },
       }}
     >
-      <MeshGradient
-        palette={backgroundPalette}
-        points={backgroundVisual.points}
-        dragging={dragging}
-      />
       <Box
         sx={{
           position: "relative",
@@ -663,6 +675,36 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
         {virtualItems.map(({ project, position, virtualIndex }) => {
           const active = position === 0;
           const visible = position >= -1 && position <= 2;
+
+          return (
+            <MobileSlideHalo
+              key={`mobile-halo-${virtualIndex}`}
+              project={project}
+              position={position}
+              active={active}
+              visible={visible}
+              dragging={dragging}
+            />
+          );
+        })}
+        {virtualItems.map(({ project, position, virtualIndex }) => {
+          const active = position === 0;
+          const visible = position >= -1 && position <= 2;
+
+          return (
+            <SlideHalo
+              key={`halo-${virtualIndex}`}
+              project={project}
+              position={position}
+              active={active}
+              visible={visible}
+              dragging={dragging}
+            />
+          );
+        })}
+        {virtualItems.map(({ project, position, virtualIndex }) => {
+          const active = position === 0;
+          const visible = position >= -1 && position <= 2;
           const meta = [project.sector, project.projectLocation].filter(Boolean).join(" — ");
 
           return (
@@ -687,7 +729,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
                   : "var(--carousel-side-width)",
                 display: "block",
                 overflow: "hidden",
-                borderRadius: { xs: 2, md: 3 },
+                borderRadius: { xs: 1, md: 1.5 },
                 color: colors.white,
                 textDecoration: "none",
                 cursor: { xs: "grab", md: "none" },
@@ -697,12 +739,12 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
                 pointerEvents: visible ? "auto" : "none",
                 transform: "translate3d(var(--carousel-drag-offset), 0, 0)",
                 zIndex: active ? 3 : Math.max(0, 2 - Math.abs(position)),
-                boxShadow: active
-                  ? "0 28px 70px rgba(20, 28, 27, 0.24)"
-                  : "0 18px 45px rgba(20, 28, 27, 0.16)",
                 transition: dragging
                   ? "none"
-                  : "left 820ms cubic-bezier(0.22, 1, 0.36, 1), width 820ms cubic-bezier(0.22, 1, 0.36, 1), transform 820ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease, box-shadow 500ms ease",
+                  : {
+                      xs: MOBILE_CAROUSEL_CARD_TRANSITION,
+                      md: CAROUSEL_CARD_TRANSITION,
+                    },
                 "@media (prefers-reduced-motion: reduce)": {
                   transition: "none",
                 },
