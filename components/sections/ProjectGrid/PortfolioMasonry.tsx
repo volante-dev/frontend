@@ -3,10 +3,15 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { colors, typography } from "@/app/theme/tokens";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
 import AppleTvCard from "@/components/ui/AppleTvCard/AppleTvCard";
+import DepthHoverGroup, {
+  depthHoverDirectionProps,
+  depthHoverItemStyle,
+  depthHoverTriggerProps,
+} from "@/components/ui/DepthHoverGroup/DepthHoverGroup";
 import type { Project } from "./project-types";
 import {
   getDesktopMasonryPlacements,
@@ -40,22 +45,58 @@ const mediaSx = {
   width: "100%",
   height: "100%",
   objectFit: "cover",
+  transform: "scale(1.035)",
   transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
 } as const;
 
+const overlayTitleShadow =
+  "0 16px 46px rgba(0, 0, 0, 0.62), 0 4px 18px rgba(0, 0, 0, 0.42)";
+const overlayBodyShadow =
+  "0 12px 36px rgba(0, 0, 0, 0.58), 0 2px 12px rgba(0, 0, 0, 0.38)";
+
+const getDepthHoverDirection = (placement: DesktopMasonryPlacement) =>
+  placement.columnStart <= 2 ? "left" : "right";
+
+const getDepthHoverStyle = (placement: DesktopMasonryPlacement) => {
+  const itemCenterColumn = placement.columnStart + placement.columnSpan / 2 - 0.5;
+  const gridCenterColumn = 2.5;
+  const translateX = (gridCenterColumn - itemCenterColumn) * 8.7;
+  const scale = placement.columnSpan > 1 || placement.rowSpan > 1 ? 0.978 : 0.982;
+
+  return depthHoverItemStyle({ translateX, scale });
+};
+
 const ProjectCoverMedia = ({ project }: { project: Project }) => {
   const mediaType = project.coverMediaType ?? inferMediaTypeFromUrl(project.imageUrl);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const handleVideoPointerEnter = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.play().catch(() => {
+      // Browsers can still reject playback depending on user settings.
+    });
+  }, []);
+  const handleVideoPointerLeave = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.pause();
+    video.currentTime = 0;
+  }, []);
 
   return mediaType === "VIDEO" ? (
     <Box
+      ref={videoRef}
       component="video"
       src={project.imageUrl}
       poster={project.coverPosterUrl ?? undefined}
-      autoPlay
       muted
       loop
       playsInline
       preload="metadata"
+      onPointerEnter={handleVideoPointerEnter}
+      onPointerLeave={handleVideoPointerLeave}
       sx={mediaSx}
     />
   ) : (
@@ -91,6 +132,12 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
     const desktopPlacement: DesktopMasonryPlacement | undefined = forcedHero
       ? { columnStart: 3, rowStart: 1, columnSpan: 2, rowSpan: 2 }
       : desktopPlacements.get(project.id);
+    const depthHoverDirection = desktopPlacement
+      ? getDepthHoverDirection(desktopPlacement)
+      : "center";
+    const depthHoverStyle = desktopPlacement
+      ? getDepthHoverStyle(desktopPlacement)
+      : undefined;
 
     return (
       <AppleTvCard
@@ -98,7 +145,10 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
         component={Link}
         href={`${portfolioHref}/${project.slug}`}
         data-link-variant="plain"
-        tilt={hero ? 4 : 6}
+        {...depthHoverTriggerProps}
+        {...depthHoverDirectionProps(depthHoverDirection)}
+        style={depthHoverStyle}
+        tilt={hero ? 2 : 4}
         parallax={hero ? 10 : 14}
         overlay={
           <>
@@ -132,8 +182,9 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
                 component="h3"
                 sx={{
                   fontFamily: typography.fontFamilyDisplay,
-                  fontWeight: { xs: 300, md: 200 },
+                  fontWeight: hero ? { xs: 300, md: 200 } : 300,
                   color: colors.white,
+                  textShadow: overlayTitleShadow,
                 }}
               >
                 {project.title}
@@ -147,7 +198,7 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
                       mt: 1.5,
                       maxWidth: 520,
                       color: colors.white,
-                      textShadow: "0 1px 8px rgba(0, 0, 0, 0.35)",
+                      textShadow: overlayBodyShadow,
                     }}
                   >
                     {heroDescription}
@@ -163,7 +214,7 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
                       lineHeight: 1.45,
                       hyphens: "auto",
                       overflowWrap: "break-word",
-                      textShadow: "0 1px 8px rgba(0, 0, 0, 0.35)",
+                      textShadow: overlayBodyShadow,
                     }}
                   >
                     {truncateMobileDescription(heroDescription)}
@@ -193,7 +244,7 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
               : "auto",
           },
           "&:hover img, &:hover video": {
-            transform: "scale(1.025)",
+            transform: "scale(1.045)",
           },
           "&:hover .portfolio-masonry-gradient, &:hover .portfolio-masonry-copy": {
             opacity: 1,
@@ -209,15 +260,15 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
   };
 
   return (
-    <Box
+    <DepthHoverGroup
       component="section"
       data-testid="portfolio-masonry"
       sx={{
         display: "grid",
         gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" },
         gridAutoRows: { xs: "minmax(150px, 48vw)", md: "minmax(180px, 22vw)" },
-        gap: { xs: "6px", md: "2px" },
-        p: { xs: "6px", md: "20px" },
+        gap: { xs: "8px", md: "20px" },
+        p: { xs: "8px", md: "20px" },
       }}
     >
       <Box
@@ -262,7 +313,7 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
 
       {firstProject && renderProject(firstProject, true)}
       {remainingProjects.map((project) => renderProject(project))}
-    </Box>
+    </DepthHoverGroup>
   );
 };
 

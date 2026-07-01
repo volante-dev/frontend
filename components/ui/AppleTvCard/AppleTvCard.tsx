@@ -37,6 +37,11 @@ type BaseRect = {
   height: number;
 };
 
+type PointerCoordinates = {
+  clientX: number;
+  clientY: number;
+};
+
 type AppleTvCardProps = Omit<
   BoxProps,
   "children" | "onPointerEnter" | "onPointerMove" | "onPointerLeave"
@@ -117,7 +122,7 @@ const AppleTvCard = forwardRef<HTMLElement, AppleTvCardProps>(
       overlay,
       parallaxLayer,
       tilt = 6,
-      shine = 0.52,
+      shine = 0.44,
       shadow = 1,
       parallax = 12,
       style,
@@ -132,6 +137,8 @@ const AppleTvCard = forwardRef<HTMLElement, AppleTvCardProps>(
     const rootRef = useRef<HTMLElement | null>(null);
     const baseRectRef = useRef<BaseRect | null>(null);
     const frameRef = useRef<number | null>(null);
+    const isInteractionActiveRef = useRef(false);
+    const latestPointerRef = useRef<PointerCoordinates | null>(null);
     const pendingStyleRef = useRef<AppleTvCardStyle>(DEFAULT_STYLE);
     const [enabled, setEnabled] = useState(false);
     const [cardStyle, setCardStyle] = useState<AppleTvCardStyle>(DEFAULT_STYLE);
@@ -188,6 +195,21 @@ const AppleTvCard = forwardRef<HTMLElement, AppleTvCardProps>(
       });
     }, [scheduleStyle]);
 
+    const updateBaseRect = useCallback(() => {
+      if (!rootRef.current) return null;
+
+      const rect = rootRef.current.getBoundingClientRect();
+      const nextRect = {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+      };
+      baseRectRef.current = nextRect;
+
+      return nextRect;
+    }, []);
+
     const scheduleInteractiveStyle = useCallback(
       (clientX: number, clientY: number) => {
         if (!rootRef.current) return;
@@ -204,7 +226,7 @@ const AppleTvCard = forwardRef<HTMLElement, AppleTvCardProps>(
           "--apple-tv-card-ry": `${centeredX * tilt}deg`,
           "--apple-tv-card-sx": `${-centeredX * 34 * shadow}px`,
           "--apple-tv-card-sy": `${(50 - centeredY * 22) * shadow}px`,
-          "--apple-tv-card-shadow-opacity": 0.5,
+          "--apple-tv-card-shadow-opacity": 0.9,
           "--apple-tv-card-scale": 1.026,
           "--apple-tv-card-shine-x": shinePosition.x,
           "--apple-tv-card-shine-y": shinePosition.y,
@@ -217,17 +239,50 @@ const AppleTvCard = forwardRef<HTMLElement, AppleTvCardProps>(
       [parallax, scheduleStyle, shadow, shine, tilt],
     );
 
+    useEffect(() => {
+      const handleViewportChange = () => {
+        const pointer = latestPointerRef.current;
+        if (!isInteractionActiveRef.current || !pointer || !rootRef.current) return;
+
+        const rect = updateBaseRect();
+        if (!rect) return;
+
+        const isPointerInside =
+          pointer.clientX >= rect.left &&
+          pointer.clientX <= rect.left + rect.width &&
+          pointer.clientY >= rect.top &&
+          pointer.clientY <= rect.top + rect.height;
+
+        if (!isPointerInside) {
+          isInteractionActiveRef.current = false;
+          latestPointerRef.current = null;
+          baseRectRef.current = null;
+          reset();
+          return;
+        }
+
+        scheduleInteractiveStyle(pointer.clientX, pointer.clientY);
+      };
+
+      window.addEventListener("scroll", handleViewportChange, { capture: true, passive: true });
+      window.addEventListener("resize", handleViewportChange);
+
+      return () => {
+        window.removeEventListener("scroll", handleViewportChange, true);
+        window.removeEventListener("resize", handleViewportChange);
+      };
+    }, [reset, scheduleInteractiveStyle, updateBaseRect]);
+
     const handlePointerEnter = (event: ReactPointerEvent<HTMLElement>) => {
       onPointerEnter?.(event);
       if (event.defaultPrevented || event.pointerType !== "mouse" || !isFinePointer()) {
         return;
       }
-      const rect = event.currentTarget.getBoundingClientRect();
-      baseRectRef.current = {
-        left: rect.left,
-        top: rect.top,
-        width: rect.width,
-        height: rect.height,
+      updateBaseRect();
+      isInteractionActiveRef.current = true;
+      latestPointerRef.current = {
+        clientX: event.clientX,
+        clientY: event.clientY,
       };
       setEnabled(true);
       scheduleInteractiveStyle(event.clientX, event.clientY);
@@ -244,11 +299,17 @@ const AppleTvCard = forwardRef<HTMLElement, AppleTvCardProps>(
         return;
       }
 
+      latestPointerRef.current = {
+        clientX: event.clientX,
+        clientY: event.clientY,
+      };
       scheduleInteractiveStyle(event.clientX, event.clientY);
     };
 
     const handlePointerLeave = (event: ReactPointerEvent<HTMLElement>) => {
       onPointerLeave?.(event);
+      isInteractionActiveRef.current = false;
+      latestPointerRef.current = null;
       baseRectRef.current = null;
       reset();
     };
@@ -301,7 +362,7 @@ const AppleTvCard = forwardRef<HTMLElement, AppleTvCardProps>(
               borderRadius: "inherit",
               pointerEvents: "none",
               boxShadow:
-                "var(--apple-tv-card-sx) var(--apple-tv-card-sy) 108px rgba(0, 0, 0, 0.58)",
+                "var(--apple-tv-card-sx) var(--apple-tv-card-sy) 168px rgba(0, 0, 0, 0.88)",
               opacity: "var(--apple-tv-card-shadow-opacity)",
               transition: `opacity 360ms ${HOVER_TRANSITION_EASING}`,
               willChange: "box-shadow, opacity",
