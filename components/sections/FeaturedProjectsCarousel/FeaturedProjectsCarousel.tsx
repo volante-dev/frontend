@@ -729,7 +729,7 @@ const FeaturedProjectsCarousel = ({ projects }: FeaturedProjectsCarouselProps) =
                   : "var(--carousel-side-width)",
                 display: "block",
                 overflow: "hidden",
-                borderRadius: { xs: 2, md: 3 },
+                borderRadius: { xs: 1, md: 1.5 },
                 color: colors.white,
                 textDecoration: "none",
                 cursor: { xs: "grab", md: "none" },

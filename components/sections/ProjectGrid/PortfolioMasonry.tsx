@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { colors, typography } from "@/app/theme/tokens";
 import { useI18n } from "@/components/providers/I18nProvider/I18nProvider";
-import AppleTvCard from "@/components/ui/AppleTvCard/AppleTvCard";
 import type { Project } from "./project-types";
 import {
   getDesktopMasonryPlacements,
@@ -93,93 +92,18 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
       : desktopPlacements.get(project.id);
 
     return (
-      <AppleTvCard
+      <Box
         key={project.id}
         component={Link}
         href={`${portfolioHref}/${project.slug}`}
-        data-link-variant="plain"
-        tilt={hero ? 4 : 6}
-        parallax={hero ? 10 : 14}
-        overlay={
-          <>
-            <Box
-              className="portfolio-masonry-gradient"
-              sx={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: hero ? "68%" : "48%",
-                background:
-                  "linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0))",
-                opacity: { xs: 1, md: 0 },
-                transition: "opacity 260ms ease-in",
-              }}
-            />
-            <Box
-              className="portfolio-masonry-copy"
-              sx={{
-                position: "absolute",
-                left: { xs: "20px", md: hero ? "32px" : "24px" },
-                right: { xs: "20px", md: hero ? "32px" : "24px" },
-                bottom: { xs: "12px", md: hero ? "28px" : "20px" },
-                opacity: { xs: 1, md: 0 },
-                transition: "opacity 260ms ease-in",
-              }}
-            >
-              <Typography
-                variant={hero ? "h2" : "h3"}
-                component="h3"
-                sx={{
-                  fontFamily: typography.fontFamilyDisplay,
-                  fontWeight: { xs: 300, md: 200 },
-                  color: colors.white,
-                }}
-              >
-                {project.title}
-              </Typography>
-              {hero && heroDescription && (
-                <>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      display: { xs: "none", md: "block" },
-                      mt: 1.5,
-                      maxWidth: 520,
-                      color: colors.white,
-                      textShadow: "0 1px 8px rgba(0, 0, 0, 0.35)",
-                    }}
-                  >
-                    {heroDescription}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    lang={locale}
-                    sx={{
-                      display: { xs: "block", md: "none" },
-                      mt: 1,
-                      maxWidth: 520,
-                      color: colors.white,
-                      lineHeight: 1.45,
-                      hyphens: "auto",
-                      overflowWrap: "break-word",
-                      textShadow: "0 1px 8px rgba(0, 0, 0, 0.35)",
-                    }}
-                  >
-                    {truncateMobileDescription(heroDescription)}
-                  </Typography>
-                </>
-              )}
-            </Box>
-          </>
-        }
         sx={{
           position: "relative",
           display: "block",
-          overflow: "visible",
+          overflow: "hidden",
           minHeight: 0,
           color: colors.white,
           textDecoration: "none",
+          backgroundColor: colors.mutedBlack,
           gridColumn: {
             xs: hero ? "span 2" : "span 1",
             md: desktopPlacement
@@ -204,7 +128,75 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
         }}
       >
         <ProjectCoverMedia project={project} />
-      </AppleTvCard>
+        <Box
+          className="portfolio-masonry-gradient"
+          sx={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: hero ? "68%" : "48%",
+            background:
+              "linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0))",
+            opacity: { xs: 1, md: 0 },
+            transition: "opacity 260ms ease-in",
+          }}
+        />
+        <Box
+          className="portfolio-masonry-copy"
+          sx={{
+            position: "absolute",
+            left: { xs: "20px", md: hero ? "32px" : "24px" },
+            right: { xs: "20px", md: hero ? "32px" : "24px" },
+            bottom: { xs: "12px", md: hero ? "28px" : "20px" },
+            opacity: { xs: 0.68, md: 0 },
+            transition: "opacity 260ms ease-in",
+          }}
+        >
+          <Typography
+            variant={hero ? "h2" : "h3"}
+            component="h3"
+            sx={{
+              fontFamily: typography.fontFamilyDisplay,
+              color: colors.white,
+            }}
+          >
+            {project.title}
+          </Typography>
+          {hero && heroDescription && (
+            <>
+              <Typography
+                variant="body2"
+                sx={{
+                  display: { xs: "none", md: "block" },
+                  mt: 1.5,
+                  maxWidth: 520,
+                  color: colors.white,
+                  textShadow: "0 1px 8px rgba(0, 0, 0, 0.35)",
+                }}
+              >
+                {heroDescription}
+              </Typography>
+              <Typography
+                variant="body2"
+                lang={locale}
+                sx={{
+                  display: { xs: "block", md: "none" },
+                  mt: 1,
+                  maxWidth: 520,
+                  color: colors.white,
+                  lineHeight: 1.45,
+                  hyphens: "auto",
+                  overflowWrap: "break-word",
+                  textShadow: "0 1px 8px rgba(0, 0, 0, 0.35)",
+                }}
+              >
+                {truncateMobileDescription(heroDescription)}
+              </Typography>
+            </>
+          )}
+        </Box>
+      </Box>
     );
   };
 
@@ -216,8 +208,7 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
         display: "grid",
         gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" },
         gridAutoRows: { xs: "minmax(150px, 48vw)", md: "minmax(180px, 22vw)" },
-        gap: { xs: "6px", md: "2px" },
-        p: { xs: "6px", md: "20px" },
+        gap: "2px",
       }}
     >
       <Box
@@ -229,6 +220,7 @@ const PortfolioMasonry = ({ projects, header }: PortfolioMasonryProps) => {
           px: { xs: 2.5, md: 4 },
           py: { xs: 3, md: 4 },
           backgroundColor: colors.offWhite,
+          border: `1px solid ${colors.blueGray}`,
           gridColumn: { xs: "span 2", md: "1 / span 2" },
           gridRow: { xs: "span 2", md: "1 / span 2" },
         }}
